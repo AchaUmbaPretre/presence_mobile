@@ -1,4 +1,4 @@
 export const Images = {
-  arriveeIcon: require("./entree.png"),
-  departIcon: require("./sortieD.png"),
+  arriveeIcon: require("./entree2.png"),
+  departIcon: require("./sortie2.png"),
 };

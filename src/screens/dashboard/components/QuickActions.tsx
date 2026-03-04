@@ -55,7 +55,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 12,
     borderWidth: 1,
-    borderColor: COLORS.gray[100],
+    borderColor: "rgba(0, 0, 0, 0.1)",
+    boxShadow: "0px 0px 15px -10px rgba(0, 0, 0, 0.75)",
   },
   actionLabel: {
     fontSize: 13,

@@ -59,12 +59,13 @@ export const MetricsCard = memo(
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    backgroundColor: COLORS.gray[50],
+    backgroundColor: "#ffff",
     borderRadius: 16,
     padding: 20,
     marginBottom: 28,
     borderWidth: 1,
-    borderColor: COLORS.gray[100],
+    borderColor: "rgba(0, 0, 0, 0.1)",
+    boxShadow: "0px 0px 15px -10px rgba(0, 0, 0, 0.75)",
   },
   metricItem: {
     flex: 1,

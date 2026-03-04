@@ -30,6 +30,7 @@ export const PresenceCards = memo(
           onPress={() => onPointage(HORAIRES_TYPE.ENTREE)}
           disabled={isEntryDisabled || isLoading}
           active={!!presence.heure_entree}
+          style={styles.CardRows}
         >
           <View style={styles.cardContent}>
             <Image source={Images.arriveeIcon} style={styles.cardIcon} />
@@ -64,6 +65,7 @@ export const PresenceCards = memo(
           onPress={() => onPointage(HORAIRES_TYPE.SORTIE)}
           disabled={isExitDisabled || isLoading}
           active={!!presence.heure_sortie}
+          style={styles.CardRows}
         >
           <View style={styles.cardContent}>
             <Image source={Images.departIcon} style={styles.cardIcon} />
@@ -103,6 +105,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 12,
     marginBottom: 28,
+  },
+  CardRows: {
+    backgroundColor: "#ffff",
+    borderColor: "rgba(0, 0, 0, 0.09)",
+    boxShadow: "0px 0px 15px -10px rgba(0, 0, 0, 0.75)",
   },
   cardContent: {
     flexDirection: "row",
