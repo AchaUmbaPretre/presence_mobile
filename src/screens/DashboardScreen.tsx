@@ -378,17 +378,17 @@ export default function DashboardScreen() {
               {
                 icon: "map-marker-outline",
                 label: "Géoloc",
-                color: COLORS.success.main,
+                color: COLORS.primary.main,
               },
               {
                 icon: "history",
                 label: "Historique",
-                color: COLORS.warning.main,
+                color: COLORS.primary.main,
               },
               {
                 icon: "file-document-outline",
                 label: "Rapports",
-                color: COLORS.error.main,
+                color: COLORS.primary.main,
               },
             ].map((action, index) => (
               <TouchableOpacity key={index} style={styles.actionItem}>
@@ -620,8 +620,11 @@ const styles = StyleSheet.create({
   metricValue: {
     fontSize: 24,
     fontWeight: "500",
-    color: COLORS.gray[900],
+    color: COLORS.primary.main,
     marginBottom: 2,
+    backgroundColor: `${COLORS.primary.light}`,
+    padding: 10,
+    borderRadius: 16,
   },
   metricUnit: {
     fontSize: 12,
