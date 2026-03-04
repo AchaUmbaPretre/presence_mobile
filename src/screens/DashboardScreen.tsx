@@ -509,7 +509,7 @@ const styles = StyleSheet.create({
   profileInitials: {
     fontSize: 16,
     fontWeight: "500",
-    color: COLORS.gray[600],
+    color: COLORS.primary.main,
   },
   dateChip: {
     flexDirection: "row",
