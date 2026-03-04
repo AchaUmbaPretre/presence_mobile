@@ -1,3 +1,4 @@
+import { Images } from "@/assets";
 import React, {
     useCallback,
     useEffect,
@@ -9,6 +10,7 @@ import {
     Alert,
     Animated,
     Dimensions,
+    Image,
     Platform,
     RefreshControl,
     SafeAreaView,
@@ -284,11 +286,7 @@ export default function DashboardScreen() {
           >
             <View style={styles.cardContent}>
               <View style={styles.cardHeader}>
-                <IconWithBackground
-                  name="login"
-                  color={COLORS.success.main}
-                  backgroundColor={COLORS.success.light}
-                />
+                <Image src={Images.arriveeIcon} alt="" />
                 <Text
                   style={[
                     styles.cardLabel,
@@ -316,11 +314,7 @@ export default function DashboardScreen() {
           >
             <View style={styles.cardContent}>
               <View style={styles.cardHeader}>
-                <IconWithBackground
-                  name="logout"
-                  color={COLORS.error.main}
-                  backgroundColor={COLORS.error.light}
-                />
+                <Image src={Images.departIcon} alt="" />
                 <Text
                   style={[
                     styles.cardLabel,
