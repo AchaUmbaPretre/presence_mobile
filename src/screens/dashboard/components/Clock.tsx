@@ -8,8 +8,7 @@ import {
     View,
 } from "react-native";
 import Animated, {
-    FadeInDown,
-    FadeInUp,
+    FadeInRight,
     useAnimatedStyle,
     useSharedValue,
     withRepeat,
@@ -84,21 +83,18 @@ export const Clock = memo(
       switch (variant) {
         case "compact":
           return {
-            timeSize: 32,
-            secondsSize: 16,
-            containerMargin: 16,
+            timeSize: 28,
+            secondsSize: 14,
           };
         case "large":
           return {
-            timeSize: 64,
-            secondsSize: 24,
-            containerMargin: 32,
+            timeSize: 48,
+            secondsSize: 22,
           };
         default:
           return {
-            timeSize: 48,
-            secondsSize: 20,
-            containerMargin: 28,
+            timeSize: 36,
+            secondsSize: 16,
           };
       }
     };
@@ -111,36 +107,27 @@ export const Clock = memo(
     };
 
     return (
-      <>
-        {/* Date chip avec gradient */}
-        <Animated.View
-          entering={animated ? FadeInDown.springify() : undefined}
-          style={styles.dateChipContainer}
+      <Animated.View
+        entering={animated ? FadeInRight.springify() : undefined}
+        style={styles.container}
+      >
+        {/* Date chip */}
+        <LinearGradient
+          colors={[COLORS.gray[50], COLORS.white]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.dateChip}
         >
-          <LinearGradient
-            colors={[COLORS.gray[50], COLORS.white]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.dateChip}
-          >
-            <Icon
-              name="calendar-blank-outline"
-              size={14}
-              color={COLORS.primary.main}
-            />
-            <Text style={styles.dateText}>{formatDate(date)}</Text>
-          </LinearGradient>
-        </Animated.View>
+          <Icon
+            name="calendar-blank-outline"
+            size={14}
+            color={COLORS.primary.main}
+          />
+          <Text style={styles.dateText}>{formatDate(date)}</Text>
+        </LinearGradient>
 
-        {/* Horloge principale */}
-        <Animated.View
-          entering={animated ? FadeInUp.delay(100).springify() : undefined}
-          style={[
-            styles.clockContainer,
-            { marginBottom: variantStyles.containerMargin },
-          ]}
-        >
-          {/* Heures */}
+        {/* Horloge */}
+        <View style={styles.clockWrapper}>
           <View style={styles.timeWrapper}>
             <Text
               style={[styles.clockTime, { fontSize: variantStyles.timeSize }]}
@@ -148,7 +135,7 @@ export const Clock = memo(
               {time}
             </Text>
 
-            {/* Point clignotant (séparateur) */}
+            {/* Point clignotant */}
             {showSeconds && (
               <RNAnimated.View
                 style={[
@@ -159,7 +146,7 @@ export const Clock = memo(
             )}
           </View>
 
-          {/* Secondes avec animation */}
+          {/* Secondes */}
           {showSeconds && (
             <Animated.View
               style={[styles.secondsWrapper, secondsAnimatedStyle]}
@@ -184,17 +171,29 @@ export const Clock = memo(
               </LinearGradient>
             </Animated.View>
           )}
-        </Animated.View>
-      </>
+        </View>
+      </Animated.View>
     );
   },
 );
 
 // ==================== STYLES ====================
 const styles = StyleSheet.create({
-  dateChipContainer: {
-    alignSelf: "flex-start",
-    marginBottom: 24,
+  container: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 20,
+  },
+  dateChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 100,
+    borderWidth: 1,
+    borderColor: COLORS.gray[200],
+    backgroundColor: COLORS.white,
     ...Platform.select({
       ios: {
         shadowColor: COLORS.primary.main,
@@ -207,33 +206,20 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  dateChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 100,
-    borderWidth: 1,
-    borderColor: COLORS.gray[200],
-    backgroundColor: COLORS.white,
-  },
   dateText: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: getFontFamily("medium"),
     color: COLORS.gray[700],
-    marginLeft: 8,
+    marginLeft: 6,
     textTransform: "capitalize",
   },
-  clockContainer: {
+  clockWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
   },
   timeWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    position: "relative",
   },
   clockTime: {
     fontFamily: Platform.select({
@@ -243,32 +229,31 @@ const styles = StyleSheet.create({
     }),
     fontWeight: "300",
     color: COLORS.gray[900],
-    letterSpacing: -2,
+    letterSpacing: -1,
     includeFontPadding: false,
-    textAlignVertical: "center",
   },
   dotSeparator: {
-    width: 4,
+    width: 3,
     backgroundColor: COLORS.primary.main,
-    borderRadius: 2,
-    marginHorizontal: 8,
+    borderRadius: 1.5,
+    marginHorizontal: 6,
     opacity: 0.5,
   },
   secondsWrapper: {
-    marginLeft: 8,
+    marginLeft: 4,
   },
   secondsBackground: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     ...Platform.select({
       ios: {
         shadowColor: COLORS.primary.main,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
+        shadowOpacity: 0.2,
+        shadowRadius: 3,
       },
       android: {
-        elevation: 3,
+        elevation: 2,
       },
     }),
   },
