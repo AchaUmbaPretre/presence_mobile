@@ -22,12 +22,10 @@ import { ACTIONS_RAPIDES, LAYOUT } from "../constants/dashboard.constants";
 import { getFontFamily } from "./../../../constants/typography";
 import { IconWithBackground } from "./IconWithBackground";
 
-// ==================== TYPES ====================
 interface QuickActionsProps {
   onActionPress?: (actionLabel: string) => void;
 }
 
-// ==================== COMPOSANT PRINCIPAL ====================
 export const QuickActions = memo(({ onActionPress }: QuickActionsProps) => {
   // Animations individuelles pour chaque action
   const scaleValues = ACTIONS_RAPIDES.map(() => useSharedValue(1));
