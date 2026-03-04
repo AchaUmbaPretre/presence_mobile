@@ -1,4 +1,4 @@
-import { api } from '@/api/client';
+import { api } from './../../../api/client';
 import { LoginCredentials, LoginResponse } from '../types/auth.types';
 import { API_ENDPOINTS } from '@/api/endpoints';
 

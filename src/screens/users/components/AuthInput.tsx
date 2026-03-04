@@ -1,8 +1,8 @@
-import React, { memo } from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '@/shared/constants/colors';
-import { TYPOGRAPHY } from '@/shared/constants/typography';
+import { COLORS } from "./../../dashboard/constants/color";
+import { getFontFamily } from "./../../../constants/typography";
+import { Ionicons } from "@expo/vector-icons";
+import React, { memo } from "react";
+import { StyleSheet, Text, TextInput, View } from "react-native";
 
 interface AuthInputProps {
   label: string;
@@ -12,74 +12,88 @@ interface AuthInputProps {
   icon: keyof typeof Ionicons.glyphMap;
   error?: string;
   secureTextEntry?: boolean;
-  keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad';
-  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
+  keyboardType?: "default" | "email-address" | "numeric" | "phone-pad";
+  autoCapitalize?: "none" | "sentences" | "words" | "characters";
+  autoCorrect?: boolean;
+  textContentType?: "emailAddress" | "password" | "username" | "none";
   onFocus?: () => void;
   onBlur?: () => void;
   isFocused?: boolean;
+  returnKeyType?: "done" | "go" | "next" | "search" | "send";
+  onSubmitEditing?: () => void;
 }
 
-export const AuthInput = memo(({
-  label,
-  value,
-  onChangeText,
-  placeholder,
-  icon,
-  error,
-  secureTextEntry = false,
-  keyboardType = 'default',
-  autoCapitalize = 'none',
-  onFocus,
-  onBlur,
-  isFocused,
-}: AuthInputProps) => (
-  <View style={styles.container}>
-    <View style={styles.labelRow}>
-      <Ionicons name={icon} size={18} color={COLORS.gray[500]} />
-      <Text style={styles.label}>{label}</Text>
-    </View>
-    
-    <TextInput
-      style={[
-        styles.input,
-        isFocused && styles.inputFocused,
-        error && styles.inputError,
-      ]}
-      value={value}
-      onChangeText={onChangeText}
-      placeholder={placeholder}
-      placeholderTextColor={COLORS.gray[400]}
-      secureTextEntry={secureTextEntry}
-      keyboardType={keyboardType}
-      autoCapitalize={autoCapitalize}
-      onFocus={onFocus}
-      onBlur={onBlur}
-      selectionColor={COLORS.primary.main}
-    />
-    
-    {error && (
-      <View style={styles.errorContainer}>
-        <Ionicons name="alert-circle" size={14} color={COLORS.error.main} />
-        <Text style={styles.errorText}>{error}</Text>
+export const AuthInput = memo(
+  ({
+    label,
+    value,
+    onChangeText,
+    placeholder,
+    icon,
+    error,
+    secureTextEntry = false,
+    keyboardType = "default",
+    autoCapitalize = "none",
+    autoCorrect = false,
+    textContentType,
+    onFocus,
+    onBlur,
+    isFocused,
+    returnKeyType,
+    onSubmitEditing,
+  }: AuthInputProps) => (
+    <View style={styles.container}>
+      <View style={styles.labelRow}>
+        <Ionicons name={icon} size={18} color={COLORS.gray[500]} />
+        <Text style={styles.label}>{label}</Text>
       </View>
-    )}
-  </View>
-));
+
+      <TextInput
+        style={[
+          styles.input,
+          isFocused && styles.inputFocused,
+          error && styles.inputError,
+        ]}
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={COLORS.gray[400]}
+        secureTextEntry={secureTextEntry}
+        keyboardType={keyboardType}
+        autoCapitalize={autoCapitalize}
+        autoCorrect={autoCorrect}
+        textContentType={textContentType}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        returnKeyType={returnKeyType}
+        onSubmitEditing={onSubmitEditing}
+        selectionColor={COLORS.primary.main}
+      />
+
+      {error && (
+        <View style={styles.errorContainer}>
+          <Ionicons name="alert-circle" size={14} color={COLORS.error.main} />
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      )}
+    </View>
+  ),
+);
 
 const styles = StyleSheet.create({
   container: {
     marginBottom: 20,
   },
   labelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 8,
     marginLeft: 4,
   },
   label: {
     fontSize: 15,
     color: COLORS.gray[900],
-    fontFamily: TYPOGRAPHY.fonts.medium,
+    fontFamily: getFontFamily("medium"),
     marginLeft: 8,
   },
   input: {
@@ -91,7 +105,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     fontSize: 17,
     color: COLORS.gray[900],
-    fontFamily: TYPOGRAPHY.fonts.regular,
+    fontFamily: getFontFamily("regular"),
   },
   inputFocused: {
     borderColor: COLORS.primary.main,
@@ -105,15 +119,15 @@ const styles = StyleSheet.create({
     borderColor: COLORS.error.main,
   },
   errorContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 6,
     marginLeft: 4,
   },
   errorText: {
     fontSize: 13,
     color: COLORS.error.main,
-    fontFamily: TYPOGRAPHY.fonts.regular,
+    fontFamily: getFontFamily("regular"),
     marginLeft: 4,
   },
 });

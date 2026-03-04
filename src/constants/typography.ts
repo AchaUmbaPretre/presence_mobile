@@ -1,3 +1,5 @@
+import { Platform } from "react-native";
+
 export const TYPOGRAPHY = {
   fonts: {
     regular: "SF-Pro-Text-Regular",
@@ -25,8 +27,12 @@ export const TYPOGRAPHY = {
   },
 } as const;
 
-// Fallback pour les polices système si SF-Pro n'est pas disponible
-export const FONT_FALLBACK = Platform.select({
+// Définir un type pour les variantes de police
+type FontWeight = 'regular' | 'medium' | 'semibold' | 'bold';
+type FontMap = Record<FontWeight, string>;
+
+// Fallback pour les polices système
+const FONT_FALLBACK: Record<string, FontMap> = {
   ios: {
     regular: "System",
     medium: "System",
@@ -45,4 +51,18 @@ export const FONT_FALLBACK = Platform.select({
     semibold: "System",
     bold: "System",
   },
-});
+};
+
+// Version avec fonction utilitaire pour obtenir la police appropriée
+export const getFontFamily = (
+  weight: FontWeight = "regular",
+): string => {
+  // Essayer d'utiliser SF-Pro d'abord
+  if (Platform.OS === "ios") {
+    return TYPOGRAPHY.fonts[weight];
+  }
+
+  // Fallback pour Android
+  const platform = Platform.OS as keyof typeof FONT_FALLBACK;
+  return FONT_FALLBACK[platform]?.[weight] || FONT_FALLBACK.default[weight];
+};

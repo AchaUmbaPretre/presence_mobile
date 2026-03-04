@@ -1,5 +1,5 @@
 import { COLORS } from "./../../dashboard/constants/color";
-import { TYPOGRAPHY } from "@/shared/constants/typography";
+import { TYPOGRAPHY } from "./../../../constants/typography";
 import { Ionicons } from "@expo/vector-icons";
 import React, { memo } from "react";
 import {

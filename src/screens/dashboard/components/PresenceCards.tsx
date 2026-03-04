@@ -1,4 +1,4 @@
-import { Images } from "@/assets";
+import { Images } from "./../../../../assets/index";
 import React, { memo } from "react";
 import {
     ActivityIndicator,
