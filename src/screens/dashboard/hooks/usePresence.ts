@@ -1,9 +1,8 @@
-import { useState, useCallback } from 'react';
-import { Alert } from 'react-native';
-import { postPresence } from '@/api/presences';
-import type { PresenceState, ActionType } from '../types/presence.types';
-
-const ID_UTILISATEUR = 1;
+import { useCallback, useState } from "react";
+import { Alert } from "react-native";
+import { ID_UTILISATEUR } from "../constants/dashboard.constants";
+import { presenceService } from "../services/presenceService";
+import { ActionType, PresenceState } from "../types/presence.types";
 
 export const usePresence = () => {
   const [presence, setPresence] = useState<PresenceState>({
@@ -13,11 +12,14 @@ export const usePresence = () => {
     heures_supplementaires: 0,
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handlePointage = useCallback(async (type: ActionType) => {
     setIsLoading(true);
+    setError(null);
+
     try {
-      const res = await postPresence({
+      const response = await presenceService.enregistrerPointage({
         id_utilisateur: ID_UTILISATEUR,
         date_presence: new Date().toISOString().slice(0, 10),
         datetime: new Date().toISOString(),
@@ -25,30 +27,52 @@ export const usePresence = () => {
         permissions: ["attendance.events.approve"],
       });
 
-      setPresence(prev => ({
-        ...prev,
-        [type === "ENTREE" ? "heure_entree" : "heure_sortie"]:
-          new Date().toLocaleTimeString("fr-FR", {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-      }));
+      if (response.success) {
+        setPresence((prev) => ({
+          ...prev,
+          [type === "ENTREE" ? "heure_entree" : "heure_sortie"]:
+            new Date().toLocaleTimeString("fr-FR", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          ...(response.data || {}),
+        }));
 
-      Alert.alert(
-        "Pointage enregistré",
-        res.data?.message || "Votre pointage a été validé",
-        [{ text: "Fermer", style: "default" }]
-      );
+        Alert.alert("✅ Pointage enregistré", response.message, [
+          { text: "Fermer", style: "default" },
+        ]);
+      } else {
+        setError(response.message);
+        Alert.alert("❌ Erreur", response.message, [
+          { text: "Réessayer", style: "cancel" },
+        ]);
+      }
     } catch (err: any) {
-      Alert.alert(
-        "Erreur",
-        err.response?.data?.message || "Impossible de contacter le serveur",
-        [{ text: "Réessayer", style: "cancel" }]
-      );
+      const errorMessage = "Impossible de contacter le serveur";
+      setError(errorMessage);
+      Alert.alert("❌ Erreur", errorMessage, [
+        { text: "Réessayer", style: "cancel" },
+      ]);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  return { presence, isLoading, handlePointage };
+  const resetPresence = useCallback(() => {
+    setPresence({
+      heure_entree: null,
+      heure_sortie: null,
+      retard_minutes: 0,
+      heures_supplementaires: 0,
+    });
+    setError(null);
+  }, []);
+
+  return {
+    presence,
+    isLoading,
+    error,
+    handlePointage,
+    resetPresence,
+  };
 };

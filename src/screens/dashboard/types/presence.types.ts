@@ -19,9 +19,28 @@ export interface PointageRequest {
   };
 }
 
-export interface MetricItem {
-  value: number;
-  unit: string;
-  label: string;
-  color?: string;
+export interface PointageResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    heure_entree?: string;
+    heure_sortie?: string;
+    retard_minutes?: number;
+    heures_supplementaires?: number;
+  };
+}
+
+export interface ActivityItem {
+  id: string;
+  type: 'arrival' | 'departure' | 'break';
+  time: string;
+  status: string;
+  date: string;
+}
+
+export interface WeekDay {
+  letter: string;
+  present: boolean;
+  partial: boolean;
+  date: Date;
 }
