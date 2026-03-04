@@ -80,11 +80,11 @@ export const PresenceCards = memo(
     }));
 
     const entryGlowStyle = useAnimatedStyle(() => ({
-      opacity: interpolate(entryGlow.value, [0, 1], [0, 0.3]),
+      opacity: interpolate(entryGlow.value, [0, 1], [0, 0.2]),
     }));
 
     const exitGlowStyle = useAnimatedStyle(() => ({
-      opacity: interpolate(exitGlow.value, [0, 1], [0, 0.3]),
+      opacity: interpolate(exitGlow.value, [0, 1], [0, 0.2]),
     }));
 
     // Rendu d'une carte
@@ -96,74 +96,96 @@ export const PresenceCards = memo(
       animatedStyle: any,
       glowStyle: any,
       delay: number,
-    ) => (
-      <Animated.View
-        entering={FadeInDown.delay(delay).springify()}
-        style={[{ flex: 1 }, animatedStyle]}
-      >
-        <Card
-          onPress={() => handlePress(type)}
-          disabled={type === "ENTREE" ? isEntryDisabled : isExitDisabled}
-          active={!!time}
-          style={[styles.card, !!time && styles.cardActive]}
-        >
-          <LinearGradient
-            colors={
-              !!time
-                ? type === "ENTREE"
-                  ? [COLORS.success.light, COLORS.white]
-                  : [COLORS.warning.light, COLORS.white]
-                : [COLORS.white, COLORS.white]
-            }
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.cardGradient}
-          >
-            <Animated.View style={[styles.glowEffect, glowStyle]} />
+    ) => {
+      const isActive = !!time;
+      const isEntry = type === "ENTREE";
+      const accentColor = isEntry ? COLORS.success.main : COLORS.warning.main;
 
-            <View style={styles.cardContent}>
-              <View style={styles.cardIconContainer}>
-                <Image source={icon} style={styles.cardIcon} />
-                {time && (
-                  <View style={styles.checkmark}>
-                    <LinearGradient
-                      colors={[COLORS.success.main, COLORS.success.dark]}
-                      style={styles.checkmarkGradient}
+      return (
+        <Animated.View
+          entering={FadeInDown.delay(delay).springify()}
+          style={[{ flex: 1 }, animatedStyle]}
+        >
+          <Card
+            onPress={() => handlePress(type)}
+            disabled={isEntry ? isEntryDisabled : isExitDisabled}
+            active={isActive}
+            style={styles.card}
+          >
+            <LinearGradient
+              colors={
+                isActive
+                  ? [COLORS.white, accentColor + "08"]
+                  : [COLORS.white, COLORS.gray[50]]
+              }
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.cardGradient}
+            >
+              <Animated.View
+                style={[
+                  styles.glowEffect,
+                  { backgroundColor: accentColor },
+                  glowStyle,
+                ]}
+              />
+
+              <View style={styles.cardContent}>
+                {/* Icône */}
+                <View
+                  style={[
+                    styles.iconContainer,
+                    isActive && { backgroundColor: accentColor + "15" },
+                  ]}
+                >
+                  <Image
+                    source={icon}
+                    style={[
+                      styles.cardIcon,
+                      isActive && { tintColor: accentColor },
+                    ]}
+                  />
+                </View>
+
+                {/* Texte */}
+                <View style={styles.textContainer}>
+                  <Text
+                    style={[
+                      styles.cardLabel,
+                      isActive && styles.cardLabelActive,
+                    ]}
+                  >
+                    {label}
+                  </Text>
+
+                  {isLoading ? (
+                    <ActivityIndicator size="small" color={accentColor} />
+                  ) : (
+                    <Text
+                      style={[
+                        styles.cardTime,
+                        isActive && styles.cardTimeActive,
+                      ]}
                     >
-                      <Text style={styles.checkmarkText}>✓</Text>
-                    </LinearGradient>
+                      {time || "--:--"}
+                    </Text>
+                  )}
+                </View>
+
+                {/* Badge de confirmation */}
+                {isActive && (
+                  <View
+                    style={[styles.badge, { backgroundColor: accentColor }]}
+                  >
+                    <Text style={styles.badgeText}>✓</Text>
                   </View>
                 )}
               </View>
-
-              <View style={styles.cardTextContainer}>
-                <Text
-                  style={[styles.cardLabel, !!time && styles.cardLabelActive]}
-                >
-                  {label}
-                </Text>
-                <Text
-                  style={[styles.cardTime, !!time && styles.cardTimeActive]}
-                >
-                  {isLoading ? (
-                    <ActivityIndicator
-                      size="small"
-                      color={
-                        type === "ENTREE"
-                          ? COLORS.primary.main
-                          : COLORS.warning.main
-                      }
-                    />
-                  ) : (
-                    time || "--:--"
-                  )}
-                </Text>
-              </View>
-            </View>
-          </LinearGradient>
-        </Card>
-      </Animated.View>
-    );
+            </LinearGradient>
+          </Card>
+        </Animated.View>
+      );
+    };
 
     return (
       <View style={styles.presenceGrid}>
@@ -191,7 +213,6 @@ export const PresenceCards = memo(
   },
 );
 
-// ==================== STYLES ====================
 const styles = StyleSheet.create({
   presenceGrid: {
     flexDirection: "row",
@@ -202,32 +223,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.white,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: COLORS.gray[200],
     overflow: "hidden",
     ...Platform.select({
       ios: {
         shadowColor: COLORS.black,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
+        shadowOpacity: 0.1,
         shadowRadius: 8,
       },
       android: {
-        elevation: 2,
-      },
-    }),
-  },
-  cardActive: {
-    borderColor: COLORS.primary.main,
-    ...Platform.select({
-      ios: {
-        shadowColor: COLORS.primary.main,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 12,
-      },
-      android: {
-        elevation: 4,
+        elevation: 3,
       },
     }),
   },
@@ -241,62 +246,35 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: COLORS.primary.main,
     opacity: 0,
   },
   cardContent: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+    gap: 12,
   },
-  cardIconContainer: {
-    position: "relative",
-  },
-  cardIcon: {
-    height: 50,
-    width: 50,
-    resizeMode: "contain",
-  },
-  checkmark: {
-    position: "absolute",
-    top: -4,
-    right: -4,
-    borderRadius: 12,
-    overflow: "hidden",
-    ...Platform.select({
-      ios: {
-        shadowColor: COLORS.success.main,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
-  },
-  checkmarkGradient: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+  iconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: COLORS.gray[50],
     justifyContent: "center",
     alignItems: "center",
   },
-  checkmarkText: {
-    color: COLORS.white,
-    fontSize: 14,
-    fontFamily: getFontFamily("bold"),
+  cardIcon: {
+    width: 28,
+    height: 28,
+    resizeMode: "contain",
+    tintColor: COLORS.gray[500],
   },
-  cardTextContainer: {
-    alignItems: "flex-end",
+  textContainer: {
+    flex: 1,
   },
   cardLabel: {
     fontSize: 14,
-    fontFamily: getFontFamily("regular"),
+    fontFamily: getFontFamily("medium"),
     color: COLORS.gray[500],
     marginBottom: 4,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
   },
   cardLabelActive: {
     color: COLORS.gray[900],
@@ -310,16 +288,37 @@ const styles = StyleSheet.create({
       default: "monospace",
     }),
     color: COLORS.gray[400],
-    letterSpacing: 1,
-    minHeight: 30,
   },
   cardTimeActive: {
     color: COLORS.gray[900],
     fontFamily: Platform.select({
-      ios: "SF-Mono-Semibold",
+      ios: "SF-Mono-Medium",
       android: "monospace",
       default: "monospace",
     }),
+  },
+  badge: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    ...Platform.select({
+      ios: {
+        shadowColor: COLORS.black,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  badgeText: {
+    color: COLORS.white,
+    fontSize: 14,
+    fontFamily: getFontFamily("bold"),
   },
 });
 
