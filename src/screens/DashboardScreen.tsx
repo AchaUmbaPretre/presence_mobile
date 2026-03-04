@@ -285,25 +285,31 @@ export default function DashboardScreen() {
             active={!!presence.heure_entree}
           >
             <View style={styles.cardContent}>
-              <View style={styles.cardHeader}>
-                <Image src={Images.arriveeIcon} alt="" />
+              <Image
+                source={Images.arriveeIcon}
+                alt=""
+                style={{ height: 50, width: 50 }}
+              />
+              <View>
+                <View style={styles.cardHeader}>
+                    <Text
+                    style={[
+                        styles.cardLabel,
+                        !!presence.heure_entree && styles.cardLabelActive,
+                    ]}
+                    >
+                    Arrivée
+                    </Text>
+                </View>
                 <Text
-                  style={[
-                    styles.cardLabel,
-                    !!presence.heure_entree && styles.cardLabelActive,
-                  ]}
+                    style={[
+                    styles.cardTime,
+                    !!presence.heure_entree && styles.cardTimeActive,
+                    ]}
                 >
-                  Arrivée
+                    {presence.heure_entree || "--:--"}
                 </Text>
               </View>
-              <Text
-                style={[
-                  styles.cardTime,
-                  !!presence.heure_entree && styles.cardTimeActive,
-                ]}
-              >
-                {presence.heure_entree || "--:--"}
-              </Text>
             </View>
           </Card>
 
@@ -313,25 +319,31 @@ export default function DashboardScreen() {
             active={!!presence.heure_sortie}
           >
             <View style={styles.cardContent}>
-              <View style={styles.cardHeader}>
-                <Image src={Images.departIcon} alt="" />
-                <Text
-                  style={[
-                    styles.cardLabel,
-                    !!presence.heure_sortie && styles.cardLabelActive,
-                  ]}
-                >
-                  Départ
-                </Text>
-              </View>
-              <Text
-                style={[
-                  styles.cardTime,
-                  !!presence.heure_sortie && styles.cardTimeActive,
-                ]}
-              >
-                {presence.heure_sortie || "--:--"}
-              </Text>
+                <Image
+                  source={Images.departIcon}
+                  alt=""
+                  style={{ height: 50, width: 50 }}
+                />
+                <View>
+                    <View style={styles.cardHeader}>
+                        <Text
+                        style={[
+                            styles.cardLabel,
+                            !!presence.heure_sortie && styles.cardLabelActive,
+                        ]}
+                        >
+                        Départ
+                        </Text>
+                    </View>
+                    <Text
+                        style={[
+                        styles.cardTime,
+                        !!presence.heure_sortie && styles.cardTimeActive,
+                        ]}
+                    >
+                        {presence.heure_sortie || "--:--"}
+                    </Text>
+                </View>
             </View>
           </Card>
         </View>
@@ -566,6 +578,8 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   cardContent: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     padding: 16,
   },
   cardHeader: {
