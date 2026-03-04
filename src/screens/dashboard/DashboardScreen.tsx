@@ -40,12 +40,10 @@ const DashboardScreen = memo(() => {
   }));
 
   const handleRefresh = useCallback(() => {
-    // Logique de rafraîchissement
   }, []);
 
   const handleActionPress = useCallback((action: string) => {
     console.log("Action pressed:", action);
-    // Navigation ou logique d'action
   }, []);
 
   return (
