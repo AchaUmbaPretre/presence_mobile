@@ -46,4 +46,5 @@ export interface WeekDay {
   present: boolean;
   partial: boolean;
   date: Date;
+  heures?: number;
 }

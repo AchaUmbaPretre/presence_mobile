@@ -18,14 +18,16 @@ import Animated, {
     withTiming,
 } from "react-native-reanimated";
 import { COLORS } from "../constants/color";
-import { ACTIONS_RAPIDES, LAYOUT } from "../constants/dashboard.constants";
+import { ACTIONS_RAPIDES } from "../constants/dashboard.constants";
 import { getFontFamily } from "./../../../constants/typography";
 import { IconWithBackground } from "./IconWithBackground";
 
+// ==================== TYPES ====================
 interface QuickActionsProps {
   onActionPress?: (actionLabel: string) => void;
 }
 
+// ==================== COMPOSANT PRINCIPAL ====================
 export const QuickActions = memo(({ onActionPress }: QuickActionsProps) => {
   // Animations individuelles pour chaque action
   const scaleValues = ACTIONS_RAPIDES.map(() => useSharedValue(1));
@@ -80,7 +82,7 @@ export const QuickActions = memo(({ onActionPress }: QuickActionsProps) => {
         </TouchableOpacity>
       </View>
 
-      {/* Grille d'actions */}
+      {/* Grille d'actions - 2 par ligne */}
       <View style={styles.actionsGrid}>
         {ACTIONS_RAPIDES.map((action, index) => {
           const animatedStyle = getAnimatedStyle(index);
@@ -145,7 +147,6 @@ export const QuickActions = memo(({ onActionPress }: QuickActionsProps) => {
   );
 });
 
-// Fonction utilitaire pour les descriptions
 const getActionDescription = (label: string): string => {
   switch (label) {
     case "QR Code":
@@ -165,7 +166,6 @@ const getActionDescription = (label: string): string => {
 const styles = StyleSheet.create({
   section: {
     marginBottom: 28,
-    paddingHorizontal: 20,
   },
   sectionHeader: {
     flexDirection: "row",
@@ -187,10 +187,11 @@ const styles = StyleSheet.create({
   actionsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
+    justifyContent: "space-between",
     gap: 12,
   },
   actionWrapper: {
-    width: LAYOUT.actionItemWidth,
+    width: "48%", // 2 par ligne avec espacement
     borderRadius: 16,
     overflow: "hidden",
     ...Platform.select({
@@ -229,7 +230,7 @@ const styles = StyleSheet.create({
   actionContent: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: 10,
   },
   textContainer: {
     flex: 1,
@@ -246,14 +247,14 @@ const styles = StyleSheet.create({
     color: COLORS.gray[500],
   },
   arrow: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
   },
   arrowText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "300",
   },
 });
