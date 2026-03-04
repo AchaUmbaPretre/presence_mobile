@@ -2,7 +2,7 @@ import axios from "axios";
 
 const DOMAIN = "https://apidlog.loginsmart-cd.com";
 
-type PresencePayload = {
+export type PresencePayload = {
   id_utilisateur: number;
   date_presence: string;
   datetime?: string;

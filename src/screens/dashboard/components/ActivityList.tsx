@@ -1,6 +1,6 @@
 import React, { memo } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { COLORS } from "../constants/colors";
+import { COLORS } from "../constants/color";
 import { ActivityItem } from "../types/presence.types";
 
 interface ActivityListProps {

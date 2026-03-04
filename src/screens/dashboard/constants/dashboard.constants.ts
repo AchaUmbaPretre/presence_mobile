@@ -9,6 +9,13 @@ export const HORAIRES_TYPE = {
   SORTIE: "SORTIE",
 } as const;
 
+// Mapping des sources pour l'API
+export const SOURCE_MAPPING = {
+  MANUEL: "MANUEL",
+  QR_CODE: "MANUEL", // Les QR codes sont aussi considérés comme manuels
+  GEOLOC: "MANUEL", // La géolocalisation aussi
+} as const;
+
 export const ACTIONS_RAPIDES = [
   {
     icon: "qrcode-scan",
