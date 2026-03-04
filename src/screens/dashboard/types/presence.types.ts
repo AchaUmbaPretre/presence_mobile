@@ -5,13 +5,16 @@ export interface PresenceState {
   heures_supplementaires: number;
 }
 
-export type ActionType = 'ENTREE' | 'SORTIE';
+export type ActionType = "ENTREE" | "SORTIE";
+
+// 👇 AJOUTER CE TYPE - Export du type PointageSource
+export type PointageSource = "MANUEL" | "QR_CODE" | "GEOLOC";
 
 export interface PointageRequest {
   id_utilisateur: number;
   date_presence: string;
   datetime: string;
-  source: 'MANUEL' | 'QR_CODE' | 'GEOLOC';
+  source: PointageSource; // Utilisation du type
   permissions: string[];
   location?: {
     latitude: number;
@@ -32,7 +35,7 @@ export interface PointageResponse {
 
 export interface ActivityItem {
   id: string;
-  type: 'arrival' | 'departure' | 'break';
+  type: "arrival" | "departure" | "break";
   time: string;
   status: string;
   date: string;

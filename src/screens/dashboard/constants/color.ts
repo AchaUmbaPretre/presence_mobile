@@ -33,4 +33,13 @@ export const COLORS = {
   },
   white: "#FFFFFF",
   black: "#000000",
+  // Ajout des couleurs manquantes
+  background: "#F2F2F7", // ← AJOUTER CE CI
+  surface: "#FFFFFF", // ← AJOUTER CE CI
+  text: {
+    // ← AJOUTER CE CI
+    primary: "#1D1D1F",
+    secondary: "#8E8E93",
+    disabled: "#C7C7CC",
+  },
 } as const;
