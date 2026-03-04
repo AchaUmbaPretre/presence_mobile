@@ -258,7 +258,7 @@ export default function DashboardScreen() {
           <Icon
             name="calendar-blank-outline"
             size={14}
-            color={COLORS.gray[500]}
+            color={COLORS.primary.main}
           />
           <Text style={styles.dateText}>{formattedDate}</Text>
         </Animated.View>
@@ -292,22 +292,22 @@ export default function DashboardScreen() {
               />
               <View>
                 <View style={styles.cardHeader}>
-                    <Text
+                  <Text
                     style={[
-                        styles.cardLabel,
-                        !!presence.heure_entree && styles.cardLabelActive,
+                      styles.cardLabel,
+                      !!presence.heure_entree && styles.cardLabelActive,
                     ]}
-                    >
+                  >
                     Arrivée
-                    </Text>
+                  </Text>
                 </View>
                 <Text
-                    style={[
+                  style={[
                     styles.cardTime,
                     !!presence.heure_entree && styles.cardTimeActive,
-                    ]}
+                  ]}
                 >
-                    {presence.heure_entree || "--:--"}
+                  {presence.heure_entree || "--:--"}
                 </Text>
               </View>
             </View>
@@ -319,31 +319,31 @@ export default function DashboardScreen() {
             active={!!presence.heure_sortie}
           >
             <View style={styles.cardContent}>
-                <Image
-                  source={Images.departIcon}
-                  alt=""
-                  style={{ height: 50, width: 50 }}
-                />
-                <View>
-                    <View style={styles.cardHeader}>
-                        <Text
-                        style={[
-                            styles.cardLabel,
-                            !!presence.heure_sortie && styles.cardLabelActive,
-                        ]}
-                        >
-                        Départ
-                        </Text>
-                    </View>
-                    <Text
-                        style={[
-                        styles.cardTime,
-                        !!presence.heure_sortie && styles.cardTimeActive,
-                        ]}
-                    >
-                        {presence.heure_sortie || "--:--"}
-                    </Text>
+              <Image
+                source={Images.departIcon}
+                alt=""
+                style={{ height: 50, width: 50 }}
+              />
+              <View>
+                <View style={styles.cardHeader}>
+                  <Text
+                    style={[
+                      styles.cardLabel,
+                      !!presence.heure_sortie && styles.cardLabelActive,
+                    ]}
+                  >
+                    Départ
+                  </Text>
                 </View>
+                <Text
+                  style={[
+                    styles.cardTime,
+                    !!presence.heure_sortie && styles.cardTimeActive,
+                  ]}
+                >
+                  {presence.heure_sortie || "--:--"}
+                </Text>
+              </View>
             </View>
           </Card>
         </View>
@@ -623,12 +623,11 @@ const styles = StyleSheet.create({
   },
   metricItem: {
     flex: 1,
-    alignItems: "center",
-  },
-  metricValue: {
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
+  },
+  metricValue: {
     fontSize: 24,
     fontWeight: "500",
     color: COLORS.primary.main,
