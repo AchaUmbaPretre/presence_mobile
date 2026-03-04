@@ -618,6 +618,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   metricValue: {
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
     fontSize: 24,
     fontWeight: "500",
     color: COLORS.primary.main,
@@ -625,6 +628,8 @@ const styles = StyleSheet.create({
     backgroundColor: `${COLORS.primary.light}`,
     padding: 10,
     borderRadius: 16,
+    height: 50,
+    width: 50,
   },
   metricUnit: {
     fontSize: 12,
@@ -654,6 +659,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: COLORS.gray[900],
     letterSpacing: -0.2,
+    marginBottom: 10,
   },
   sectionLink: {
     fontSize: 13,
