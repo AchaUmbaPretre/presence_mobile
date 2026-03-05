@@ -84,7 +84,7 @@ const ActivityRow = memo(
     const handlePress = useCallback(() => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-      scale.value = withSpring(0.98, { damping: 15 }, () => {
+      scale.value = withSpring(0.97, { damping: 12 }, () => {
         scale.value = withSpring(1);
       });
 
@@ -102,7 +102,7 @@ const ActivityRow = memo(
     }));
 
     const glowStyle = useAnimatedStyle(() => ({
-      opacity: interpolate(glow.value, [0, 1], [0, 0.2]),
+      opacity: interpolate(glow.value, [0, 1], [0, 0.15]),
     }));
 
     return (
@@ -122,7 +122,13 @@ const ActivityRow = memo(
             style={styles.activityGradient}
           >
             {/* Effet de glow */}
-            <Animated.View style={[styles.glowEffect, glowStyle]} />
+            <Animated.View
+              style={[
+                styles.glowEffect,
+                { backgroundColor: config.colors.primary },
+                glowStyle,
+              ]}
+            />
 
             <View style={styles.activityItem}>
               {/* Icône avec gradient */}
@@ -142,7 +148,7 @@ const ActivityRow = memo(
                   <View
                     style={[
                       styles.typeBadge,
-                      { backgroundColor: `${config.colors.primary}15` },
+                      { backgroundColor: `${config.colors.primary}12` },
                     ]}
                   >
                     <View
@@ -186,7 +192,7 @@ const ActivityRow = memo(
               <View
                 style={[
                   styles.arrowContainer,
-                  { backgroundColor: `${config.colors.primary}10` },
+                  { backgroundColor: `${config.colors.primary}08` },
                 ]}
               >
                 <Ionicons
@@ -344,7 +350,7 @@ const styles = StyleSheet.create({
       ios: {
         shadowColor: COLORS.primary.main,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
+        shadowOpacity: 0.15,
         shadowRadius: 4,
       },
       android: {
@@ -392,7 +398,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: COLORS.primary.main,
     opacity: 0,
   },
   activityItem: {

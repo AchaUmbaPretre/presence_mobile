@@ -24,6 +24,17 @@ import { Images } from "./../../../../assets/index";
 import { getFontFamily } from "./../../../constants/typography";
 import { Card } from "./Card";
 
+// ==================== PALETTE DE BLEUS ====================
+const BLUE_PRO = {
+  primary: "#0A4DA4",
+  secondary: "#1E6EC7",
+  light: "#E8F0FE",
+  dark: "#07317A",
+  textLight: "#FFFFFF",
+  textBlue: "#1E3A5F", // Bleu profond élégant
+  textMuted: "#5A6B7A", // Bleu-gris secondaire
+} as const;
+
 // ==================== TYPES ====================
 interface PresenceCardsProps {
   presence: PresenceState;
@@ -58,7 +69,7 @@ export const PresenceCards = memo(
         const scale = type === "ENTREE" ? entryScale : exitScale;
         const glow = type === "ENTREE" ? entryGlow : exitGlow;
 
-        scale.value = withSpring(0.95, { damping: 10 }, () => {
+        scale.value = withSpring(0.95, { damping: 12 }, () => {
           scale.value = withSpring(1);
         });
 
@@ -80,11 +91,11 @@ export const PresenceCards = memo(
     }));
 
     const entryGlowStyle = useAnimatedStyle(() => ({
-      opacity: interpolate(entryGlow.value, [0, 1], [0, 0.2]),
+      opacity: interpolate(entryGlow.value, [0, 1], [0, 0.15]),
     }));
 
     const exitGlowStyle = useAnimatedStyle(() => ({
-      opacity: interpolate(exitGlow.value, [0, 1], [0, 0.2]),
+      opacity: interpolate(exitGlow.value, [0, 1], [0, 0.15]),
     }));
 
     // Rendu d'une carte
@@ -99,11 +110,11 @@ export const PresenceCards = memo(
     ) => {
       const isActive = !!time;
       const isEntry = type === "ENTREE";
-      const accentColor = isEntry ? COLORS.success.main : COLORS.warning.main;
+      const accentColor = isEntry ? BLUE_PRO.primary : BLUE_PRO.secondary;
 
       return (
         <Animated.View
-          entering={FadeInDown.delay(delay).springify()}
+          entering={FadeInDown.delay(delay).springify().damping(15)}
           style={[{ flex: 1 }, animatedStyle]}
         >
           <Card
@@ -115,7 +126,7 @@ export const PresenceCards = memo(
             <LinearGradient
               colors={
                 isActive
-                  ? [COLORS.white, accentColor + "08"]
+                  ? [BLUE_PRO.light, COLORS.white]
                   : [COLORS.white, COLORS.gray[50]]
               }
               start={{ x: 0, y: 0 }}
@@ -131,7 +142,7 @@ export const PresenceCards = memo(
               />
 
               <View style={styles.cardContent}>
-                {/* Icône */}
+                {/* Icône avec fond */}
                 <View
                   style={[
                     styles.iconContainer,
@@ -172,13 +183,16 @@ export const PresenceCards = memo(
                   )}
                 </View>
 
-                {/* Badge de confirmation */}
+                {/* Badge de confirmation avec dégradé */}
                 {isActive && (
-                  <View
-                    style={[styles.badge, { backgroundColor: accentColor }]}
+                  <LinearGradient
+                    colors={[accentColor, accentColor + "CC"]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.badge}
                   >
                     <Text style={styles.badgeText}>✓</Text>
-                  </View>
+                  </LinearGradient>
                 )}
               </View>
             </LinearGradient>
@@ -226,7 +240,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     ...Platform.select({
       ios: {
-        shadowColor: COLORS.black,
+        shadowColor: BLUE_PRO.primary,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 8,
@@ -257,15 +271,26 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: COLORS.gray[50],
+    backgroundColor: BLUE_PRO.light,
     justifyContent: "center",
     alignItems: "center",
+    ...Platform.select({
+      ios: {
+        shadowColor: BLUE_PRO.primary,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   cardIcon: {
     width: 28,
     height: 28,
     resizeMode: "contain",
-    tintColor: COLORS.gray[500],
+    tintColor: BLUE_PRO.primary,
   },
   textContainer: {
     flex: 1,
@@ -273,12 +298,14 @@ const styles = StyleSheet.create({
   cardLabel: {
     fontSize: 14,
     fontFamily: getFontFamily("medium"),
-    color: COLORS.gray[500],
+    color: BLUE_PRO.textBlue, // Changé de textDark à textBlue
     marginBottom: 4,
+    opacity: 0.7,
   },
   cardLabelActive: {
-    color: COLORS.gray[900],
+    color: BLUE_PRO.primary,
     fontFamily: getFontFamily("semibold"),
+    opacity: 1,
   },
   cardTime: {
     fontSize: 20,
@@ -287,15 +314,17 @@ const styles = StyleSheet.create({
       android: "monospace",
       default: "monospace",
     }),
-    color: COLORS.gray[400],
+    color: BLUE_PRO.textBlue, // Changé de textDark à textBlue
+    opacity: 0.5,
   },
   cardTimeActive: {
-    color: COLORS.gray[900],
+    color: BLUE_PRO.primary,
     fontFamily: Platform.select({
       ios: "SF-Mono-Medium",
       android: "monospace",
       default: "monospace",
     }),
+    opacity: 1,
   },
   badge: {
     width: 24,
@@ -305,9 +334,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     ...Platform.select({
       ios: {
-        shadowColor: COLORS.black,
+        shadowColor: BLUE_PRO.primary,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
+        shadowOpacity: 0.3,
         shadowRadius: 4,
       },
       android: {

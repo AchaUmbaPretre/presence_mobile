@@ -13,6 +13,18 @@ import {
 import { COLORS } from "../constants/color";
 import { getFontFamily } from "./../../../constants/typography";
 
+// ==================== PALETTE DE BLEUS ====================
+const BLUE_PRO = {
+  primary: "#0A4DA4",
+  secondary: "#1E6EC7",
+  light: "#E8F0FE",
+  dark: "#07317A",
+  textLight: "#FFFFFF",
+  textBlue: "#1E3A5F", // Bleu profond élégant
+  textMuted: "#5A6B7A", // Bleu-gris secondaire
+} as const;
+
+// ==================== TYPES ====================
 interface MetricItemProps {
   value: number;
   unit: string;
@@ -38,7 +50,7 @@ const MetricItem = memo(
     unit,
     label,
     icon,
-    color = COLORS.primary.main,
+    color = BLUE_PRO.primary,
     trend,
     onPress,
   }: MetricItemProps) => {
@@ -72,7 +84,7 @@ const MetricItem = memo(
     // Déterminer la couleur de la tendance
     const getTrendColor = () => {
       if (!trend) return COLORS.gray[400];
-      return trend > 0 ? COLORS.success.main : COLORS.error.main;
+      return trend > 0 ? BLUE_PRO.primary : BLUE_PRO.secondary;
     };
 
     return (
@@ -82,7 +94,7 @@ const MetricItem = memo(
         <View style={styles.metricContent}>
           {/* Cercle de valeur avec gradient */}
           <LinearGradient
-            colors={[`${color}20`, `${color}10`]}
+            colors={[`${color}15`, `${color}05`]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={[styles.metricValueContainer]}
@@ -96,7 +108,7 @@ const MetricItem = memo(
           {/* Label avec icône optionnelle */}
           <View style={styles.metricLabelContainer}>
             {icon && (
-              <Ionicons name={icon} size={14} color={COLORS.gray[400]} />
+              <Ionicons name={icon} size={14} color={COLORS.gray[500]} />
             )}
             <Text style={styles.metricLabel}>{label}</Text>
           </View>
@@ -185,7 +197,7 @@ export const MetricsCard = memo(
             unit="h"
             label="Suppl."
             icon="trending-up-outline"
-            color={COLORS.success.main}
+            color={BLUE_PRO.secondary}
             trend={supplementaires > 0 ? 20 : undefined}
             onPress={() => onMetricPress?.("supplementaires")}
           />
@@ -197,7 +209,7 @@ export const MetricsCard = memo(
             unit="h"
             label="Objectif"
             icon="flag-outline"
-            color={COLORS.primary.main}
+            color={BLUE_PRO.primary}
             onPress={() => onMetricPress?.("objectif")}
           />
         </View>
@@ -219,10 +231,10 @@ export const MetricsCard = memo(
                   width: progressWidth,
                   backgroundColor:
                     pourcentageObjectif >= 100
-                      ? COLORS.success.main
+                      ? BLUE_PRO.primary
                       : pourcentageObjectif >= 75
-                        ? COLORS.warning.main
-                        : COLORS.primary.main,
+                        ? BLUE_PRO.secondary
+                        : BLUE_PRO.primary + "80",
                 },
               ]}
             />
@@ -236,11 +248,7 @@ export const MetricsCard = memo(
         {/* Séparateur décoratif */}
         <View style={styles.decorativeLine}>
           <LinearGradient
-            colors={[
-              COLORS.primary.light,
-              COLORS.primary.main,
-              COLORS.primary.light,
-            ]}
+            colors={[BLUE_PRO.light, BLUE_PRO.primary, BLUE_PRO.light]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.decorativeGradient}
@@ -262,9 +270,9 @@ const styles = StyleSheet.create({
     borderColor: COLORS.gray[200],
     ...Platform.select({
       ios: {
-        shadowColor: COLORS.black,
+        shadowColor: BLUE_PRO.primary,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
+        shadowOpacity: 0.08,
         shadowRadius: 8,
       },
       android: {
@@ -294,9 +302,9 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     ...Platform.select({
       ios: {
-        shadowColor: COLORS.black,
+        shadowColor: BLUE_PRO.primary,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
+        shadowOpacity: 0.1,
         shadowRadius: 4,
       },
       android: {
@@ -311,7 +319,7 @@ const styles = StyleSheet.create({
   metricUnit: {
     fontSize: 12,
     fontFamily: getFontFamily("regular"),
-    color: COLORS.gray[400],
+    color: COLORS.gray[500],
     marginBottom: 4,
   },
   metricLabelContainer: {
@@ -322,7 +330,7 @@ const styles = StyleSheet.create({
   metricLabel: {
     fontSize: 12,
     fontFamily: getFontFamily("medium"),
-    color: COLORS.gray[500],
+    color: BLUE_PRO.textBlue, // Changé de COLORS.gray[600] à textBlue
   },
   trendContainer: {
     flexDirection: "row",
@@ -370,7 +378,7 @@ const styles = StyleSheet.create({
   progressValue: {
     fontSize: 13,
     fontFamily: getFontFamily("semibold"),
-    color: COLORS.gray[900],
+    color: BLUE_PRO.textBlue, // Changé de textDark à textBlue
   },
   progressBarBackground: {
     height: 8,

@@ -39,7 +39,7 @@ export const QuickActions = memo(({ onActionPress }: QuickActionsProps) => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
       // Animation de scale
-      scaleValues[index].value = withSpring(0.9, { damping: 10 }, () => {
+      scaleValues[index].value = withSpring(0.92, { damping: 12 }, () => {
         scaleValues[index].value = withSpring(1);
       });
 
@@ -65,8 +65,24 @@ export const QuickActions = memo(({ onActionPress }: QuickActionsProps) => {
 
   const getGlowStyle = (index: number) => {
     return useAnimatedStyle(() => ({
-      opacity: interpolate(glowValues[index].value, [0, 1], [0, 0.3]),
+      opacity: interpolate(glowValues[index].value, [0, 1], [0, 0.2]),
     }));
+  };
+
+  // Couleurs spécifiques par action
+  const getActionColor = (label: string): string => {
+    switch (label) {
+      case "QR Code":
+        return COLORS.primary.main;
+      case "Géoloc":
+        return COLORS.success.main;
+      case "Historique":
+        return COLORS.warning.main;
+      case "Rapports":
+        return COLORS.secondary?.main || COLORS.primary.main;
+      default:
+        return COLORS.primary.main;
+    }
   };
 
   return (
@@ -87,6 +103,7 @@ export const QuickActions = memo(({ onActionPress }: QuickActionsProps) => {
         {ACTIONS_RAPIDES.map((action, index) => {
           const animatedStyle = getAnimatedStyle(index);
           const glowStyle = getGlowStyle(index);
+          const actionColor = getActionColor(action.label);
 
           return (
             <Animated.View
@@ -106,14 +123,20 @@ export const QuickActions = memo(({ onActionPress }: QuickActionsProps) => {
                   style={styles.actionGradient}
                 >
                   {/* Effet de glow */}
-                  <Animated.View style={[styles.glowEffect, glowStyle]} />
+                  <Animated.View
+                    style={[
+                      styles.glowEffect,
+                      { backgroundColor: actionColor },
+                      glowStyle,
+                    ]}
+                  />
 
                   {/* Contenu */}
                   <View style={styles.actionContent}>
                     <IconWithBackground
                       name={action.icon}
-                      color={action.color}
-                      backgroundColor={`${action.color}15`}
+                      color={actionColor}
+                      backgroundColor={`${actionColor}15`}
                       size={22}
                     />
 
@@ -129,10 +152,10 @@ export const QuickActions = memo(({ onActionPress }: QuickActionsProps) => {
                     <View
                       style={[
                         styles.arrow,
-                        { backgroundColor: `${action.color}15` },
+                        { backgroundColor: `${actionColor}15` },
                       ]}
                     >
-                      <Text style={[styles.arrowText, { color: action.color }]}>
+                      <Text style={[styles.arrowText, { color: actionColor }]}>
                         →
                       </Text>
                     </View>
@@ -191,7 +214,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   actionWrapper: {
-    width: "48%", // 2 par ligne avec espacement
+    width: "48%",
     borderRadius: 16,
     overflow: "hidden",
     ...Platform.select({
@@ -224,7 +247,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: COLORS.primary.main,
     opacity: 0,
   },
   actionContent: {

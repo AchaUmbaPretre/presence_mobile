@@ -1,8 +1,13 @@
 export const COLORS = {
   primary: {
-    main: "#3B82F6",
-    light: "#EFF6FF",
-    dark: "#2563EB",
+    main: "#0A4DA4", // Bleu profond professionnel
+    light: "#E8F0FE", // Bleu très clair pour les fonds
+    dark: "#07317A", // Bleu foncé pour les gradients
+  },
+  secondary: {
+    main: "#1E6EC7", // Bleu medium
+    light: "#F0F7FF",
+    dark: "#0A3D7A",
   },
   success: {
     main: "#10B981",
@@ -33,13 +38,5 @@ export const COLORS = {
   },
   white: "#FFFFFF",
   black: "#000000",
-  // Ajout des couleurs manquantes
-  background: "#F2F2F7", // ← AJOUTER CE CI
-  surface: "#FFFFFF", // ← AJOUTER CE CI
-  text: {
-    // ← AJOUTER CE CI
-    primary: "#1D1D1F",
-    secondary: "#8E8E93",
-    disabled: "#C7C7CC",
-  },
+  background: "#E8F0FE", // Fond bleu très clair
 } as const;

@@ -16,8 +16,18 @@ import Animated, {
     withTiming,
 } from "react-native-reanimated";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { COLORS } from "../constants/color";
 import { getFontFamily } from "./../../../constants/typography";
+
+// ==================== PALETTE DE BLEUS ====================
+const BLUE_PRO = {
+  primary: "#0A4DA4",
+  secondary: "#1E6EC7",
+  light: "#E8F0FE",
+  dark: "#07317A",
+  textLight: "#FFFFFF",
+  textBlue: "#1E3A5F", // Bleu profond élégant pour le texte
+  textMuted: "#5A6B7A", // Bleu-gris pour texte secondaire
+} as const;
 
 // ==================== TYPES ====================
 interface ClockProps {
@@ -83,18 +93,18 @@ export const Clock = memo(
       switch (variant) {
         case "compact":
           return {
-            timeSize: 28,
-            secondsSize: 14,
+            timeSize: 24,
+            secondsSize: 12,
           };
         case "large":
           return {
-            timeSize: 48,
-            secondsSize: 22,
+            timeSize: 42,
+            secondsSize: 20,
           };
         default:
           return {
-            timeSize: 36,
-            secondsSize: 16,
+            timeSize: 32,
+            secondsSize: 14,
           };
       }
     };
@@ -108,12 +118,12 @@ export const Clock = memo(
 
     return (
       <Animated.View
-        entering={animated ? FadeInRight.springify() : undefined}
+        entering={animated ? FadeInRight.springify().damping(15) : undefined}
         style={styles.container}
       >
-        {/* Date chip */}
+        {/* Date chip avec dégradé bleu */}
         <LinearGradient
-          colors={[COLORS.gray[50], COLORS.white]}
+          colors={[BLUE_PRO.light, BLUE_PRO.light + "80"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.dateChip}
@@ -121,7 +131,7 @@ export const Clock = memo(
           <Icon
             name="calendar-blank-outline"
             size={14}
-            color={COLORS.primary.main}
+            color={BLUE_PRO.primary}
           />
           <Text style={styles.dateText}>{formatDate(date)}</Text>
         </LinearGradient>
@@ -140,21 +150,25 @@ export const Clock = memo(
               <RNAnimated.View
                 style={[
                   styles.dotSeparator,
-                  { opacity: dotAnim, height: variantStyles.timeSize * 0.3 },
+                  {
+                    opacity: dotAnim,
+                    height: variantStyles.timeSize * 0.3,
+                    backgroundColor: BLUE_PRO.primary,
+                  },
                 ]}
               />
             )}
           </View>
 
-          {/* Secondes */}
+          {/* Secondes avec dégradé */}
           {showSeconds && (
             <Animated.View
               style={[styles.secondsWrapper, secondsAnimatedStyle]}
             >
               <LinearGradient
-                colors={[COLORS.primary.light, COLORS.primary.main]}
+                colors={[BLUE_PRO.primary, BLUE_PRO.dark]}
                 start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
+                end={{ x: 1, y: 1 }}
                 style={[
                   styles.secondsBackground,
                   { borderRadius: variantStyles.secondsSize * 0.5 },
@@ -192,11 +206,10 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 100,
     borderWidth: 1,
-    borderColor: COLORS.gray[200],
-    backgroundColor: COLORS.white,
+    borderColor: BLUE_PRO.light,
     ...Platform.select({
       ios: {
-        shadowColor: COLORS.primary.main,
+        shadowColor: BLUE_PRO.primary,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
@@ -209,7 +222,7 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 13,
     fontFamily: getFontFamily("medium"),
-    color: COLORS.gray[700],
+    color: BLUE_PRO.textBlue, // Changé de textDark à textBlue
     marginLeft: 6,
     textTransform: "capitalize",
   },
@@ -227,14 +240,13 @@ const styles = StyleSheet.create({
       android: "monospace",
       default: "monospace",
     }),
-    fontWeight: "300",
-    color: COLORS.gray[900],
-    letterSpacing: -1,
+    fontWeight: "400",
+    color: BLUE_PRO.textBlue, // Changé de textDark à textBlue
+    letterSpacing: -0.5,
     includeFontPadding: false,
   },
   dotSeparator: {
     width: 3,
-    backgroundColor: COLORS.primary.main,
     borderRadius: 1.5,
     marginHorizontal: 6,
     opacity: 0.5,
@@ -247,13 +259,13 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     ...Platform.select({
       ios: {
-        shadowColor: COLORS.primary.main,
+        shadowColor: BLUE_PRO.primary,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 3,
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
       },
       android: {
-        elevation: 2,
+        elevation: 3,
       },
     }),
   },
@@ -263,7 +275,7 @@ const styles = StyleSheet.create({
       android: "monospace",
       default: "monospace",
     }),
-    color: COLORS.white,
+    color: BLUE_PRO.textLight,
     fontWeight: "600",
     textAlign: "center",
     includeFontPadding: false,

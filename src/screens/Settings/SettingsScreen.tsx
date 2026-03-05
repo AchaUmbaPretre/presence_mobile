@@ -25,8 +25,9 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getFontFamily } from "./../../constants/typography";
-import { COLORS } from "./../../screens/dashboard/constants/color";
+import { COLORS } from "./../dashboard/constants/color";
 
+// ==================== TYPES ====================
 interface SettingSection {
   id: string;
   title: string;
@@ -51,15 +52,10 @@ interface StorageInfo {
   percentage: number;
 }
 
-// ==================== CONSTANTES AVEC GESTION DES ERREURS ====================
+// ==================== CONSTANTES ====================
 const manifest =
   Constants.manifest || Constants.manifest2?.extra?.expoClient || {};
-
-// Version avec fallback sécurisé
-const APP_VERSION =
-  (manifest as any).version || (manifest as any).runtimeVersion || "1.0.0";
-
-// Build number avec sécurité
+const APP_VERSION = (manifest as any).version || "1.0.0";
 const BUILD_NUMBER = Platform.select({
   ios: (manifest as any).ios?.buildNumber || "1",
   android: (manifest as any).android?.versionCode?.toString() || "1",
@@ -78,6 +74,7 @@ const supportsBiometrics = Platform.select({
   default: false,
 });
 
+// ==================== COMPOSANT PRINCIPAL ====================
 const SettingsScreen = () => {
   const insets = useSafeAreaInsets();
   const scrollY = useSharedValue(0);
@@ -277,118 +274,6 @@ const SettingsScreen = () => {
     return { opacity };
   });
 
-  const renderItem = useCallback(
-    (item: SettingItem) => {
-      return (
-        <TouchableOpacity
-          key={item.id}
-          style={[styles.item, item.disabled && styles.itemDisabled]}
-          onPress={() => {
-            if (item.disabled) return;
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            if (item.type === "toggle") {
-              handleToggle(item);
-            } else {
-              item.onPress?.();
-            }
-          }}
-          activeOpacity={item.disabled ? 1 : 0.7}
-        >
-          <View style={styles.itemLeft}>
-            <View
-              style={[
-                styles.itemIcon,
-                item.destructive && styles.itemIconDestructive,
-              ]}
-            >
-              <Ionicons
-                name={item.icon}
-                size={20}
-                color={
-                  item.destructive
-                    ? COLORS.error.main
-                    : item.disabled
-                      ? COLORS.gray[400]
-                      : COLORS.gray[600]
-                }
-              />
-            </View>
-            <View style={styles.itemLabelContainer}>
-              <Text
-                style={[
-                  styles.itemLabel,
-                  item.destructive && styles.itemLabelDestructive,
-                  item.disabled && styles.itemLabelDisabled,
-                ]}
-              >
-                {item.label}
-              </Text>
-              {item.value && <Text style={styles.itemValue}>{item.value}</Text>}
-            </View>
-          </View>
-
-          <View style={styles.itemRight}>
-            {item.badge ? (
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{item.badge}</Text>
-              </View>
-            ) : null}
-            {item.type === "toggle" ? (
-              <Switch
-                value={
-                  item.id === "notifications"
-                    ? notificationsEnabled
-                    : item.id === "darkmode"
-                      ? darkModeEnabled
-                      : item.id === "biometrics"
-                        ? biometricsEnabled
-                        : autoSyncEnabled
-                }
-                onValueChange={() => handleToggle(item)}
-                trackColor={{
-                  false: COLORS.gray[300],
-                  true: COLORS.primary.main,
-                }}
-                thumbColor={COLORS.white}
-                ios_backgroundColor={COLORS.gray[300]}
-                disabled={item.disabled}
-              />
-            ) : item.type === "navigation" ? (
-              <Ionicons
-                name="chevron-forward"
-                size={20}
-                color={COLORS.gray[400]}
-              />
-            ) : null}
-          </View>
-        </TouchableOpacity>
-      );
-    },
-    [
-      notificationsEnabled,
-      darkModeEnabled,
-      biometricsEnabled,
-      autoSyncEnabled,
-      handleToggle,
-    ],
-  );
-
-  const renderSection = useCallback(
-    (section: SettingSection, sectionIndex: number) => (
-      <Animated.View
-        key={section.id}
-        entering={FadeInDown.delay(200 + sectionIndex * 100).springify()}
-        style={styles.section}
-      >
-        <Text style={styles.sectionTitle}>{section.title}</Text>
-        <View style={styles.sectionContent}>
-          {section.items.map((item) => renderItem(item))}
-        </View>
-      </Animated.View>
-    ),
-    [renderItem],
-  );
-
   // Sections de paramètres
   const settingsSections: SettingSection[] = useMemo(
     () => [
@@ -576,7 +461,118 @@ const SettingsScreen = () => {
     ],
   );
 
-  // Barre de progression du stockage
+  const renderItem = useCallback(
+    (item: SettingItem) => {
+      return (
+        <TouchableOpacity
+          key={item.id}
+          style={[styles.item, item.disabled && styles.itemDisabled]}
+          onPress={() => {
+            if (item.disabled) return;
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            if (item.type === "toggle") {
+              handleToggle(item);
+            } else {
+              item.onPress?.();
+            }
+          }}
+          activeOpacity={item.disabled ? 1 : 0.7}
+        >
+          <View style={styles.itemLeft}>
+            <View
+              style={[
+                styles.itemIcon,
+                item.destructive && styles.itemIconDestructive,
+              ]}
+            >
+              <Ionicons
+                name={item.icon}
+                size={20}
+                color={
+                  item.destructive
+                    ? COLORS.error.main
+                    : item.disabled
+                      ? COLORS.gray[400]
+                      : COLORS.gray[600]
+                }
+              />
+            </View>
+            <View style={styles.itemLabelContainer}>
+              <Text
+                style={[
+                  styles.itemLabel,
+                  item.destructive && styles.itemLabelDestructive,
+                  item.disabled && styles.itemLabelDisabled,
+                ]}
+              >
+                {item.label}
+              </Text>
+              {item.value && <Text style={styles.itemValue}>{item.value}</Text>}
+            </View>
+          </View>
+
+          <View style={styles.itemRight}>
+            {item.badge ? (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{item.badge}</Text>
+              </View>
+            ) : null}
+            {item.type === "toggle" ? (
+              <Switch
+                value={
+                  item.id === "notifications"
+                    ? notificationsEnabled
+                    : item.id === "darkmode"
+                      ? darkModeEnabled
+                      : item.id === "biometrics"
+                        ? biometricsEnabled
+                        : autoSyncEnabled
+                }
+                onValueChange={() => handleToggle(item)}
+                trackColor={{
+                  false: COLORS.gray[300],
+                  true: COLORS.primary.main,
+                }}
+                thumbColor={COLORS.white}
+                ios_backgroundColor={COLORS.gray[300]}
+                disabled={item.disabled}
+              />
+            ) : item.type === "navigation" ? (
+              <Ionicons
+                name="chevron-forward"
+                size={20}
+                color={COLORS.gray[400]}
+              />
+            ) : null}
+          </View>
+        </TouchableOpacity>
+      );
+    },
+    [
+      notificationsEnabled,
+      darkModeEnabled,
+      biometricsEnabled,
+      autoSyncEnabled,
+      handleToggle,
+    ],
+  );
+
+  const renderSection = useCallback(
+    (section: SettingSection, sectionIndex: number) => (
+      <Animated.View
+        key={section.id}
+        entering={FadeInDown.delay(200 + sectionIndex * 100).springify()}
+        style={styles.section}
+      >
+        <Text style={styles.sectionTitle}>{section.title}</Text>
+        <View style={styles.sectionContent}>
+          {section.items.map((item) => renderItem(item))}
+        </View>
+      </Animated.View>
+    ),
+    [renderItem],
+  );
+
   const StorageProgress = useCallback(
     () => (
       <View style={styles.storageContainer}>
@@ -811,7 +807,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   itemIconDestructive: {
-    backgroundColor: `${COLORS.error.main}15`,
+    backgroundColor: `${COLORS.error.main}12`,
   },
   itemLabelContainer: {
     flex: 1,

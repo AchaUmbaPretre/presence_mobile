@@ -29,6 +29,16 @@ interface HeaderProps {
   onNotificationPress?: () => void;
 }
 
+// ==================== PALETTE DE BLEUS ====================
+const BLUE_PRO = {
+  primary: "#0A4DA4",
+  secondary: "#1E6EC7",
+  light: "#E8F0FE",
+  dark: "#07317A",
+  textLight: "#FFFFFF",
+  textDark: "#1E293B",
+} as const;
+
 export const Header = memo(
   ({
     userName = "Acha",
@@ -80,7 +90,10 @@ export const Header = memo(
     }));
 
     return (
-      <Animated.View entering={FadeInDown.springify()} style={styles.container}>
+      <Animated.View
+        entering={FadeInDown.springify().damping(15)}
+        style={styles.container}
+      >
         <View style={styles.header}>
           {/* Section titre */}
           <Animated.View
@@ -92,7 +105,7 @@ export const Header = memo(
               <Ionicons
                 name="briefcase-outline"
                 size={14}
-                color={COLORS.primary.main}
+                color={BLUE_PRO.textLight}
               />
               <Text style={styles.headerSubtitle}>{userRole}</Text>
             </View>
@@ -111,7 +124,7 @@ export const Header = memo(
                   <Ionicons
                     name="notifications-outline"
                     size={22}
-                    color={COLORS.gray[600]}
+                    color={BLUE_PRO.primary}
                   />
                 </Animated.View>
                 {notificationCount > 0 && (
@@ -139,7 +152,7 @@ export const Header = memo(
                   style={[styles.profileBadge, profileAnimatedStyle]}
                 >
                   <LinearGradient
-                    colors={[COLORS.primary.light, COLORS.primary.main]}
+                    colors={[BLUE_PRO.primary, BLUE_PRO.dark]}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={styles.profileGradient}
@@ -155,11 +168,7 @@ export const Header = memo(
         {/* Ligne décorative */}
         <View style={styles.decorativeLine}>
           <LinearGradient
-            colors={[
-              COLORS.primary.light,
-              COLORS.primary.main,
-              COLORS.primary.light,
-            ]}
+            colors={[BLUE_PRO.textLight, BLUE_PRO.primary, BLUE_PRO.textLight]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.decorativeGradient}
@@ -187,7 +196,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 28,
     fontFamily: getFontFamily("bold"),
-    color: COLORS.gray[900],
+    color: BLUE_PRO.textLight, // Blanc pour le titre
     letterSpacing: -0.5,
     marginBottom: 4,
   },
@@ -199,7 +208,7 @@ const styles = StyleSheet.create({
   headerSubtitle: {
     fontSize: 14,
     fontFamily: getFontFamily("regular"),
-    color: COLORS.gray[500],
+    color: BLUE_PRO.textLight, // Blanc pour le sous-titre
   },
   actionsSection: {
     flexDirection: "row",
@@ -211,14 +220,14 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: COLORS.gray[50],
+    backgroundColor: BLUE_PRO.light,
     justifyContent: "center",
     alignItems: "center",
     ...Platform.select({
       ios: {
-        shadowColor: COLORS.black,
+        shadowColor: BLUE_PRO.primary,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
+        shadowOpacity: 0.1,
         shadowRadius: 4,
       },
       android: {
@@ -237,7 +246,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 4,
     borderWidth: 2,
-    borderColor: COLORS.white,
+    borderColor: BLUE_PRO.textLight,
     ...Platform.select({
       ios: {
         shadowColor: COLORS.error.main,
@@ -251,7 +260,7 @@ const styles = StyleSheet.create({
     }),
   },
   notificationBadgeText: {
-    color: COLORS.white,
+    color: BLUE_PRO.textLight,
     fontSize: 10,
     fontFamily: getFontFamily("bold"),
   },
@@ -262,9 +271,9 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     ...Platform.select({
       ios: {
-        shadowColor: COLORS.primary.main,
+        shadowColor: BLUE_PRO.primary,
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
+        shadowOpacity: 0.25,
         shadowRadius: 8,
       },
       android: {
@@ -280,12 +289,12 @@ const styles = StyleSheet.create({
   profileInitials: {
     fontSize: 18,
     fontFamily: getFontFamily("semibold"),
-    color: COLORS.white,
+    color: BLUE_PRO.textLight,
   },
   decorativeLine: {
-    marginTop: 12,
+    marginTop: 16,
     height: 2,
-    width: "30%",
+    width: "40%",
     borderRadius: 1,
     overflow: "hidden",
   },

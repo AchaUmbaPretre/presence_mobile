@@ -73,12 +73,12 @@ export const WeekIndicator = memo(
         const handlePress = () => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-          scale.value = withSpring(0.9, { damping: 10 }, () => {
+          scale.value = withSpring(0.92, { damping: 12 }, () => {
             scale.value = withSpring(1);
           });
 
-          glow.value = withTiming(1, { duration: 150 }, () => {
-            glow.value = withTiming(0, { duration: 200 });
+          glow.value = withTiming(1, { duration: 120 }, () => {
+            glow.value = withTiming(0, { duration: 180 });
           });
 
           onDayPress?.(day, index);
@@ -90,7 +90,7 @@ export const WeekIndicator = memo(
         }));
 
         const glowStyle = useAnimatedStyle(() => ({
-          opacity: interpolate(glow.value, [0, 1], [0, 0.3]),
+          opacity: interpolate(glow.value, [0, 1], [0, 0.25]),
         }));
 
         return (
@@ -99,7 +99,13 @@ export const WeekIndicator = memo(
             entering={FadeInDown.delay(100 + index * 50).springify()}
             style={[styles.weekDayWrapper, animatedStyle]}
           >
-            <Animated.View style={[styles.glowEffect, glowStyle]} />
+            <Animated.View
+              style={[
+                styles.glowEffect,
+                { backgroundColor: config.color },
+                glowStyle,
+              ]}
+            />
 
             <View style={styles.weekDayContent}>
               {/* Lettre du jour */}
@@ -192,11 +198,13 @@ export const WeekIndicator = memo(
           {/* Ligne décorative */}
           <View style={styles.decorativeLine}>
             <LinearGradient
-              colors={[
-                COLORS.primary.light,
-                COLORS.primary.main,
-                COLORS.primary.light,
-              ] as const}
+              colors={
+                [
+                  COLORS.primary.light,
+                  COLORS.primary.main,
+                  COLORS.primary.light,
+                ] as const
+              }
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.decorativeGradient}
@@ -208,10 +216,9 @@ export const WeekIndicator = memo(
   },
 );
 
-// ==================== STYLES ====================
 const styles = StyleSheet.create({
   section: {
-    marginBottom: 30,
+    marginBottom: 90,
   },
   sectionHeader: {
     flexDirection: "row",
@@ -278,7 +285,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: COLORS.primary.main,
     opacity: 0,
     borderRadius: 12,
   },

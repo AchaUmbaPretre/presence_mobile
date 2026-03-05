@@ -1,11 +1,14 @@
+import { LinearGradient } from "expo-linear-gradient";
 import React, { memo, useCallback } from "react";
 import {
   Animated,
+  Platform,
   RefreshControl,
   SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
+  View,
 } from "react-native";
 import { ActivityList } from "./components/ActivityList";
 import { Clock } from "./components/Clock";
@@ -14,11 +17,19 @@ import { MetricsCard } from "./components/MetricsCard";
 import { PresenceCards } from "./components/PresenceCards";
 import { QuickActions } from "./components/QuickActions";
 import { WeekIndicator } from "./components/WeekIndicator";
-import { COLORS } from "./constants/color";
 import { ACTIVITES_RECENTES, WEEK_DAYS } from "./constants/dashboard.constants";
 import { useCombinedAnimation } from "./hooks/useAnimation";
 import { useCurrentTime } from "./hooks/useCurrentTime";
 import { usePresence } from "./hooks/usePresence";
+
+// Palette de couleurs
+const BLUE_PRO = {
+  primary: "#0A4DA4",
+  secondary: "#1E6EC7",
+  light: "#E8F0FE",
+  accent: "#2E7BE6",
+  dark: "#07317A",
+} as const;
 
 const DashboardScreen = memo(() => {
   const { presence, isLoading, handlePointage } = usePresence();
@@ -46,34 +57,56 @@ const DashboardScreen = memo(() => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
+      <StatusBar barStyle="light-content" backgroundColor={BLUE_PRO.primary} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={handleRefresh} />
+          <RefreshControl
+            refreshing={isLoading}
+            onRefresh={handleRefresh}
+            tintColor={BLUE_PRO.primary}
+            colors={[BLUE_PRO.primary]}
+          />
         }
       >
-        <Animated.View style={animatedStyle}>
-          <Header />
-          <Clock
-            time={formattedTime}
-            seconds={formattedSeconds}
-            date={formattedDate}
-          />
-          <PresenceCards
-            presence={presence}
-            onPointage={handlePointage}
-            isLoading={isLoading}
-          />
-          <MetricsCard
-            retard={presence.retard_minutes}
-            supplementaires={presence.heures_supplementaires}
-          />
-          <QuickActions onActionPress={handleActionPress} />
-          <ActivityList activities={activities} onSeeAll={() => {}} />
-          <WeekIndicator days={weekDays} />
+        <Animated.View style={[styles.content, animatedStyle]}>
+          {/* Section header avec dégradé */}
+          <LinearGradient
+            colors={[BLUE_PRO.primary, BLUE_PRO.dark]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.headerSection}
+          >
+            {/* Effet de brillance subtil - remplacé par une vue avec opacité */}
+            <View style={styles.shineEffect} />
+
+            <View style={styles.headerContent}>
+              <Header />
+              <Clock
+                time={formattedTime}
+                seconds={formattedSeconds}
+                date={formattedDate}
+              />
+              <PresenceCards
+                presence={presence}
+                onPointage={handlePointage}
+                isLoading={isLoading}
+              />
+            </View>
+          </LinearGradient>
+
+          {/* Section des métriques */}
+          <View style={styles.metricsSection}>
+            <MetricsCard
+              retard={presence.retard_minutes}
+              supplementaires={presence.heures_supplementaires}
+            />
+            <QuickActions onActionPress={handleActionPress} />
+            <ActivityList activities={activities} onSeeAll={() => {}} />
+            <WeekIndicator days={weekDays} />
+          </View>
         </Animated.View>
       </ScrollView>
     </SafeAreaView>
@@ -83,11 +116,48 @@ const DashboardScreen = memo(() => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.gray[50],
+    backgroundColor: BLUE_PRO.light,
   },
   scrollContent: {
+    flexGrow: 1,
+  },
+  content: {
+    flex: 1,
+  },
+  headerSection: {
+    paddingTop: Platform.OS === "android" ? 16 : 0,
+    paddingBottom: 24,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    ...Platform.select({
+      ios: {
+        shadowColor: BLUE_PRO.dark,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.25,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
+    position: "relative",
+    overflow: "hidden",
+  },
+  shineEffect: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: "100%",
+    backgroundColor: "rgba(255, 255, 255, 0.03)", // Effet de brillance subtil
+  },
+  headerContent: {
     paddingHorizontal: 20,
-    paddingBottom: 50,
+    zIndex: 2,
+  },
+  metricsSection: {
+    paddingTop: 16,
+    paddingHorizontal: 20,
   },
 });
 

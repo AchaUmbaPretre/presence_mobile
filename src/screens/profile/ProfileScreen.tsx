@@ -77,7 +77,7 @@ const ProfileScreen = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
 
-  // Données utilisateur (à connecter avec Redux)
+  // Données utilisateur
   const user = {
     name: "Acha umba",
     email: "achandambi@email.com",
@@ -156,7 +156,6 @@ const ProfileScreen = () => {
   // Handlers
   const handleNavigation = useCallback((screen: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    // Navigation vers l'écran (à implémenter)
     console.log(`Naviguer vers ${screen}`);
   }, []);
 
@@ -191,7 +190,6 @@ const ProfileScreen = () => {
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-    // Simuler un rechargement
     setTimeout(() => {
       setRefreshing(false);
     }, 1500);
@@ -389,7 +387,7 @@ const ProfileScreen = () => {
                   <View
                     style={[
                       styles.statIcon,
-                      { backgroundColor: `${stat.color}15` },
+                      { backgroundColor: `${stat.color}12` },
                     ]}
                   >
                     <Ionicons name={stat.icon} size={20} color={stat.color} />
@@ -442,7 +440,6 @@ const ProfileScreen = () => {
   );
 };
 
-// ==================== STYLES ====================
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -674,7 +671,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   menuIconDestructive: {
-    backgroundColor: `${COLORS.error.main}15`,
+    backgroundColor: `${COLORS.error.main}12`,
   },
   menuLabel: {
     fontSize: 15,
