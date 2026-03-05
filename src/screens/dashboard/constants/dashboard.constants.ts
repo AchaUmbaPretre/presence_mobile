@@ -10,7 +10,6 @@ export type WeekDayFull = (typeof WEEK_DAYS)[number]["full"];
 export type ActivityType = (typeof ACTIVITES_RECENTES)[number]["type"];
 export type ActionId = (typeof ACTIONS_RAPIDES)[number]["id"];
 
-// ==================== CONSTANTES UTILISATEUR ====================
 export const ID_UTILISATEUR = 1;
 
 // ==================== TYPES D'HORAIRES ====================
