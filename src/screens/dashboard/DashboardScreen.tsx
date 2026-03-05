@@ -1,11 +1,11 @@
 import React, { memo, useCallback } from "react";
 import {
-    Animated,
-    RefreshControl,
-    SafeAreaView,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
+  Animated,
+  RefreshControl,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
 } from "react-native";
 import { ActivityList } from "./components/ActivityList";
 import { Clock } from "./components/Clock";
@@ -39,8 +39,7 @@ const DashboardScreen = memo(() => {
     date: new Date().toISOString(),
   }));
 
-  const handleRefresh = useCallback(() => {
-  }, []);
+  const handleRefresh = useCallback(() => {}, []);
 
   const handleActionPress = useCallback((action: string) => {
     console.log("Action pressed:", action);
@@ -85,12 +84,11 @@ const DashboardScreen = memo(() => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.gray[50],
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 40,
+    paddingBottom: 50,
   },
 });
 
