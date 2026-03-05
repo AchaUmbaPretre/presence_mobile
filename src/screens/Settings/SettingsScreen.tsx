@@ -51,13 +51,20 @@ interface StorageInfo {
   percentage: number;
 }
 
+// ==================== CONSTANTES AVEC GESTION DES ERREURS ====================
 const manifest =
   Constants.manifest || Constants.manifest2?.extra?.expoClient || {};
-const APP_VERSION = manifest.version || "1.0.0";
-const BUILD_NUMBER =
-  Platform.OS === "ios"
-    ? manifest.ios?.buildNumber || "1"
-    : manifest.android?.versionCode?.toString() || "1";
+
+// Version avec fallback sécurisé
+const APP_VERSION =
+  (manifest as any).version || (manifest as any).runtimeVersion || "1.0.0";
+
+// Build number avec sécurité
+const BUILD_NUMBER = Platform.select({
+  ios: (manifest as any).ios?.buildNumber || "1",
+  android: (manifest as any).android?.versionCode?.toString() || "1",
+  default: "1",
+});
 
 const STORAGE_INFO: StorageInfo = {
   used: 2.4,
@@ -270,7 +277,6 @@ const SettingsScreen = () => {
     return { opacity };
   });
 
-  // Rendu d'un item (défini AVANT renderSection)
   const renderItem = useCallback(
     (item: SettingItem) => {
       return (
@@ -367,7 +373,6 @@ const SettingsScreen = () => {
     ],
   );
 
-  // Rendu d'une section (défini APRÈS renderItem)
   const renderSection = useCallback(
     (section: SettingSection, sectionIndex: number) => (
       <Animated.View
@@ -381,10 +386,10 @@ const SettingsScreen = () => {
         </View>
       </Animated.View>
     ),
-    [renderItem], // Dépendance à renderItem
+    [renderItem],
   );
 
-  // Sections de paramètres (définies APRÈS les handlers)
+  // Sections de paramètres
   const settingsSections: SettingSection[] = useMemo(
     () => [
       {
