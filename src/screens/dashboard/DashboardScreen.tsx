@@ -25,7 +25,6 @@ const DashboardScreen = memo(() => {
   const { formattedDate, formattedTime, formattedSeconds } = useCurrentTime();
   const { animatedStyle } = useCombinedAnimation();
 
-  // Données mockées pour l'exemple
   const weekDays = WEEK_DAYS.map((day, index) => ({
     ...day,
     present: index < 4,
