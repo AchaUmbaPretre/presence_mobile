@@ -7,7 +7,7 @@ import { SettingSection as SettingSectionType } from "../types/settings.types";
 import { SettingsItem } from "./SettingsItem";
 
 interface SettingsSectionProps {
-  section: SettingSectionType;
+  section: SettingSectionType;    
   index: number;
   toggleValues: {
     notificationsEnabled: boolean;
