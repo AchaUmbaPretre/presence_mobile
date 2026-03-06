@@ -17,8 +17,9 @@ export type AuthStackParamList = {
   ForgotPassword: undefined;
 };
 
+// Modifiez votre type dans le hook
 export type RootStackParamList = {
-  "(tabs)/home": undefined;
+  Main: undefined;
   Auth: undefined;
 } & AuthStackParamList;
 
@@ -52,7 +53,6 @@ export const useLoginForm = () => {
   const dispatch = useDispatch();
   const navigation = useNavigation<LoginScreenNavigationProp>();
 
-  // Vérification si le formulaire est valide
   const isFormValid = useMemo(
     () => formData.email.trim() !== "" && formData.password.trim() !== "",
     [formData.email, formData.password],
@@ -117,7 +117,7 @@ export const useLoginForm = () => {
       // Navigation vers l'écran d'accueil
       navigation.reset({
         index: 0,
-        routes: [{ name: "(tabs)/home" }],
+        routes: [{ name: "Main" }], // ← Utiliser "Main" car c'est le nom du Stack.Screen
       });
     } catch (error) {
       const errorMessage = handleApiError(error);
@@ -156,27 +156,26 @@ export const useLoginForm = () => {
     navigation.goBack();
   }, [navigation]);
 
-return {
-  // État
-  formData,
-  errors,
-  loading,
-  showPassword,
-  focusedInput,
-  isFormValid,
-  firstError,
+  return {
+    formData,
+    errors,
+    loading,
+    showPassword,
+    focusedInput,
+    isFormValid,
+    firstError,
 
-  // Actions - Notez que c'est handleFocus, pas setFocus
-  updateField,
-  handleLogin,
-  togglePasswordVisibility,
-  handleFocus,  // ← C'est handleFocus, pas setFocus
-  handleBlur,
-  resetForm,
+    // Actions - Notez que c'est handleFocus, pas setFocus
+    updateField,
+    handleLogin,
+    togglePasswordVisibility,
+    handleFocus,
+    handleBlur,
+    resetForm,
 
-  // Navigation
-  goToSignup,
-  goToForgotPassword,
-  goBack,
-};
+    // Navigation
+    goToSignup,
+    goToForgotPassword,
+    goBack,
+  };
 };

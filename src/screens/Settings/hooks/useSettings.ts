@@ -1,15 +1,19 @@
-import { useCallback, useState } from "react";
-import { Alert, Linking, Share, Platform } from "react-native";
+import { logout } from "@/store/authSlice";
+import { tokenManager } from "@/utils/tokenManager";
 import * as Haptics from "expo-haptics";
 import * as Updates from "expo-updates";
-import { SettingsState } from "../types/settings.types";
+import { useCallback, useState } from "react";
+import { Alert, Linking, Platform, Share } from "react-native";
+import { useDispatch } from "react-redux";
 import {
-  ALERT_MESSAGES,
-  LANGUAGE_OPTIONS,
-  URLS,
+    ALERT_MESSAGES,
+    LANGUAGE_OPTIONS,
+    URLS,
 } from "../constants/settings.constants";
+import { SettingsState } from "../types/settings.types";
 
 export const useSettings = () => {
+  const dispatch = useDispatch();
   const [state, setState] = useState<SettingsState>({
     notificationsEnabled: true,
     darkModeEnabled: false,
@@ -19,28 +23,40 @@ export const useSettings = () => {
     cacheSize: "128 MB",
   });
 
-  const updateState = useCallback(<K extends keyof SettingsState>(
-    key: K,
-    value: SettingsState[K]
-  ) => {
-    setState(prev => ({ ...prev, [key]: value }));
-  }, []);
+  const updateState = useCallback(
+    <K extends keyof SettingsState>(key: K, value: SettingsState[K]) => {
+      setState((prev) => ({ ...prev, [key]: value }));
+    },
+    [],
+  );
 
   const handleToggle = useCallback((id: string) => {
     Haptics.selectionAsync();
 
     switch (id) {
       case "notifications":
-        setState(prev => ({ ...prev, notificationsEnabled: !prev.notificationsEnabled }));
+        setState((prev) => ({
+          ...prev,
+          notificationsEnabled: !prev.notificationsEnabled,
+        }));
         break;
       case "darkmode":
-        setState(prev => ({ ...prev, darkModeEnabled: !prev.darkModeEnabled }));
+        setState((prev) => ({
+          ...prev,
+          darkModeEnabled: !prev.darkModeEnabled,
+        }));
         break;
       case "biometrics":
-        setState(prev => ({ ...prev, biometricsEnabled: !prev.biometricsEnabled }));
+        setState((prev) => ({
+          ...prev,
+          biometricsEnabled: !prev.biometricsEnabled,
+        }));
         break;
       case "autosync":
-        setState(prev => ({ ...prev, autoSyncEnabled: !prev.autoSyncEnabled }));
+        setState((prev) => ({
+          ...prev,
+          autoSyncEnabled: !prev.autoSyncEnabled,
+        }));
         break;
     }
   }, []);
@@ -50,49 +66,41 @@ export const useSettings = () => {
       ALERT_MESSAGES.LANGUAGE.title,
       "Sélectionnez votre langue préférée",
       [
-        ...LANGUAGE_OPTIONS.map(option => ({
+        ...LANGUAGE_OPTIONS.map((option) => ({
           text: option.label,
           onPress: () => updateState("language", option.value),
         })),
         { text: ALERT_MESSAGES.LANGUAGE.cancel, style: "cancel" },
-      ]
+      ],
     );
   }, [updateState]);
 
   const handleClearCache = useCallback(() => {
-    Alert.alert(
-      ALERT_MESSAGES.CACHE.title,
-      ALERT_MESSAGES.CACHE.message,
-      [
-        { text: ALERT_MESSAGES.CACHE.cancel, style: "cancel" },
-        {
-          text: ALERT_MESSAGES.CACHE.confirm,
-          style: "destructive",
-          onPress: () => {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            updateState("cacheSize", "0 MB");
-            Alert.alert("Succès", ALERT_MESSAGES.CACHE.success);
-          },
+    Alert.alert(ALERT_MESSAGES.CACHE.title, ALERT_MESSAGES.CACHE.message, [
+      { text: ALERT_MESSAGES.CACHE.cancel, style: "cancel" },
+      {
+        text: ALERT_MESSAGES.CACHE.confirm,
+        style: "destructive",
+        onPress: () => {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          updateState("cacheSize", "0 MB");
+          Alert.alert("Succès", ALERT_MESSAGES.CACHE.success);
         },
-      ],
-    );
+      },
+    ]);
   }, [updateState]);
 
   const handleExportData = useCallback(() => {
-    Alert.alert(
-      ALERT_MESSAGES.EXPORT.title,
-      ALERT_MESSAGES.EXPORT.message,
-      [
-        { text: ALERT_MESSAGES.EXPORT.cancel, style: "cancel" },
-        {
-          text: ALERT_MESSAGES.EXPORT.confirm,
-          onPress: () => {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            Alert.alert("Succès", ALERT_MESSAGES.EXPORT.success);
-          },
+    Alert.alert(ALERT_MESSAGES.EXPORT.title, ALERT_MESSAGES.EXPORT.message, [
+      { text: ALERT_MESSAGES.EXPORT.cancel, style: "cancel" },
+      {
+        text: ALERT_MESSAGES.EXPORT.confirm,
+        onPress: () => {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          Alert.alert("Succès", ALERT_MESSAGES.EXPORT.success);
         },
-      ],
-    );
+      },
+    ]);
   }, []);
 
   const handleOpenLink = useCallback(async (url: string) => {
@@ -138,7 +146,10 @@ export const useSettings = () => {
           ],
         );
       } else {
-        Alert.alert(ALERT_MESSAGES.UPDATE.upToDate, ALERT_MESSAGES.UPDATE.upToDateMessage);
+        Alert.alert(
+          ALERT_MESSAGES.UPDATE.upToDate,
+          ALERT_MESSAGES.UPDATE.upToDateMessage,
+        );
       }
     } catch (error) {
       Alert.alert("Erreur", ALERT_MESSAGES.UPDATE.error);
@@ -168,47 +179,43 @@ export const useSettings = () => {
   }, []);
 
   const handleResetSettings = useCallback(() => {
-    Alert.alert(
-      ALERT_MESSAGES.RESET.title,
-      ALERT_MESSAGES.RESET.message,
-      [
-        { text: ALERT_MESSAGES.RESET.cancel, style: "cancel" },
-        {
-          text: ALERT_MESSAGES.RESET.confirm,
-          style: "destructive",
-          onPress: () => {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-            setState({
-              notificationsEnabled: true,
-              darkModeEnabled: false,
-              biometricsEnabled: false,
-              autoSyncEnabled: true,
-              language: "Français",
-              cacheSize: "128 MB",
-            });
-            Alert.alert("Succès", ALERT_MESSAGES.RESET.success);
-          },
+    Alert.alert(ALERT_MESSAGES.RESET.title, ALERT_MESSAGES.RESET.message, [
+      { text: ALERT_MESSAGES.RESET.cancel, style: "cancel" },
+      {
+        text: ALERT_MESSAGES.RESET.confirm,
+        style: "destructive",
+        onPress: () => {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+          setState({
+            notificationsEnabled: true,
+            darkModeEnabled: false,
+            biometricsEnabled: false,
+            autoSyncEnabled: true,
+            language: "Français",
+            cacheSize: "128 MB",
+          });
+          Alert.alert("Succès", ALERT_MESSAGES.RESET.success);
         },
-      ],
-    );
+      },
+    ]);
   }, []);
 
+  // ✅ GESTION DE LA DÉCONNEXION
   const handleLogout = useCallback(() => {
-    Alert.alert(
-      ALERT_MESSAGES.LOGOUT.title,
-      ALERT_MESSAGES.LOGOUT.message,
-      [
-        { text: ALERT_MESSAGES.LOGOUT.cancel, style: "cancel" },
-        {
-          text: ALERT_MESSAGES.LOGOUT.confirm,
-          style: "destructive",
-          onPress: () => {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          },
+    Alert.alert(ALERT_MESSAGES.LOGOUT.title, ALERT_MESSAGES.LOGOUT.message, [
+      { text: ALERT_MESSAGES.LOGOUT.cancel, style: "cancel" },
+      {
+        text: ALERT_MESSAGES.LOGOUT.confirm,
+        style: "destructive",
+        onPress: async () => {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+          await tokenManager.clearToken();
+          dispatch(logout());
         },
-      ],
-    );
-  }, []);
+      },
+    ]);
+  }, [dispatch]);
 
   return {
     state,

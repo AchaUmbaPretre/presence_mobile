@@ -1,9 +1,9 @@
+import { tokenManager } from "@/utils/tokenManager";
 import axios, {
     AxiosError,
     AxiosInstance,
     InternalAxiosRequestConfig,
 } from "axios";
-import { authService } from "./../screens/users/services/authService";
 import { isAuthError } from "./../utils/errorHandler";
 import { API_ENDPOINTS } from "./endpoints";
 
@@ -35,8 +35,8 @@ const onRefreshed = (token: string) => {
 
 // Intercepteur de requête
 api.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    const token = getAccessToken();
+  async (config: InternalAxiosRequestConfig) => {
+    const token = await tokenManager.getToken();
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -78,8 +78,12 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const { accessToken } = await authService.refreshToken();
-        setAccessToken(accessToken);
+        const refreshResponse = await api.post(
+          API_ENDPOINTS.AUTH.REFRESH_TOKEN,
+        );
+        const { accessToken } = refreshResponse.data;
+
+        await tokenManager.setToken(accessToken);
         onRefreshed(accessToken);
 
         if (originalRequest.headers) {
@@ -87,8 +91,7 @@ api.interceptors.response.use(
         }
         return api(originalRequest);
       } catch (refreshError) {
-        clearAccessToken();
-        // Rediriger vers login si nécessaire
+        await tokenManager.clearToken(); // ← Nettoyage via tokenManager
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
@@ -98,17 +101,3 @@ api.interceptors.response.use(
     return Promise.reject(error);
   },
 );
-
-// Gestion du token (adaptez selon votre méthode de stockage)
-const getAccessToken = (): string | null => {
-  // À adapter selon votre méthode de stockage (AsyncStorage, Redux, etc.)
-  return null;
-};
-
-const setAccessToken = (token: string) => {
-  // À adapter selon votre méthode de stockage
-};
-
-const clearAccessToken = () => {
-  // À adapter selon votre méthode de stockage
-};
