@@ -16,12 +16,8 @@ const RootNavigator = () => {
     (state: RootState) => state.auth.token !== null,
   );
 
-  console.log("auth", isAuthenticated);
-
-  // Simuler un chargement initial (vérification du token)
   useEffect(() => {
     const checkAuth = async () => {
-      // Ici vous pouvez vérifier la validité du token si nécessaire
       setTimeout(() => {
         setIsLoading(false);
       }, 500);

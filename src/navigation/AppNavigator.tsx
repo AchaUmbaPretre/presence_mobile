@@ -17,7 +17,6 @@ import DashboardScreen from "../screens/dashboard/DashboardScreen";
 import { getFontFamily } from "./../constants/typography";
 import { COLORS } from "./../screens/dashboard/constants/color";
 
-// ==================== TYPES ====================
 export type TabParamList = {
   Dashboard: undefined;
   Profile: undefined;
@@ -35,7 +34,6 @@ interface TabConfig {
   badge?: number;
 }
 
-// ==================== CONFIGURATION ====================
 const TAB_CONFIG: TabConfig[] = [
   {
     name: "Dashboard",
@@ -217,7 +215,6 @@ const TabNavigator = () => {
   );
 };
 
-// ==================== STYLES ====================
 const styles = StyleSheet.create({
   tabBarContainer: {
     position: "absolute",
