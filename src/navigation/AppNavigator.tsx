@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import DashboardScreen from "../screens/dashboard/DashboardScreen";
+import { getFontFamily } from "./../constants/typography";
 import { COLORS } from "./../screens/dashboard/constants/color";
 
 // ==================== TYPES ====================
@@ -87,12 +88,15 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
     });
 
     if (!isFocused && !event.defaultPrevented) {
-      // Animation de scale
+      // ✅ Correction: Utiliser UN SEUL jeu de paramètres
       Animated.sequence([
         Animated.spring(scaleAnims[index], {
-          toValue: 0.8,
+          toValue: 0.85,
           useNativeDriver: true,
-          speed: 20,
+          speed: 20, // ← Utiliser speed seulement
+          // friction: 5,    // ← Ne pas utiliser friction avec speed
+          // damping: 10,    // ← Ne pas utiliser damping
+          // stiffness: 100, // ← Ne pas utiliser stiffness
         }),
         Animated.spring(scaleAnims[index], {
           toValue: 1,
@@ -116,7 +120,7 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
       ]}
     >
       {Platform.OS === "ios" && (
-        <BlurView tint="light" intensity={80} style={StyleSheet.absoluteFill} />
+        <BlurView tint="light" intensity={90} style={StyleSheet.absoluteFill} />
       )}
 
       <View style={styles.tabBarContent}>
@@ -131,7 +135,6 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
               accessibilityRole="button"
               accessibilityState={isFocused ? { selected: true } : {}}
               accessibilityLabel={options.tabBarAccessibilityLabel}
-              // ⚠️ tabBarTestID n'existe pas, on utilise testID directement
               testID={`tab-${route.name.toLowerCase()}`}
               onPress={() => handlePress(route.name, isFocused, index)}
               activeOpacity={0.7}
@@ -168,8 +171,8 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
                     {
                       color: isFocused ? COLORS.primary.main : COLORS.gray[400],
                       fontFamily: isFocused
-                        ? "SF-Pro-Text-Semibold"
-                        : "SF-Pro-Text-Medium",
+                        ? getFontFamily("semibold")
+                        : getFontFamily("medium"),
                     },
                   ]}
                 >
@@ -207,7 +210,6 @@ const TabNavigator = () => {
           options={{
             title: label,
             tabBarAccessibilityLabel: `${label} onglet`,
-            // ⚠️ tabBarTestID n'existe pas, on le supprime
           }}
         />
       ))}
@@ -226,8 +228,8 @@ const styles = StyleSheet.create({
     borderTopWidth: Platform.OS === "android" ? 1 : 0,
     borderTopColor: COLORS.gray[200],
     shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 8,
   },
@@ -273,11 +275,24 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 4,
+    borderWidth: 1.5,
+    borderColor: COLORS.white,
+    ...Platform.select({
+      ios: {
+        shadowColor: COLORS.error.main,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
   },
   badgeText: {
     color: COLORS.white,
     fontSize: 10,
-    fontFamily: "SF-Pro-Text-Bold",
+    fontFamily: getFontFamily("bold"),
   },
 });
 

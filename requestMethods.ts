@@ -6,7 +6,7 @@ import {
   RefreshTokenResponse,
   RefreshSubscriber,
   ApiErrorResponse 
-} from "./types/api.types";
+} from "./src/types/api.types";
 
 const DOMAIN = config.REACT_APP_SERVER_DOMAIN;
 
