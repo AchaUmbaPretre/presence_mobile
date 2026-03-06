@@ -113,12 +113,6 @@ export const useLoginForm = () => {
 
       // Réinitialisation du formulaire
       resetForm();
-
-      // Navigation vers l'écran d'accueil
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "Main" }], // ← Utiliser "Main" car c'est le nom du Stack.Screen
-      });
     } catch (error) {
       const errorMessage = handleApiError(error);
       Alert.alert(ALERT_MESSAGES.LOGIN_FAILED, errorMessage, [
