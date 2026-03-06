@@ -27,6 +27,6 @@ export const AUTH_MESSAGES = {
 } as const;
 
 export const AUTH_VALIDATION = {
-  PASSWORD_MIN_LENGTH: 6,
+  PASSWORD_MIN_LENGTH: 4,
   EMAIL_REGEX: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
 } as const;

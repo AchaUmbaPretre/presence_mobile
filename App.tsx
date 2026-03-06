@@ -1,17 +1,27 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
-import React from "react";
+import React, { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 import {
     SafeAreaProvider,
     useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import { Provider } from "react-redux";
-import { store } from "./redux/store";
-import AppNavigator from "./src/navigation/AppNavigator";
+import { Provider, useDispatch } from "react-redux";
+import RootNavigator from "./src/navigation/RootNavigator";
 import { COLORS } from "./src/screens/dashboard/constants/color";
+import { store } from "./redux/store";
+import { restoreSession } from "./redux/authSlice";
 
-// Composant interne qui utilise les safe area insets
+const AuthInitializer = ({ children }: { children: React.ReactNode }) => {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(restoreSession() as any);
+  }, [dispatch]);
+
+  return <>{children}</>;
+};
+
 const AppContent = () => {
   const insets = useSafeAreaInsets();
 
@@ -25,7 +35,9 @@ const AppContent = () => {
         },
       ]}
     >
-      <AppNavigator />
+      <AuthInitializer>
+        <RootNavigator />
+      </AuthInitializer>
       <StatusBar style="dark" backgroundColor={COLORS.background} />
     </View>
   );
