@@ -10,6 +10,8 @@ import {
   StyleSheet,
   View,
 } from "react-native";
+import { useSelector } from "react-redux";
+import { RootState } from "redux/store";
 import { ActivityList } from "./components/ActivityList";
 import { Clock } from "./components/Clock";
 import { Header } from "./components/Header";
@@ -35,6 +37,7 @@ const DashboardScreen = memo(() => {
   const { presence, isLoading, handlePointage } = usePresence();
   const { formattedDate, formattedTime, formattedSeconds } = useCurrentTime();
   const { animatedStyle } = useCombinedAnimation();
+  const data = useSelector((state: RootState) => state.auth.currentUser);
 
   const weekDays = WEEK_DAYS.map((day, index) => ({
     ...day,
@@ -79,11 +82,13 @@ const DashboardScreen = memo(() => {
             end={{ x: 1, y: 1 }}
             style={styles.headerSection}
           >
-            {/* Effet de brillance subtil - remplacé par une vue avec opacité */}
             <View style={styles.shineEffect} />
 
             <View style={styles.headerContent}>
-              <Header />
+              <Header 
+                userName={data?.nom || "Utilisateur"} 
+                userRole={data?.role || "Employé"} 
+              />
               <Clock
                 time={formattedTime}
                 seconds={formattedSeconds}

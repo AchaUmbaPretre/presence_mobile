@@ -48,3 +48,11 @@ export interface WeekDay {
   date: Date;
   heures?: number;
 }
+
+export interface HeaderProps {
+  userName?: string;
+  userRole?: string;
+  notificationCount?: number;
+  onProfilePress?: () => void;
+  onNotificationPress?: () => void;
+}

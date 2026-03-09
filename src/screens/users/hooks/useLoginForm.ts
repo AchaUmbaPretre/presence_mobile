@@ -6,10 +6,13 @@ import { useCallback, useMemo, useState } from "react";
 import { Alert } from "react-native";
 import { useDispatch } from "react-redux";
 import { ALERT_MESSAGES, AUTH_MESSAGES } from "../constants/auth.constants";
-import { validateLoginForm } from "../schemas/validation.schema";
+import { validateField, validateLoginForm } from "../schemas/validation.schema";
 import { authService } from "../services/authService";
-import { LoginFormData, RootStackParamList, ValidationErrors } from "../types/auth.types";
-
+import {
+    LoginFormData,
+    RootStackParamList,
+    ValidationErrors,
+} from "../types/auth.types";
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -38,24 +41,27 @@ export const useLoginForm = () => {
     [formData.email, formData.password],
   );
 
-  // Récupérer la première erreur
   const firstError = useMemo(() => Object.values(errors)[0], [errors]);
 
-  // Mise à jour d'un champ
+  // Mise à jour d'un champ avec validation en temps réel
   const updateField = useCallback((field: FormField, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // Effacer l'erreur du champ modifié
-    setErrors((prev) => ({ ...prev, [field]: undefined }));
+
+    // Validation en temps réel (optionnelle)
+    const fieldError = validateField(field, value);
+    setErrors((prev) => ({
+      ...prev,
+      [field]: fieldError || undefined,
+    }));
   }, []);
 
-  // Validation du formulaire
+  // Validation complète du formulaire
   const validateForm = useCallback((): boolean => {
     const validationErrors = validateLoginForm(formData);
     setErrors(validationErrors);
     return Object.keys(validationErrors).length === 0;
   }, [formData]);
 
-  // Réinitialisation du formulaire
   const resetForm = useCallback(() => {
     setFormData(INITIAL_FORM_DATA);
     setErrors({});
@@ -64,13 +70,20 @@ export const useLoginForm = () => {
 
   // Gestion de la connexion
   const handleLogin = useCallback(async () => {
-    // Validation
     if (!validateForm()) {
       Alert.alert(
         ALERT_MESSAGES.VALIDATION_ERROR,
         firstError || "Veuillez vérifier vos champs",
         [{ text: ALERT_MESSAGES.OK }],
       );
+
+      // Focus sur le premier champ en erreur
+      if (errors.email) {
+        handleFocus("email");
+      } else if (errors.password) {
+        handleFocus("password");
+      }
+
       return;
     }
 
@@ -88,27 +101,36 @@ export const useLoginForm = () => {
         throw new Error(AUTH_MESSAGES.ERROR.TOKEN_MISSING);
       }
 
-      // Succès de la connexion
       dispatch(loginSuccess({ token: accessToken, user }));
-
-      // Réinitialisation du formulaire
       resetForm();
-    } catch (error) {
+
+      // ✅ Plus besoin de navigation.reset
+      // Le RootNavigator basculera automatiquement grâce à Redux
+    } catch (error: any) {
       const errorMessage = handleApiError(error);
-      Alert.alert(ALERT_MESSAGES.LOGIN_FAILED, errorMessage, [
-        { text: ALERT_MESSAGES.RETRY, style: "default" },
-      ]);
+
+      // Messages d'erreur personnalisés selon le code HTTP
+      if (error.response?.status === 401) {
+        Alert.alert(
+          "Authentification échouée",
+          "Email ou mot de passe incorrect",
+        );
+      } else if (error.response?.status === 404) {
+        Alert.alert("Compte introuvable", "Aucun compte associé à cet email");
+      } else {
+        Alert.alert(ALERT_MESSAGES.LOGIN_FAILED, errorMessage, [
+          { text: ALERT_MESSAGES.RETRY, style: "default" },
+        ]);
+      }
     } finally {
       setLoading(false);
     }
-  }, [formData, validateForm, firstError, resetForm, dispatch, navigation]);
+  }, [formData, validateForm, firstError, errors, resetForm, dispatch]);
 
-  // Basculer la visibilité du mot de passe
   const togglePasswordVisibility = useCallback(() => {
     setShowPassword((prev) => !prev);
   }, []);
 
-  // Gestion du focus
   const handleFocus = useCallback((field: FormField) => {
     setFocusedInput(field);
   }, []);
@@ -117,7 +139,6 @@ export const useLoginForm = () => {
     setFocusedInput(null);
   }, []);
 
-  // Navigation
   const goToSignup = useCallback(() => {
     navigation.navigate("Signup");
   }, [navigation]);
@@ -131,6 +152,7 @@ export const useLoginForm = () => {
   }, [navigation]);
 
   return {
+    // État
     formData,
     errors,
     loading,
@@ -139,6 +161,7 @@ export const useLoginForm = () => {
     isFormValid,
     firstError,
 
+    // Actions
     updateField,
     handleLogin,
     togglePasswordVisibility,

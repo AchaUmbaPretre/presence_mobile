@@ -18,16 +18,8 @@ import Animated, {
     withTiming,
 } from "react-native-reanimated";
 import { COLORS } from "../constants/color";
+import { HeaderProps } from "../types/presence.types";
 import { getFontFamily } from "./../../../constants/typography";
-
-// ==================== TYPES ====================
-interface HeaderProps {
-  userName?: string;
-  userRole?: string;
-  notificationCount?: number;
-  onProfilePress?: () => void;
-  onNotificationPress?: () => void;
-}
 
 // ==================== PALETTE DE BLEUS ====================
 const BLUE_PRO = {
@@ -41,8 +33,8 @@ const BLUE_PRO = {
 
 export const Header = memo(
   ({
-    userName = "Acha",
-    userRole = "Développeur",
+    userName = "Utilisateur",
+    userRole = "Employé",
     notificationCount = 0,
     onProfilePress,
     onNotificationPress,
@@ -50,33 +42,30 @@ export const Header = memo(
     const scale = useSharedValue(1);
     const notificationScale = useSharedValue(1);
 
-    // Calcul des initiales
     const initials = userName
-      .split(" ")
-      .map((word) => word[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
+      ? userName
+          .split(" ")
+          .map((word) => word[0])
+          .join("")
+          .toUpperCase()
+          .slice(0, 2)
+      : "U";
 
     // Animation au toucher du profil
     const handleProfilePress = useCallback(() => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
       scale.value = withSpring(0.9, { damping: 10 }, () => {
         scale.value = withSpring(1);
       });
-
       onProfilePress?.();
     }, [onProfilePress]);
 
     // Animation au toucher des notifications
     const handleNotificationPress = useCallback(() => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-
       notificationScale.value = withTiming(1.2, { duration: 100 }, () => {
         notificationScale.value = withTiming(1, { duration: 100 });
       });
-
       onNotificationPress?.();
     }, [onNotificationPress]);
 
@@ -114,33 +103,35 @@ export const Header = memo(
           {/* Section actions */}
           <View style={styles.actionsSection}>
             {/* Bouton notifications */}
-            <Animated.View entering={FadeInRight.delay(150).springify()}>
-              <TouchableOpacity
-                onPress={handleNotificationPress}
-                activeOpacity={0.7}
-                style={styles.notificationButton}
-              >
-                <Animated.View style={notificationAnimatedStyle}>
-                  <Ionicons
-                    name="notifications-outline"
-                    size={22}
-                    color={BLUE_PRO.primary}
-                  />
-                </Animated.View>
-                {notificationCount > 0 && (
-                  <LinearGradient
-                    colors={[COLORS.error.main, COLORS.error.dark]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.notificationBadge}
-                  >
-                    <Text style={styles.notificationBadgeText}>
-                      {notificationCount > 9 ? "9+" : notificationCount}
-                    </Text>
-                  </LinearGradient>
-                )}
-              </TouchableOpacity>
-            </Animated.View>
+            {notificationCount >= 0 && (
+              <Animated.View entering={FadeInRight.delay(150).springify()}>
+                <TouchableOpacity
+                  onPress={handleNotificationPress}
+                  activeOpacity={0.7}
+                  style={styles.notificationButton}
+                >
+                  <Animated.View style={notificationAnimatedStyle}>
+                    <Ionicons
+                      name="notifications-outline"
+                      size={22}
+                      color={BLUE_PRO.primary}
+                    />
+                  </Animated.View>
+                  {notificationCount > 0 && (
+                    <LinearGradient
+                      colors={[COLORS.error.main, COLORS.error.dark]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={styles.notificationBadge}
+                    >
+                      <Text style={styles.notificationBadgeText}>
+                        {notificationCount > 9 ? "9+" : notificationCount}
+                      </Text>
+                    </LinearGradient>
+                  )}
+                </TouchableOpacity>
+              </Animated.View>
+            )}
 
             {/* Bouton profil */}
             <Animated.View entering={FadeInRight.delay(200).springify()}>
@@ -196,7 +187,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 28,
     fontFamily: getFontFamily("bold"),
-    color: BLUE_PRO.textLight, // Blanc pour le titre
+    color: BLUE_PRO.textLight,
     letterSpacing: -0.5,
     marginBottom: 4,
   },
@@ -208,7 +199,7 @@ const styles = StyleSheet.create({
   headerSubtitle: {
     fontSize: 14,
     fontFamily: getFontFamily("regular"),
-    color: BLUE_PRO.textLight, // Blanc pour le sous-titre
+    color: BLUE_PRO.textLight,
   },
   actionsSection: {
     flexDirection: "row",

@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface User {
   id: number;
@@ -32,7 +32,7 @@ export const restoreSession = createAsyncThunk(
         AsyncStorage.getItem("token"),
         AsyncStorage.getItem("user"),
       ]);
-      
+
       if (token && user) {
         return { token, user: JSON.parse(user) };
       }
@@ -41,7 +41,7 @@ export const restoreSession = createAsyncThunk(
       console.error("Erreur lors de la restauration de la session:", error);
       return null;
     }
-  }
+  },
 );
 
 const authSlice = createSlice({
@@ -57,7 +57,7 @@ const authSlice = createSlice({
       state.currentUser = action.payload.user;
       state.isLoading = false;
       state.error = null;
-      
+
       // Persistance
       AsyncStorage.setItem("token", action.payload.token);
       AsyncStorage.setItem("user", JSON.stringify(action.payload.user));
@@ -71,7 +71,7 @@ const authSlice = createSlice({
       state.currentUser = null;
       state.isLoading = false;
       state.error = null;
-      
+
       // Nettoyage
       AsyncStorage.removeItem("token");
       AsyncStorage.removeItem("user");
@@ -101,13 +101,13 @@ const authSlice = createSlice({
   },
 });
 
-export const { 
-  loginStart, 
-  loginSuccess, 
-  loginFailure, 
-  logout, 
-  setToken, 
-  setUser 
+export const {
+  loginStart,
+  loginSuccess,
+  loginFailure,
+  logout,
+  setToken,
+  setUser,
 } = authSlice.actions;
 
 export default authSlice.reducer;

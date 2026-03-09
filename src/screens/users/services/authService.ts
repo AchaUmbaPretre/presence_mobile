@@ -1,5 +1,5 @@
 import { api } from './../../../api/client';
-import { LoginCredentials, LoginResponse } from '../types/auth.types';
+import { LoginCredentials, LoginResponse, User } from '../types/auth.types';
 import { API_ENDPOINTS } from '@/api/endpoints';
 
 class AuthService {
@@ -12,13 +12,37 @@ class AuthService {
     return AuthService.instance;
   }
 
-  async login(credentials: LoginCredentials): Promise<LoginResponse> {
+  async login(credentials: LoginCredentials): Promise<{ accessToken: string; user: User }> {
     try {
       const response = await api.post<LoginResponse>(
         API_ENDPOINTS.AUTH.LOGIN, 
         credentials
       );
-      return response.data;
+      
+      const data = response.data;
+      
+      // Vérifier si la connexion a réussi
+      if (!data.success) {
+        throw new Error(data.message || 'Erreur de connexion');
+      }
+
+      // Construire l'objet user
+      const user: User = {
+        id: data.id_utilisateur,
+        email: data.email,
+        nom: data.nom || '',
+        prenom: data.prenom || '',
+        role: data.role || 'user',
+        permissions: data.permissions || [],
+        scope_sites: data.scope_sites || [],
+        scope_departments: data.scope_departments || [],
+        scope_terminals: data.scope_terminals || []
+      };
+
+      return {
+        accessToken: data.accessToken,
+        user
+      };
     } catch (error) {
       throw this.handleError(error);
     }
