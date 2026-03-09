@@ -18,7 +18,6 @@ import Animated, {
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { getFontFamily } from "./../../../constants/typography";
 
-// ==================== PALETTE DE BLEUS ====================
 const BLUE_PRO = {
   primary: "#0A4DA4",
   secondary: "#1E6EC7",
@@ -29,7 +28,6 @@ const BLUE_PRO = {
   textMuted: "#5A6B7A",
 } as const;
 
-// ==================== TYPES ====================
 interface ClockProps {
   time: string;
   seconds: string;
@@ -49,7 +47,6 @@ export const Clock = memo(
     showSeconds = true,
     variant = "default",
   }: ClockProps) => {
-    // Animation de pulsation pour les secondes
     const pulseAnim = useSharedValue(1);
     const dotAnim = useRef(new RNAnimated.Value(1)).current;
 
@@ -83,7 +80,6 @@ export const Clock = memo(
       }
     }, [animated]);
 
-    // Styles animés
     const secondsAnimatedStyle = useAnimatedStyle(() => ({
       transform: [{ scale: pulseAnim.value }],
     }));
