@@ -208,31 +208,6 @@ const LoginScreen = () => {
                 loading={loading}
                 disabled={!isFormValid}
               />
-
-              <View style={styles.signupContainer}>
-                <Text style={styles.signupText}>
-                  {AUTH_MESSAGES.LABELS.NO_ACCOUNT}
-                </Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    Haptics.selectionAsync();
-                    goToSignup();
-                  }}
-                  activeOpacity={0.7}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                >
-                  <LinearGradient
-                    colors={[COLORS.primary.light, COLORS.primary.main]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.signupLinkGradient}
-                  >
-                    <Text style={styles.signupLink}>
-                      {AUTH_MESSAGES.LABELS.SIGNUP} →
-                    </Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-              </View>
             </View>
           </Animated.View>
 
