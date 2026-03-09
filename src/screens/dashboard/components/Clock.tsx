@@ -25,8 +25,8 @@ const BLUE_PRO = {
   light: "#E8F0FE",
   dark: "#07317A",
   textLight: "#FFFFFF",
-  textBlue: "#1E3A5F", // Bleu profond élégant pour le texte
-  textMuted: "#5A6B7A", // Bleu-gris pour texte secondaire
+  textBlue: "#8e9dc4ff",
+  textMuted: "#5A6B7A",
 } as const;
 
 // ==================== TYPES ====================
