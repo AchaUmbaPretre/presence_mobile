@@ -7,7 +7,6 @@ export interface PresenceState {
 
 export type ActionType = "ENTREE" | "SORTIE";
 
-// 👇 AJOUTER CE TYPE - Export du type PointageSource
 export type PointageSource = "MANUEL" | "QR_CODE" | "GEOLOC";
 
 export interface PointageRequest {

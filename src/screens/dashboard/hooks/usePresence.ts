@@ -1,12 +1,12 @@
-import { useState, useCallback } from 'react'
+import { useCallback, useState } from "react";
 import { Alert } from "react-native";
 import { useSelector } from "react-redux";
 import { RootState } from "redux/store";
 import { postPresence } from "../services/presenceService";
 import {
-    ActionType,
-    PointageSource,
-    PresenceState
+  ActionType,
+  PointageSource,
+  PresenceState,
 } from "../types/presence.types";
 
 const MESSAGES = {
@@ -22,7 +22,6 @@ interface PresenceApiResponse {
   message: string;
   retard_minutes?: number;
   heures_supplementaires?: number;
-  // ajoutez d'autres champs si nécessaire
 }
 
 export const usePresence = () => {
@@ -82,20 +81,28 @@ export const usePresence = () => {
 
       const now = new Date();
 
+      // ✅ AJOUTER +1h pour compenser le backend
+      const adjustedHours = String((now.getHours() + 1) % 24).padStart(2, "0");
+
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      const minutes = String(now.getMinutes()).padStart(2, "0");
+      const seconds = String(now.getSeconds()).padStart(2, "0");
+
+      const dateTimeToSend = `${year}-${month}-${day} ${adjustedHours}:${minutes}:${seconds}`;
+
       try {
-        // ✅ Typer la réponse Axios
         const response = await postPresence({
           id_utilisateur: data.id,
-          date_presence: now.toISOString().slice(0, 10),
-          datetime: now.toISOString(),
+          date_presence: `${year}-${month}-${day}`,
+          datetime: dateTimeToSend,
           source,
           permissions: ["attendance.events.approve"],
         });
 
-        // ✅ Maintenant response.data est typé correctement
         const responseData = response.data as PresenceApiResponse;
 
-        // Vérification par le code HTTP
         if (response.status >= 200 && response.status < 300) {
           const heureFormatee = getFormattedTime();
 

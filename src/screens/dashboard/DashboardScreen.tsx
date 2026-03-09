@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: "100%",
-    backgroundColor: "rgba(255, 255, 255, 0.03)", // Effet de brillance subtil
+    backgroundColor: "rgba(255, 255, 255, 0.03)",
   },
   headerContent: {
     paddingHorizontal: 20,
