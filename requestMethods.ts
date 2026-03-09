@@ -1,11 +1,15 @@
-import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios, {
+    AxiosError,
+    AxiosInstance,
+    InternalAxiosRequestConfig,
+} from "axios";
 import config from "./config";
-import { 
-  PersistedRootState, 
-  User, 
-  RefreshTokenResponse,
-  RefreshSubscriber,
-  ApiErrorResponse 
+import {
+    ApiErrorResponse,
+    RefreshSubscriber,
+    RefreshTokenResponse,
+    User,
 } from "./src/types/api.types";
 
 const DOMAIN = config.REACT_APP_SERVER_DOMAIN;
@@ -43,67 +47,79 @@ function onRefreshed(token: string): void {
 }
 
 // ===================== UTILS =====================
-// Fonction pour récupérer le token depuis localStorage
-function getAccessTokenFromStorage(): string | null {
+// Fonction pour récupérer le token depuis AsyncStorage
+async function getAccessTokenFromStorage(): Promise<string | null> {
   try {
-    const persisted = localStorage.getItem("persist:root");
-    if (!persisted) return null;
-    
-    const parsed: PersistedRootState = JSON.parse(persisted);
-    if (!parsed?.user) return null;
-    
-    const userState = JSON.parse(parsed.user);
-    return userState?.currentUser?.accessToken || null;
+    const token = await AsyncStorage.getItem("token");
+    return token;
   } catch (error) {
-    console.error("Error parsing storage:", error);
+    console.error("Error reading token from storage:", error);
     return null;
   }
 }
 
-// Fonction pour mettre à jour le token dans localStorage
-function updateAccessTokenInStorage(newToken: string): boolean {
+// Fonction pour récupérer l'utilisateur depuis AsyncStorage
+async function getUserFromStorage(): Promise<User | null> {
   try {
-    const persisted = localStorage.getItem("persist:root");
-    if (!persisted) return false;
-    
-    const parsed: PersistedRootState = JSON.parse(persisted);
-    if (!parsed?.user) return false;
-    
-    const userState = JSON.parse(parsed.user);
-    if (!userState?.currentUser) return false;
-    
-    userState.currentUser.accessToken = newToken;
-    parsed.user = JSON.stringify(userState);
-    localStorage.setItem("persist:root", JSON.stringify(parsed));
-    
+    const userStr = await AsyncStorage.getItem("user");
+    return userStr ? JSON.parse(userStr) : null;
+  } catch (error) {
+    console.error("Error reading user from storage:", error);
+    return null;
+  }
+}
+
+// Fonction pour mettre à jour le token dans AsyncStorage
+async function updateAccessTokenInStorage(newToken: string): Promise<boolean> {
+  try {
+    await AsyncStorage.setItem("token", newToken);
+
+    // Optionnel: mettre à jour aussi le token dans l'objet user stocké
+    const userStr = await AsyncStorage.getItem("user");
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      user.accessToken = newToken;
+      await AsyncStorage.setItem("user", JSON.stringify(user));
+    }
+
     return true;
   } catch (error) {
-    console.error("Error updating storage:", error);
+    console.error("Error updating token in storage:", error);
     return false;
   }
 }
 
 // Fonction de logout
-function logout(): void {
-  localStorage.removeItem("persist:root");
-  window.location.href = "/login";
+async function logout(): Promise<void> {
+  try {
+    await AsyncStorage.multiRemove(["token", "user"]);
+    // Redirection vers login - utiliser une navigation ou un event
+    // navigationRef.current?.reset({ index: 0, routes: [{ name: "Auth" }] });
+  } catch (error) {
+    console.error("Error during logout:", error);
+  }
 }
 
 // ===================== REQUEST INTERCEPTOR =====================
-userRequest.interceptors.request.use((config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
-  try {
-    const token = getAccessTokenFromStorage();
+userRequest.interceptors.request.use(
+  async (
+    config: InternalAxiosRequestConfig,
+  ): Promise<InternalAxiosRequestConfig> => {
+    try {
+      const token = await getAccessTokenFromStorage();
 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      if (token && config.headers) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (error) {
+      console.error("Error in request interceptor:", error);
     }
-  } catch (error) {
-    console.error("Error in request interceptor:", error);
-  }
-  return config;
-}, (error: AxiosError) => {
-  return Promise.reject(error);
-});
+    return config;
+  },
+  (error: AxiosError) => {
+    return Promise.reject(error);
+  },
+);
 
 // ===================== RESPONSE INTERCEPTOR =====================
 userRequest.interceptors.response.use(
@@ -138,13 +154,15 @@ userRequest.interceptors.response.use(
 
       try {
         // Appel à l'API de refresh token
-        const res = await refreshClient.get<RefreshTokenResponse>("/api/auth/refresh-token");
+        const res = await refreshClient.get<RefreshTokenResponse>(
+          "/api/auth/refresh-token",
+        );
         const newAccessToken = res.data.accessToken;
 
         if (!newAccessToken) throw new Error("No token received");
 
-        // Mettre à jour le localStorage
-        const updateSuccess = updateAccessTokenInStorage(newAccessToken);
+        // Mettre à jour le AsyncStorage
+        const updateSuccess = await updateAccessTokenInStorage(newAccessToken);
         if (!updateSuccess) {
           throw new Error("Failed to update storage");
         }
@@ -160,7 +178,7 @@ userRequest.interceptors.response.use(
       } catch (refreshError) {
         console.error("Refresh token failed:", refreshError);
         // refresh échoué → logout
-        logout();
+        await logout();
         return Promise.reject(error);
       } finally {
         isRefreshing = false;
@@ -170,20 +188,22 @@ userRequest.interceptors.response.use(
     // Gestion spécifique des autres erreurs
     if (error.response?.status === 403) {
       console.error("Access forbidden");
-      // Optionnel: rediriger vers une page d'accès interdit
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 // ===================== EXPORT DES FONCTIONS UTILES =====================
 export const api = {
   get: <T>(url: string, config?: any) => userRequest.get<T>(url, config),
-  post: <T>(url: string, data?: any, config?: any) => userRequest.post<T>(url, data, config),
-  put: <T>(url: string, data?: any, config?: any) => userRequest.put<T>(url, data, config),
+  post: <T>(url: string, data?: any, config?: any) =>
+    userRequest.post<T>(url, data, config),
+  put: <T>(url: string, data?: any, config?: any) =>
+    userRequest.put<T>(url, data, config),
   delete: <T>(url: string, config?: any) => userRequest.delete<T>(url, config),
-  patch: <T>(url: string, data?: any, config?: any) => userRequest.patch<T>(url, data, config),
+  patch: <T>(url: string, data?: any, config?: any) =>
+    userRequest.patch<T>(url, data, config),
 };
 
 export default userRequest;

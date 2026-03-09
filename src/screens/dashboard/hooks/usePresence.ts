@@ -1,15 +1,14 @@
-import { useCallback, useState } from "react";
+import { useState, useCallback } from 'react'
 import { Alert } from "react-native";
-import { ID_UTILISATEUR } from "../constants/dashboard.constants";
+import { useSelector } from "react-redux";
+import { RootState } from "redux/store";
 import { postPresence } from "../services/presenceService";
 import {
     ActionType,
-    PointageResponse,
     PointageSource,
-    PresenceState,
+    PresenceState
 } from "../types/presence.types";
 
-// Messages constants pour éviter la duplication
 const MESSAGES = {
   SUCCESS_TITLE: "✅ Pointage enregistré",
   ERROR_TITLE: "❌ Erreur",
@@ -19,16 +18,11 @@ const MESSAGES = {
   ALREADY_DONE: "⏰ Action déjà effectuée",
 } as const;
 
-// Type guard pour valider la réponse
-function isPointageResponse(data: unknown): data is PointageResponse {
-  return (
-    typeof data === "object" &&
-    data !== null &&
-    "success" in data &&
-    typeof (data as any).success === "boolean" &&
-    "message" in data &&
-    typeof (data as any).message === "string"
-  );
+interface PresenceApiResponse {
+  message: string;
+  retard_minutes?: number;
+  heures_supplementaires?: number;
+  // ajoutez d'autres champs si nécessaire
 }
 
 export const usePresence = () => {
@@ -40,6 +34,7 @@ export const usePresence = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const data = useSelector((state: RootState) => state.auth.currentUser);
 
   // Fonction utilitaire pour formater l'heure
   const getFormattedTime = useCallback((): string => {
@@ -63,6 +58,12 @@ export const usePresence = () => {
 
   const handlePointage = useCallback(
     async (type: ActionType, source: PointageSource = "MANUEL") => {
+      // Vérifier que l'utilisateur est connecté
+      if (!data?.id) {
+        Alert.alert("Erreur", "Utilisateur non identifié", [{ text: "OK" }]);
+        return;
+      }
+
       // Validation : empêcher de pointer deux fois la même action
       if (
         (type === "ENTREE" && presence.heure_entree) ||
@@ -82,46 +83,39 @@ export const usePresence = () => {
       const now = new Date();
 
       try {
+        // ✅ Typer la réponse Axios
         const response = await postPresence({
-          id_utilisateur: ID_UTILISATEUR,
+          id_utilisateur: data.id,
           date_presence: now.toISOString().slice(0, 10),
           datetime: now.toISOString(),
           source,
           permissions: ["attendance.events.approve"],
         });
 
-        // Solution 1: Type assertion (si vous êtes sûr du format)
-        const pointageResponse = response.data as PointageResponse;
+        // ✅ Maintenant response.data est typé correctement
+        const responseData = response.data as PresenceApiResponse;
 
-        // OU Solution 2: Type guard (plus sûr)
-        // const pointageResponse = response.data;
-        // if (!isPointageResponse(pointageResponse)) {
-        //   throw new Error('Format de réponse invalide');
-        // }
-
-        if (pointageResponse.success) {
+        // Vérification par le code HTTP
+        if (response.status >= 200 && response.status < 300) {
           const heureFormatee = getFormattedTime();
 
           setPresence((prev) => ({
             ...prev,
             [type === "ENTREE" ? "heure_entree" : "heure_sortie"]:
               heureFormatee,
-            ...(pointageResponse.data || {}),
+            retard_minutes: responseData.retard_minutes || 0,
+            heures_supplementaires: responseData.heures_supplementaires || 0,
           }));
 
           Alert.alert(
             MESSAGES.SUCCESS_TITLE,
-            pointageResponse.message || "Votre pointage a été validé",
+            responseData.message || "Votre pointage a été validé",
             [{ text: MESSAGES.CLOSE, style: "default" }],
           );
         } else {
-          handleError(
-            new Error(pointageResponse.message),
-            pointageResponse.message,
-          );
+          handleError(new Error(responseData.message || "Erreur inconnue"));
         }
       } catch (err: any) {
-        // Gestion des erreurs réseau ou autres
         const errorMessage = err.response?.data?.message || err.message;
         handleError(err, errorMessage);
       } finally {
@@ -129,6 +123,7 @@ export const usePresence = () => {
       }
     },
     [
+      data,
       presence.heure_entree,
       presence.heure_sortie,
       getFormattedTime,
@@ -146,7 +141,6 @@ export const usePresence = () => {
     setError(null);
   }, []);
 
-  // Vérifier si l'utilisateur peut pointer
   const canPoint = useCallback(
     (type: ActionType): boolean => {
       if (type === "ENTREE") {

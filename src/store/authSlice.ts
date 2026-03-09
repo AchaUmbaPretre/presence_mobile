@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { Platform } from "react-native";
 
 interface User {
   id: number;
@@ -23,14 +24,57 @@ const initialState: UserState = {
   error: null,
 };
 
+// Safe storage wrapper pour éviter les erreurs
+const safeStorage = {
+  async setItem(key: string, value: string) {
+    try {
+      // Vérifier si AsyncStorage est disponible (côté client)
+      if (typeof window !== "undefined" && Platform.OS !== "web") {
+        await AsyncStorage.setItem(key, value);
+      } else if (Platform.OS === "web") {
+        // Fallback pour web avec localStorage
+        localStorage.setItem(key, value);
+      }
+    } catch (error) {
+      console.warn(`Storage error for ${key}:`, error);
+    }
+  },
+
+  async getItem(key: string) {
+    try {
+      if (typeof window !== "undefined" && Platform.OS !== "web") {
+        return await AsyncStorage.getItem(key);
+      } else if (Platform.OS === "web") {
+        return localStorage.getItem(key);
+      }
+      return null;
+    } catch (error) {
+      console.warn(`Storage error for ${key}:`, error);
+      return null;
+    }
+  },
+
+  async removeItem(key: string) {
+    try {
+      if (typeof window !== "undefined" && Platform.OS !== "web") {
+        await AsyncStorage.removeItem(key);
+      } else if (Platform.OS === "web") {
+        localStorage.removeItem(key);
+      }
+    } catch (error) {
+      console.warn(`Storage error for ${key}:`, error);
+    }
+  },
+};
+
 // Async thunk pour restaurer la session
 export const restoreSession = createAsyncThunk(
   "auth/restoreSession",
   async () => {
     try {
       const [token, user] = await Promise.all([
-        AsyncStorage.getItem("token"),
-        AsyncStorage.getItem("user"),
+        safeStorage.getItem("token"),
+        safeStorage.getItem("user"),
       ]);
 
       if (token && user) {
@@ -58,9 +102,9 @@ const authSlice = createSlice({
       state.isLoading = false;
       state.error = null;
 
-      // Persistance
-      AsyncStorage.setItem("token", action.payload.token);
-      AsyncStorage.setItem("user", JSON.stringify(action.payload.user));
+      // Persistance avec safeStorage
+      safeStorage.setItem("token", action.payload.token);
+      safeStorage.setItem("user", JSON.stringify(action.payload.user));
     },
     loginFailure(state, action: PayloadAction<string>) {
       state.isLoading = false;
@@ -72,9 +116,9 @@ const authSlice = createSlice({
       state.isLoading = false;
       state.error = null;
 
-      // Nettoyage
-      AsyncStorage.removeItem("token");
-      AsyncStorage.removeItem("user");
+      // Nettoyage avec safeStorage
+      safeStorage.removeItem("token");
+      safeStorage.removeItem("user");
     },
     setToken(state, action: PayloadAction<string | null>) {
       state.token = action.payload;

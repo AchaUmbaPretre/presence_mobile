@@ -14,7 +14,7 @@ export interface PointageRequest {
   id_utilisateur: number;
   date_presence: string;
   datetime: string;
-  source: PointageSource; // Utilisation du type
+  source: PointageSource;
   permissions: string[];
   location?: {
     latitude: number;

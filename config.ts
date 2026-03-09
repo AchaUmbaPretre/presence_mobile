@@ -4,7 +4,7 @@ interface Config {
 
 const config: Config = {
   REACT_APP_SERVER_DOMAIN:
-    process.env.REACT_APP_SERVER_DOMAIN || "http://localhost:3001",
+    process.env.REACT_APP_SERVER_DOMAIN || "https://apidlog.loginsmart-cd.com",
 };
 
 export default config;
