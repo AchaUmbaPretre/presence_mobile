@@ -1,8 +1,8 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Alert } from "react-native";
 import { useSelector } from "react-redux";
 import { RootState } from "redux/store";
-import { postPresence } from "../services/presenceService";
+import { getHebdomadaireById, postPresence } from "../services/presenceService";
 import {
   ActionType,
   PointageSource,
@@ -16,12 +16,34 @@ const MESSAGES = {
   RETRY: "Réessayer",
   CLOSE: "Fermer",
   ALREADY_DONE: "⏰ Action déjà effectuée",
+  USER_NOT_IDENTIFIED: "Utilisateur non identifié",
 } as const;
 
 interface PresenceApiResponse {
   message: string;
   retard_minutes?: number;
   heures_supplementaires?: number;
+}
+
+interface HebdomadaireMetrics {
+  retard: number;
+  supplementaires: number;
+  objectif: number;
+  objectifAtteint: number;
+}
+
+// Interface pour la réponse de l'API hebdomadaire
+interface HebdomadaireData {
+  retard: number;
+  supplementaires: number;
+  objectif: number;
+  objectifAtteint: number;
+}
+
+interface HebdomadaireApiResponse {
+  data: HebdomadaireData;
+  message?: string;
+  status?: number;
 }
 
 export const usePresence = () => {
@@ -31,9 +53,17 @@ export const usePresence = () => {
     retard_minutes: 0,
     heures_supplementaires: 0,
   });
+
+  const [metrics, setMetrics] = useState<HebdomadaireMetrics>({
+    retard: 0,
+    supplementaires: 0,
+    objectif: 35,
+    objectifAtteint: 0,
+  });
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const data = useSelector((state: RootState) => state.auth.currentUser);
+  const currentUser = useSelector((state: RootState) => state.auth.currentUser);
 
   // Fonction utilitaire pour formater l'heure
   const getFormattedTime = useCallback((): string => {
@@ -51,15 +81,46 @@ export const usePresence = () => {
 
     setError(errorMessage);
     Alert.alert(MESSAGES.ERROR_TITLE, errorMessage, [
-      { text: MESSAGES.RETRY, style: "cancel" },
+      { text: MESSAGES.CLOSE, style: "cancel" },
     ]);
   }, []);
+
+  const loadHebdomadaire = useCallback(async () => {
+    if (!currentUser?.id) return;
+
+    try {
+      setIsLoading(true);
+      const response = (await getHebdomadaireById({
+        id: currentUser.id,
+      })) as HebdomadaireApiResponse;
+
+      if (response?.data) {
+        setMetrics({
+          retard: response.data.retard ?? 0,
+          supplementaires: response.data.supplementaires ?? 0,
+          objectif: response.data.objectif ?? 27,
+          objectifAtteint: response.data.objectifAtteint ?? 0,
+        });
+      }
+    } catch (err) {
+      console.error("Erreur chargement hebdomadaire:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentUser?.id]);
+
+  // Charger les données hebdomadaires au montage du hook
+  useEffect(() => {
+    loadHebdomadaire();
+  }, [loadHebdomadaire]);
 
   const handlePointage = useCallback(
     async (type: ActionType, source: PointageSource = "MANUEL") => {
       // Vérifier que l'utilisateur est connecté
-      if (!data?.id) {
-        Alert.alert("Erreur", "Utilisateur non identifié", [{ text: "OK" }]);
+      if (!currentUser?.id) {
+        Alert.alert(MESSAGES.ERROR_TITLE, MESSAGES.USER_NOT_IDENTIFIED, [
+          { text: "OK" },
+        ]);
         return;
       }
 
@@ -76,12 +137,22 @@ export const usePresence = () => {
         return;
       }
 
+      // Validation : ne pas permettre une sortie sans entrée
+      if (type === "SORTIE" && !presence.heure_entree) {
+        Alert.alert(
+          MESSAGES.ERROR_TITLE,
+          "Vous devez d'abord enregistrer votre arrivée",
+          [{ text: "OK" }],
+        );
+        return;
+      }
+
       setIsLoading(true);
       setError(null);
 
       const now = new Date();
 
-      // ✅ AJOUTER +1h pour compenser le backend
+      // ✅ AJOUTER +1h pour compenser le backend (à confirmer si toujours nécessaire)
       const adjustedHours = String((now.getHours() + 1) % 24).padStart(2, "0");
 
       const year = now.getFullYear();
@@ -94,7 +165,7 @@ export const usePresence = () => {
 
       try {
         const response = await postPresence({
-          id_utilisateur: data.id,
+          id_utilisateur: currentUser.id,
           date_presence: `${year}-${month}-${day}`,
           datetime: dateTimeToSend,
           source,
@@ -110,14 +181,19 @@ export const usePresence = () => {
             ...prev,
             [type === "ENTREE" ? "heure_entree" : "heure_sortie"]:
               heureFormatee,
-            retard_minutes: responseData.retard_minutes || 0,
-            heures_supplementaires: responseData.heures_supplementaires || 0,
+            retard_minutes: responseData.retard_minutes || prev.retard_minutes,
+            heures_supplementaires:
+              responseData.heures_supplementaires ||
+              prev.heures_supplementaires,
           }));
+
+          // Recharger les données hebdomadaires après un pointage réussi
+          await loadHebdomadaire();
 
           Alert.alert(
             MESSAGES.SUCCESS_TITLE,
             responseData.message || "Votre pointage a été validé",
-            [{ text: MESSAGES.CLOSE, style: "default" }],
+            [{ text: MESSAGES.CLOSE }],
           );
         } else {
           handleError(new Error(responseData.message || "Erreur inconnue"));
@@ -130,11 +206,12 @@ export const usePresence = () => {
       }
     },
     [
-      data,
+      currentUser?.id,
       presence.heure_entree,
       presence.heure_sortie,
       getFormattedTime,
       handleError,
+      loadHebdomadaire,
     ],
   );
 
@@ -160,10 +237,12 @@ export const usePresence = () => {
 
   return {
     presence,
+    metrics,
     isLoading,
     error,
     handlePointage,
     resetPresence,
     canPoint,
+    loadHebdomadaire,
   };
 };

@@ -16,12 +16,24 @@ export const getPresences = async (params?: {
   date_debut?: string;
   date_fin?: string;
 }) => {
-  return api.get("/api/presences", { params });
+  return api.get("/api/presence", { params });
+};
+
+interface HebdomadaireParams {
+  id: number;
+}
+
+export const getHebdomadaireById = async (params: HebdomadaireParams) => {
+  return api.get("/api/presence/hebdomadaireById", {
+    params: {
+      id: params.id,
+    },
+  });
 };
 
 /**
  * Récupère les statistiques de présence pour un utilisateur
  */
 export const getPresenceStats = async (id_utilisateur: number) => {
-  return api.get(`/api/presences/stats/${id_utilisateur}`);
+  return api.get(`/api/presence/stats/${id_utilisateur}`);
 };

@@ -34,7 +34,7 @@ const BLUE_PRO = {
 } as const;
 
 const DashboardScreen = memo(() => {
-  const { presence, isLoading, handlePointage } = usePresence();
+  const { presence, isLoading, handlePointage, metrics } = usePresence();
   const { formattedDate, formattedTime, formattedSeconds } = useCurrentTime();
   const { animatedStyle } = useCombinedAnimation();
   const data = useSelector((state: RootState) => state.auth.currentUser);
@@ -85,9 +85,9 @@ const DashboardScreen = memo(() => {
             <View style={styles.shineEffect} />
 
             <View style={styles.headerContent}>
-              <Header 
-                userName={data?.nom || "Utilisateur"} 
-                userRole={data?.role || "Employé"} 
+              <Header
+                userName={data?.nom || "Utilisateur"}
+                userRole={data?.role || "Employé"}
               />
               <Clock
                 time={formattedTime}
@@ -105,8 +105,10 @@ const DashboardScreen = memo(() => {
           {/* Section des métriques */}
           <View style={styles.metricsSection}>
             <MetricsCard
-              retard={presence.retard_minutes}
-              supplementaires={presence.heures_supplementaires}
+              retard={metrics.retard}
+              supplementaires={metrics.supplementaires}
+              objectif={metrics.objectif}
+              objectifAtteint={metrics.objectifAtteint}
             />
             <QuickActions onActionPress={handleActionPress} />
             <ActivityList activities={activities} onSeeAll={() => {}} />
