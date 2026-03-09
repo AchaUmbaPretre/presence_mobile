@@ -36,3 +36,16 @@ export interface ValidationErrors {
   password?: string;
   general?: string;
 }
+
+// Types de navigation
+export type AuthStackParamList = {
+  Login: undefined;
+  Signup: undefined;
+  ForgotPassword: undefined;
+};
+
+// Modifiez votre type dans le hook
+export type RootStackParamList = {
+  Main: undefined;
+  Auth: undefined;
+} & AuthStackParamList;

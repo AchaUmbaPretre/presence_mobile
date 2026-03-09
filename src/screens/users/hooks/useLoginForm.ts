@@ -5,23 +5,11 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useCallback, useMemo, useState } from "react";
 import { Alert } from "react-native";
 import { useDispatch } from "react-redux";
-import { AUTH_MESSAGES } from "../constants/auth.constants";
+import { ALERT_MESSAGES, AUTH_MESSAGES } from "../constants/auth.constants";
 import { validateLoginForm } from "../schemas/validation.schema";
 import { authService } from "../services/authService";
-import { LoginFormData, ValidationErrors } from "../types/auth.types";
+import { LoginFormData, RootStackParamList, ValidationErrors } from "../types/auth.types";
 
-// Types de navigation
-export type AuthStackParamList = {
-  Login: undefined;
-  Signup: undefined;
-  ForgotPassword: undefined;
-};
-
-// Modifiez votre type dans le hook
-export type RootStackParamList = {
-  Main: undefined;
-  Auth: undefined;
-} & AuthStackParamList;
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -34,14 +22,6 @@ const INITIAL_FORM_DATA: LoginFormData = {
   email: "",
   password: "",
 };
-
-// Messages d'alerte constants
-const ALERT_MESSAGES = {
-  VALIDATION_ERROR: "Erreur de validation",
-  LOGIN_FAILED: "Échec de la connexion",
-  RETRY: "Réessayer",
-  OK: "OK",
-} as const;
 
 export const useLoginForm = () => {
   const [formData, setFormData] = useState<LoginFormData>(INITIAL_FORM_DATA);
@@ -159,7 +139,6 @@ export const useLoginForm = () => {
     isFormValid,
     firstError,
 
-    // Actions - Notez que c'est handleFocus, pas setFocus
     updateField,
     handleLogin,
     togglePasswordVisibility,

@@ -30,3 +30,10 @@ export const AUTH_VALIDATION = {
   PASSWORD_MIN_LENGTH: 4,
   EMAIL_REGEX: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
 } as const;
+
+export const ALERT_MESSAGES = {
+  VALIDATION_ERROR: "Erreur de validation",
+  LOGIN_FAILED: "Échec de la connexion",
+  RETRY: "Réessayer",
+  OK: "OK",
+} as const;
