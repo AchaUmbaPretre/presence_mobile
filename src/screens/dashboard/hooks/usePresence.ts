@@ -8,6 +8,7 @@ import {
   PointageSource,
   PresenceState,
 } from "../types/presence.types";
+import * as Haptics from "expo-haptics";
 
 const MESSAGES = {
   SUCCESS_TITLE: "✅ Pointage enregistré",
@@ -61,7 +62,8 @@ export const usePresence = () => {
     objectifAtteint: 0,
   });
 
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // Pour les pointages
+  const [isLoadingMetrics, setIsLoadingMetrics] = useState(false); // Pour les métriques
   const [error, setError] = useState<string | null>(null);
   const currentUser = useSelector((state: RootState) => state.auth.currentUser);
 
@@ -89,25 +91,36 @@ export const usePresence = () => {
     if (!currentUser?.id) return;
 
     try {
-      setIsLoading(true);
-      const response = (await getHebdomadaireById({
+      setIsLoadingMetrics(true);
+      const response = await getHebdomadaireById({
         id: currentUser.id,
-      })) as HebdomadaireApiResponse;
+      }) as HebdomadaireApiResponse;
 
       if (response?.data) {
         setMetrics({
           retard: response.data.retard ?? 0,
           supplementaires: response.data.supplementaires ?? 0,
-          objectif: response.data.objectif ?? 27,
+          objectif: response.data.objectif ?? 35,
           objectifAtteint: response.data.objectifAtteint ?? 0,
         });
       }
     } catch (err) {
       console.error("Erreur chargement hebdomadaire:", err);
+      // Optionnel : afficher une notification discrète
+      Alert.alert(
+        "Information",
+        "Impossible de charger les statistiques hebdomadaires",
+        [{ text: "OK" }]
+      );
     } finally {
-      setIsLoading(false);
+      setIsLoadingMetrics(false);
     }
   }, [currentUser?.id]);
+
+  // Rafraîchissement manuel des métriques
+  const refreshMetrics = useCallback(() => {
+    return loadHebdomadaire();
+  }, [loadHebdomadaire]);
 
   // Charger les données hebdomadaires au montage du hook
   useEffect(() => {
@@ -152,16 +165,15 @@ export const usePresence = () => {
 
       const now = new Date();
 
-      // ✅ AJOUTER +1h pour compenser le backend (à confirmer si toujours nécessaire)
-      const adjustedHours = String((now.getHours() + 1) % 24).padStart(2, "0");
-
+      // Format de date pour l'API
       const year = now.getFullYear();
       const month = String(now.getMonth() + 1).padStart(2, "0");
       const day = String(now.getDate()).padStart(2, "0");
+      const hours = String(now.getHours()).padStart(2, "0");
       const minutes = String(now.getMinutes()).padStart(2, "0");
       const seconds = String(now.getSeconds()).padStart(2, "0");
 
-      const dateTimeToSend = `${year}-${month}-${day} ${adjustedHours}:${minutes}:${seconds}`;
+      const dateTimeToSend = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 
       try {
         const response = await postPresence({
@@ -179,16 +191,13 @@ export const usePresence = () => {
 
           setPresence((prev) => ({
             ...prev,
-            [type === "ENTREE" ? "heure_entree" : "heure_sortie"]:
-              heureFormatee,
+            [type === "ENTREE" ? "heure_entree" : "heure_sortie"]: heureFormatee,
             retard_minutes: responseData.retard_minutes || prev.retard_minutes,
-            heures_supplementaires:
-              responseData.heures_supplementaires ||
-              prev.heures_supplementaires,
+            heures_supplementaires: responseData.heures_supplementaires || prev.heures_supplementaires,
           }));
 
           // Recharger les données hebdomadaires après un pointage réussi
-          await loadHebdomadaire();
+          await refreshMetrics();
 
           Alert.alert(
             MESSAGES.SUCCESS_TITLE,
@@ -196,7 +205,7 @@ export const usePresence = () => {
             [{ text: MESSAGES.CLOSE }],
           );
         } else {
-          handleError(new Error(responseData.message || "Erreur inconnue"));
+          throw new Error(responseData.message || "Erreur inconnue");
         }
       } catch (err: any) {
         const errorMessage = err.response?.data?.message || err.message;
@@ -211,7 +220,7 @@ export const usePresence = () => {
       presence.heure_sortie,
       getFormattedTime,
       handleError,
-      loadHebdomadaire,
+      refreshMetrics,
     ],
   );
 
@@ -235,14 +244,43 @@ export const usePresence = () => {
     [presence.heure_entree, presence.heure_sortie],
   );
 
+  const handleMetricPress = useCallback((metric: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    
+    switch (metric) {
+      case "retard":
+        Alert.alert(
+          "Détail des retards", 
+          `Total cumulé : ${metrics.retard} minutes`
+        );
+        break;
+      case "supplementaires":
+        Alert.alert(
+          "Heures supplémentaires", 
+          `${metrics.supplementaires}h effectuées`
+        );
+        break;
+      case "objectif":
+        const reste = Math.max(0, metrics.objectif - metrics.objectifAtteint);
+        Alert.alert(
+          "Objectif hebdomadaire",
+          `${metrics.objectifAtteint}h / ${metrics.objectif}h atteints\n` +
+          `Reste : ${reste}h à effectuer`
+        );
+        break;
+    }
+  }, [metrics]);
+
   return {
     presence,
     metrics,
     isLoading,
+    isLoadingMetrics,
     error,
     handlePointage,
     resetPresence,
     canPoint,
-    loadHebdomadaire,
+    refreshMetrics,
+    handleMetricPress,
   };
 };

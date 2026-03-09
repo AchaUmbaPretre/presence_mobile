@@ -54,4 +54,6 @@ export interface HeaderProps {
   notificationCount?: number;
   onProfilePress?: () => void;
   onNotificationPress?: () => void;
+  userAvatar?: string | null; // Rendre optionnel avec ?
+
 }

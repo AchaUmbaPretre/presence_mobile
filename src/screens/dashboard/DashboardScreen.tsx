@@ -34,7 +34,8 @@ const BLUE_PRO = {
 } as const;
 
 const DashboardScreen = memo(() => {
-  const { presence, isLoading, handlePointage, metrics } = usePresence();
+  const { presence, isLoading, handlePointage, metrics, handleMetricPress } =
+    usePresence();
   const { formattedDate, formattedTime, formattedSeconds } = useCurrentTime();
   const { animatedStyle } = useCombinedAnimation();
   const data = useSelector((state: RootState) => state.auth.currentUser);
