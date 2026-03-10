@@ -10,8 +10,6 @@ export type WeekDayFull = (typeof WEEK_DAYS)[number]["full"];
 export type ActivityType = (typeof ACTIVITES_RECENTES)[number]["type"];
 export type ActionId = (typeof ACTIONS_RAPIDES)[number]["id"];
 
-export const ID_UTILISATEUR = 1;
-
 // ==================== TYPES D'HORAIRES ====================
 export const HORAIRES_TYPE = {
   ENTREE: "ENTREE",
@@ -262,8 +260,6 @@ export const API_ENDPOINTS = {
     AVATAR: "/api/user/avatar",
   },
 } as const;
-
-// ==================== FONCTIONS UTILITAIRES ====================
 
 /**
  * Récupère la configuration d'un type d'activité
