@@ -29,7 +29,7 @@ export const MOCK_USER = {
   avatar:
     "https://thumbs.dreamstime.com/b/generic-male-user-profile-icon-formal-suit-clean-line-art-business-digital-avatars-simple-avatar-wearing-perfect-394004406.jpg",
   department: "Technique",
-  joinDate: "Janvier 2026",
+  joinDate: "Mars 2026",
 };
 
 export const ALERT_MESSAGES = {
