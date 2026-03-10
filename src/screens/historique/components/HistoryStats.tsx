@@ -53,7 +53,7 @@ export const HistoryStats: React.FC<HistoryStatsProps> = ({
           <View style={[styles.iconContainer, { backgroundColor: COLORS.primary.light }]}>
             <Ionicons name="trending-up" size={20} color={COLORS.primary.main} />
           </View>
-          <Text style={styles.statValue}>{formatHours(stats.total_heures)}</Text>
+          <Text style={styles.statValue}>{formatHours(stats.total_presents)}</Text>
           <Text style={styles.statLabel}>Total</Text>
         </View>
       </View>

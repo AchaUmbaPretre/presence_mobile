@@ -20,6 +20,13 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
 }) => {
   const statut = item.statut as PresenceStatus;
   const config = STATUS_CONFIG[statut];
+
+  // ✅ Vérifier que config existe
+  if (!config) {
+    console.warn(`Configuration manquante pour le statut: ${statut}`);
+    return null;
+  }
+
   const date = new Date(item.date).toLocaleDateString("fr-FR", {
     weekday: "short",
     day: "numeric",
@@ -27,6 +34,12 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
   });
 
   const formatTime = (time: string | null) => time || "--:--";
+
+  // ✅ Récupérer le nom du site (objet ou string)
+  const siteName =
+    typeof item.site === "string"
+      ? item.site
+      : item.site?.name || "Site inconnu";
 
   return (
     <TouchableOpacity
@@ -52,7 +65,7 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
           {/* Date et site */}
           <View style={styles.infoContainer}>
             <Text style={styles.date}>{date}</Text>
-            {item.site && <Text style={styles.site}>{item.site}</Text>}
+            {item.site && <Text style={styles.site}>{siteName}</Text>}
           </View>
         </View>
 

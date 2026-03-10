@@ -1,138 +1,143 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Alert } from 'react-native';
-import { useSelector } from 'react-redux';
-import { RootState } from 'redux/store';
-import { HistoryItems, HistoryFilters, HistoryStats } from '../types/history.types';
-import { MOCK_HISTORY, MOCK_STATS, HISTORY_MESSAGES } from '../constants/history.constants';
-import * as Haptics from 'expo-haptics';
+import * as Haptics from "expo-haptics";
+import { useCallback, useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "redux/store";
+import { historyService } from "../services/historyService";
+import { HistoryFilters, HistoryItems } from "../types/history.types";
 
 export const useHistory = () => {
   const [history, setHistory] = useState<HistoryItems[]>([]);
-  const [filteredHistory, setFilteredHistory] = useState<HistoryItems[]>([]);
-  const [stats, setStats] = useState<HistoryStats>(MOCK_STATS);
+  const [stats, setStats] = useState<any>(null);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 20,
+    total: 0,
+    pages: 0,
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showFilters, setShowFilters] = useState(false); // ← AJOUTÉ
   const [filters, setFilters] = useState<HistoryFilters>({
-    sortBy: 'date',
-    sortOrder: 'desc',
+    page: 1,
+    limit: 20,
+    sortBy: "date",
+    sortOrder: "desc",
   });
-  const [showFilters, setShowFilters] = useState(false);
-  
+
   const user = useSelector((state: RootState) => state.auth.currentUser);
-  const userId = user?.id || 1; // Fallback pour développement
+  const userId = user?.id;
 
-  const loadHistory = useCallback(async (showLoading = true) => {
-    if (!userId) return;
-    
-    if (showLoading) setIsLoading(true);
-    setError(null);
+  // ✅ Fonction de filtrage locale
+  const applyClientFilters = useCallback(
+    (items: HistoryItems[], currentFilters: HistoryFilters) => {
+      let filtered = [...items];
 
-    try {
-      // En développement, utiliser les données mockées
-      // const data = await historyService.getHistory(userId, filters);
-      const data = MOCK_HISTORY; // Remplacer par l'appel API réel
-      
-      setHistory(data);
-      applyFilters(data, filters);
-      
-      // Charger les stats
-      // const statsData = await historyService.getHistoryStats(userId);
-      // setStats(statsData);
-    } catch (err) {
-      setError(HISTORY_MESSAGES.error);
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  }, [userId, filters]);
+      // Filtre par recherche
+      if (currentFilters.search) {
+        const searchLower = currentFilters.search.toLowerCase();
+        filtered = filtered.filter((item) => {
+          const siteName = item.site?.name || "";
+          const statut = item.statut.toLowerCase();
 
-  const applyFilters = useCallback((data: HistoryItems[], currentFilters: HistoryFilters) => {
-    let filtered = [...data];
+          return (
+            siteName.toLowerCase().includes(searchLower) ||
+            statut.includes(searchLower)
+          );
+        });
+      }
 
-    // Filtre par date
-    if (currentFilters.startDate) {
-      filtered = filtered.filter(item => item.date >= currentFilters.startDate!);
-    }
-    if (currentFilters.endDate) {
-      filtered = filtered.filter(item => item.date <= currentFilters.endDate!);
-    }
+      // Filtre par statut
+      if (currentFilters.status && currentFilters.status.length > 0) {
+        filtered = filtered.filter((item) =>
+          currentFilters.status?.includes(item.statut),
+        );
+      }
 
-    // Filtre par statut
-    if (currentFilters.status && currentFilters.status.length > 0) {
-      filtered = filtered.filter(item => 
-        currentFilters.status?.includes(item.statut)
-      );
-    }
+      // Tri
+      if (currentFilters.sortBy) {
+        filtered.sort((a, b) => {
+          let comparison = 0;
+          switch (currentFilters.sortBy) {
+            case "date":
+              comparison = a.date.localeCompare(b.date);
+              break;
+            case "retard":
+              comparison = a.retard_minutes - b.retard_minutes;
+              break;
+            case "heures_supp":
+              comparison = a.heures_supplementaires - b.heures_supplementaires;
+              break;
+          }
+          return currentFilters.sortOrder === "desc" ? -comparison : comparison;
+        });
+      }
 
-    // Filtre par recherche
-    if (currentFilters.search) {
-      const searchLower = currentFilters.search.toLowerCase();
-      filtered = filtered.filter(item => 
-        item.site?.toLowerCase().includes(searchLower) ||
-        item.statut.toLowerCase().includes(searchLower)
-      );
-    }
+      return filtered;
+    },
+    [],
+  );
 
-    // Tri
-    if (currentFilters.sortBy) {
-      filtered.sort((a, b) => {
-        let comparison = 0;
-        switch (currentFilters.sortBy) {
-          case 'date':
-            comparison = a.date.localeCompare(b.date);
-            break;
-          case 'retard':
-            comparison = a.retard_minutes - b.retard_minutes;
-            break;
-          case 'heures_supp':
-            comparison = a.heures_supplementaires - b.heures_supplementaires;
-            break;
-        }
-        return currentFilters.sortOrder === 'desc' ? -comparison : comparison;
-      });
-    }
+  const loadHistory = useCallback(
+    async (showLoading = true) => {
+      if (!userId) return;
 
-    setFilteredHistory(filtered);
-  }, []);
+      if (showLoading) setIsLoading(true);
+      setError(null);
 
-  const refresh = useCallback(async () => {
+      try {
+        const response = await historyService.getHistory(userId, filters);
+
+        setHistory(response.historique);
+        setStats(response.stats);
+        setPagination(response.pagination);
+      } catch (err) {
+        setError("Erreur lors du chargement de l'historique");
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+        setIsRefreshing(false);
+      }
+    },
+    [userId, filters],
+  );
+
+  const refresh = useCallback(() => {
     setIsRefreshing(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await loadHistory(false);
+    setFilters((prev) => ({ ...prev, page: 1 }));
+    loadHistory(false);
   }, [loadHistory]);
 
+  const loadMore = useCallback(() => {
+    if (pagination.page < pagination.pages && !isLoading) {
+      setFilters((prev) => ({ ...prev, page: prev.page! + 1 }));
+    }
+  }, [pagination.page, pagination.pages, isLoading]);
+
   const updateFilters = useCallback((newFilters: Partial<HistoryFilters>) => {
-    setFilters(prev => {
-      const updated = { ...prev, ...newFilters };
-      applyFilters(history, updated);
-      return updated;
-    });
-  }, [history, applyFilters]);
+    setFilters((prev) => ({ ...prev, ...newFilters, page: 1 }));
+    Haptics.selectionAsync();
+  }, []);
 
   const resetFilters = useCallback(() => {
-    const defaultFilters: HistoryFilters = {
-      sortBy: 'date',
-      sortOrder: 'desc',
-    };
-    setFilters(defaultFilters);
-    applyFilters(history, defaultFilters);
+    setFilters({
+      page: 1,
+      limit: 20,
+      sortBy: "date",
+      sortOrder: "desc",
+    });
     Haptics.selectionAsync();
-  }, [history, applyFilters]);
+  }, []);
 
-  const exportHistory = useCallback(async (format: 'pdf' | 'excel' = 'pdf') => {
+  const exportHistory = useCallback(async () => {
     try {
+      if (!userId) return;
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      Alert.alert('Export', HISTORY_MESSAGES.export);
-      
-      // await historyService.exportHistory(userId, format);
-      
-      setTimeout(() => {
-        Alert.alert('Succès', HISTORY_MESSAGES.exportSuccess);
-      }, 1500);
+      await historyService.exportHistory(userId);
+      // Optionnel: Afficher un message de succès
     } catch (err) {
-      Alert.alert('Erreur', HISTORY_MESSAGES.exportError);
+      console.error("Erreur export:", err);
     }
   }, [userId]);
 
@@ -141,18 +146,19 @@ export const useHistory = () => {
   }, [loadHistory]);
 
   return {
-    history: filteredHistory,
-    allHistory: history,
+    history,
     stats,
+    pagination,
     isLoading,
     isRefreshing,
     error,
     filters,
-    showFilters,
-    setShowFilters,
+    showFilters, // ← AJOUTÉ
+    setShowFilters, // ← AJOUTÉ
     refresh,
+    loadMore,
     updateFilters,
     resetFilters,
-    exportHistory,
+    exportHistory, // ← AJOUTÉ
   };
 };
