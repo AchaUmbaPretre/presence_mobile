@@ -3,8 +3,8 @@ export type RootStackParamList = {
   Main: undefined;
   QRScanner: undefined;
   Geoloc: undefined;
-  History: undefined;
-  Reports: undefined;
+  Historique: undefined;
+  Rapports: undefined;
 };
 
 export type AuthStackParamList = {

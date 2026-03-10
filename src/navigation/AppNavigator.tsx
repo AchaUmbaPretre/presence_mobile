@@ -4,11 +4,15 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
 import { COLORS } from "./../screens/dashboard/constants/color";
 import TabNavigator from "./TabNavigator";
+import HistoryScreen from "@/screens/historique/HistoryScreen";
+import RapportPresenceScreen from "@/screens/rapportPresence/RapportPresenceScreen";
 
 export type AppStackParamList = {
   Tabs: undefined;
   QRScanner: undefined;
   Geoloc: undefined;
+  Historique: undefined;
+  Rapports: undefined;
 };
 
 const Stack = createNativeStackNavigator<AppStackParamList>();
@@ -27,6 +31,8 @@ const AppNavigator = () => {
       <Stack.Screen name="Tabs" component={TabNavigator} />
       <Stack.Screen name="QRScanner" component={QRScannerScreen} />
       <Stack.Screen name="Geoloc" component={GeolocScreen} />
+      <Stack.Screen name="Historique" component={HistoryScreen} />
+      <Stack.Screen name="Rapports" component={RapportPresenceScreen} />
     </Stack.Navigator>
   );
 };
