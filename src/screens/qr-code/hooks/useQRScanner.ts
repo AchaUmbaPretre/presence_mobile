@@ -1,9 +1,9 @@
-import { useState, useCallback, useRef } from 'react';
-import { Alert, Vibration } from 'react-native';
-import * as Haptics from 'expo-haptics';
-import { CameraView, useCameraPermissions } from 'expo-camera';
-import { qrService } from '../services/qrService';
-import { QRPayload, QRScanResult } from '../types/qr.types';
+import { useCameraPermissions } from "expo-camera";
+import * as Haptics from "expo-haptics";
+import { useCallback, useRef, useState } from "react";
+import { Alert, Vibration } from "react-native";
+import { qrService } from "../services/qrService";
+import { QRPayload, QRScanResult } from "../types/qr.types";
 
 interface UseQRScannerProps {
   onScanSuccess?: (data: QRPayload) => void;
@@ -20,67 +20,68 @@ export const useQRScanner = ({
   const [isScanning, setIsScanning] = useState(true);
   const [scanned, setScanned] = useState(false);
   const [lastResult, setLastResult] = useState<QRScanResult | null>(null);
-  const scanTimeout = useRef<NodeJS.Timeout>();
 
-  const handleScan = useCallback(async (data: string) => {
-    if (!isScanning || scanned) return;
+  // ✅ CORRECTION: Initialiser avec null
+  const scanTimeout = useRef<NodeJS.Timeout | null>(null);
 
-    setScanned(true);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    Vibration.vibrate(100);
+  // ✅ handleScan reçoit maintenant une string (le data du QR code)
+  const handleScan = useCallback(
+    async (data: string) => {
+      if (!isScanning || scanned) return;
 
-    try {
-      const result = await qrService.verifyAndDecode(data);
-      setLastResult(result);
+      setScanned(true);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Vibration.vibrate(100);
 
-      if (result.success && result.data) {
-        // Scanner réussi
-        onScanSuccess?.(result.data);
-        
-        if (autoClose) {
-          // Fermer après 2 secondes
-          scanTimeout.current = setTimeout(() => {
-            // Logique de fermeture
-          }, 2000);
-        }
-      } else {
-        // Scanner échoué
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        onScanError?.(result.message);
-        
-        Alert.alert(
-          'QR Code invalide',
-          result.message,
-          [
+      try {
+        const result = await qrService.verifyAndDecode(data);
+        setLastResult(result);
+
+        if (result.success && result.data) {
+          onScanSuccess?.(result.data);
+
+          if (autoClose) {
+            // ✅ Maintenant TypeScript sait que scanTimeout.current peut être null
+            scanTimeout.current = setTimeout(() => {
+              // Logique de fermeture
+            }, 2000);
+          }
+        } else {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+          onScanError?.(result.message);
+
+          Alert.alert("QR Code invalide", result.message, [
             {
-              text: 'Réessayer',
+              text: "Réessayer",
               onPress: () => {
                 setScanned(false);
                 setLastResult(null);
               },
             },
-            { text: 'Annuler', style: 'cancel' },
-          ]
-        );
+            { text: "Annuler", style: "cancel" },
+          ]);
+        }
+      } catch (error) {
+        console.error("Erreur scan:", error);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+
+        Alert.alert("Erreur", "Impossible de lire le QR code", [
+          { text: "OK", onPress: () => setScanned(false) },
+        ]);
       }
-    } catch (error) {
-      console.error('Erreur scan:', error);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      
-      Alert.alert(
-        'Erreur',
-        'Impossible de lire le QR code',
-        [{ text: 'OK', onPress: () => setScanned(false) }]
-      );
-    }
-  }, [isScanning, scanned, autoClose, onScanSuccess, onScanError]);
+    },
+    [isScanning, scanned, autoClose, onScanSuccess, onScanError],
+  );
 
   const resetScanner = useCallback(() => {
     setScanned(false);
     setLastResult(null);
     setIsScanning(true);
+
+    // ✅ Vérification que scanTimeout.current existe
     if (scanTimeout.current) {
       clearTimeout(scanTimeout.current);
+      scanTimeout.current = null;
     }
   }, []);
 
@@ -88,11 +89,6 @@ export const useQRScanner = ({
     setIsScanning(false);
     setScanned(true);
   }, []);
-
-  const requestCameraPermission = useCallback(async () => {
-    const { status } = await requestPermission();
-    return status === 'granted';
-  }, [requestPermission]);
 
   return {
     permission,
@@ -102,6 +98,6 @@ export const useQRScanner = ({
     handleScan,
     resetScanner,
     stopScanning,
-    requestCameraPermission,
+    requestCameraPermission: requestPermission,
   };
 };

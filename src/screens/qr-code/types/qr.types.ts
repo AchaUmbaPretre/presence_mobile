@@ -11,6 +11,7 @@ export interface QRScanResult {
   success: boolean;
   data?: QRPayload;
   message: string;
+  terminalInfo?: TerminalInfo;
 }
 
 export interface TerminalInfo {

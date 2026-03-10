@@ -2,7 +2,7 @@ import { getFontFamily } from "@/constants/typography";
 import { COLORS } from "@/screens/dashboard/constants/color";
 import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
-import { CameraView } from "expo-camera";
+import { CameraView, BarcodeScanningResult } from "expo-camera";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useState } from "react";
 import {
@@ -47,6 +47,11 @@ export const QRScanner: React.FC<QRScannerProps> = ({
     resetScanner();
   };
 
+  // ✅ Adapter handleScan pour recevoir BarcodeScanningResult
+  const onBarcodeScanned = (result: BarcodeScanningResult) => {
+    handleScan(result.data);
+  };
+
   if (!permission?.granted) {
     return (
       <View style={styles.container}>
@@ -88,10 +93,9 @@ export const QRScanner: React.FC<QRScannerProps> = ({
     <View style={styles.container}>
       <CameraView
         style={styles.camera}
-        onBarcodeScanned={scanned ? undefined : handleScan}
+        onBarcodeScanned={scanned ? undefined : onBarcodeScanned}
         barcodeScannerSettings={{
           barcodeTypes: ["qr"],
-          interval: 1000,
         }}
       >
         {/* Overlay avec effet de flou */}
