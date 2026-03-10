@@ -1,4 +1,5 @@
 import { Dimensions } from "react-native";
+import { COLORS } from "./color";
 
 const { width } = Dimensions.get("window");
 
@@ -49,37 +50,40 @@ export const ACTIONS_RAPIDES = [
     id: "qr_code",
     icon: "qr-code-outline" as const,
     label: "QR Code",
-    color: ACTION_COLORS.QR_CODE,
-    description: "Scanner un code",
-    route: "/qr-scanner",
-    gradient: [ACTION_COLORS.QR_CODE, "#2563EB"] as const,
+    color: COLORS.primary.main,
+    description: "Scanner",
+    route: "QRScanner",
+    gradient: [COLORS.primary.light, COLORS.primary.main] as const, // ← AJOUTÉ
   },
   {
     id: "geoloc",
     icon: "map-outline" as const,
     label: "Géoloc",
-    color: ACTION_COLORS.GEOLOC,
+    color: COLORS.success.main,
     description: "Localisation",
-    route: "/geolocation",
-    gradient: [ACTION_COLORS.GEOLOC, "#059669"] as const,
+    route: "Geoloc",
+    gradient: [COLORS.success.light, COLORS.success.main] as const, // ← AJOUTÉ
   },
   {
     id: "historique",
     icon: "time-outline" as const,
     label: "Historique",
-    color: ACTION_COLORS.HISTORIQUE,
+    color: COLORS.warning.main,
     description: "Consultation",
-    route: "/history",
-    gradient: [ACTION_COLORS.HISTORIQUE, "#D97706"] as const,
+    route: "History",
+    gradient: [COLORS.warning.light, COLORS.warning.main] as const, // ← AJOUTÉ
   },
   {
     id: "rapports",
     icon: "document-text-outline" as const,
     label: "Rapports",
-    color: ACTION_COLORS.RAPPORTS,
+    color: COLORS.secondary?.main || COLORS.primary.main,
     description: "Visualisation",
-    route: "/reports",
-    gradient: [ACTION_COLORS.RAPPORTS, "#6D28D9"] as const,
+    route: "Reports",
+    gradient: [
+      COLORS.secondary?.light || COLORS.primary.light,
+      COLORS.secondary?.main || COLORS.primary.main,
+    ] as const, // ← AJOUTÉ
   },
 ] as const;
 
@@ -261,6 +265,8 @@ export const API_ENDPOINTS = {
   },
 } as const;
 
+// ==================== FONCTIONS UTILITAIRES ====================
+
 /**
  * Récupère la configuration d'un type d'activité
  */
@@ -283,6 +289,7 @@ export const getActionGradient = (
   actionId: ActionId,
 ): readonly [string, string] => {
   const action = ACTIONS_RAPIDES.find((a) => a.id === actionId);
+  // ✅ Maintenant gradient existe sur toutes les actions
   return action?.gradient || [ACTION_COLORS.QR_CODE, "#2563EB"];
 };
 

@@ -17,12 +17,12 @@ const RootNavigator = () => {
   );
 
   useEffect(() => {
-    const checkAuth = async () => {
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 500);
-    };
-    checkAuth();
+    // Simuler un chargement initial
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
+
+    return () => clearTimeout(timer);
   }, []);
 
   if (isLoading) {

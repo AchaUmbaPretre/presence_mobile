@@ -12,6 +12,8 @@ import {
 } from "react-native";
 import { useSelector } from "react-redux";
 import { RootState } from "redux/store";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { ActivityList } from "./components/ActivityList";
 import { Clock } from "./components/Clock";
 import { Header } from "./components/Header";
@@ -23,6 +25,7 @@ import { ACTIVITES_RECENTES, WEEK_DAYS } from "./constants/dashboard.constants";
 import { useCombinedAnimation } from "./hooks/useAnimation";
 import { useCurrentTime } from "./hooks/useCurrentTime";
 import { usePresence } from "./hooks/usePresence";
+import { RootStackParamList } from "@/navigation/types";
 
 // Palette de couleurs
 const BLUE_PRO = {
@@ -33,12 +36,15 @@ const BLUE_PRO = {
   dark: "#07317A",
 } as const;
 
+type AppNavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
 const DashboardScreen = memo(() => {
   const { presence, isLoading, handlePointage, metrics, handleMetricPress } =
     usePresence();
   const { formattedDate, formattedTime, formattedSeconds } = useCurrentTime();
   const { animatedStyle } = useCombinedAnimation();
   const data = useSelector((state: RootState) => state.auth.currentUser);
+  const navigation = useNavigation<AppNavigationProp>();
 
   const weekDays = WEEK_DAYS.map((day, index) => ({
     ...day,
@@ -57,7 +63,24 @@ const DashboardScreen = memo(() => {
 
   const handleActionPress = useCallback((action: string) => {
     console.log("Action pressed:", action);
-  }, []);
+    
+    switch (action) {
+      case "QR Code":
+        navigation.navigate('QRScanner');
+        break;
+      case "Géoloc":
+        navigation.navigate('Geoloc');
+        break;
+      case "Historique":
+        // TODO: Naviguer vers l'historique
+        break;
+      case "Rapports":
+        // TODO: Naviguer vers les rapports
+        break;
+      default:
+        break;
+    }
+  }, [navigation]);
 
   return (
     <SafeAreaView style={styles.container}>
