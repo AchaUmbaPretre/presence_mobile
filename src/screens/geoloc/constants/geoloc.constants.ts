@@ -5,11 +5,11 @@ export const DEFAULT_SITE: SiteZone = {
   id: 1,
   name: "Site Principal",
   coordinates: {
-    latitude: -4.325, // Kinshasa
-    longitude: 15.322,
+    latitude: -4.37589,
+    longitude: 15.264516,
   },
-  radius: 100, // 100 mètres
-  address: "123 Avenue, Kinshasa",
+  radius: 100,
+  address: "08 Avenue, Kinshasa",
 };
 
 export const ZONE_COLORS = {
