@@ -2,25 +2,25 @@ import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { memo, useCallback } from "react";
 import {
-    ActivityIndicator,
-    Image,
-    Platform,
-    StyleSheet,
-    Text,
-    View,
+  ActivityIndicator,
+  Image,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 import Animated, {
-    FadeInDown,
-    interpolate,
-    runOnJS,
-    useAnimatedStyle,
-    useSharedValue,
-    withSpring,
-    withTiming,
+  FadeInDown,
+  interpolate,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
 } from "react-native-reanimated";
+import { Images } from "../../../assets/index";
 import { COLORS } from "../constants/color";
 import { PresenceState } from "../types/presence.types";
-import { Images } from "./../../../../assets/index";
 import { getFontFamily } from "./../../../constants/typography";
 import { Card } from "./Card";
 
