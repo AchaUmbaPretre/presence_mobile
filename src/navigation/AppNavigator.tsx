@@ -1,11 +1,11 @@
 import GeolocScreen from "@/screens/geoloc/GeolocScreen";
+import HistoryScreen from "@/screens/historique/HistoryScreen";
 import QRScannerScreen from "@/screens/qr-code/QRScannerScreen";
+import RapportPresenceScreen from "@/screens/rapportPresence/RapportPresenceScreen";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
 import { COLORS } from "./../screens/dashboard/constants/color";
 import TabNavigator from "./TabNavigator";
-import HistoryScreen from "@/screens/historique/HistoryScreen";
-import RapportPresenceScreen from "@/screens/rapportPresence/RapportPresenceScreen";
 
 export type AppStackParamList = {
   Tabs: undefined;

@@ -1,3 +1,6 @@
+import { RootStackParamList } from "@/navigation/types";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { memo, useCallback } from "react";
 import {
@@ -12,8 +15,6 @@ import {
 } from "react-native";
 import { useSelector } from "react-redux";
 import { RootState } from "redux/store";
-import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { ActivityList } from "./components/ActivityList";
 import { Clock } from "./components/Clock";
 import { Header } from "./components/Header";
@@ -25,7 +26,6 @@ import { ACTIVITES_RECENTES, WEEK_DAYS } from "./constants/dashboard.constants";
 import { useCombinedAnimation } from "./hooks/useAnimation";
 import { useCurrentTime } from "./hooks/useCurrentTime";
 import { usePresence } from "./hooks/usePresence";
-import { RootStackParamList } from "@/navigation/types";
 
 // Palette de couleurs
 const BLUE_PRO = {
@@ -61,26 +61,28 @@ const DashboardScreen = memo(() => {
 
   const handleRefresh = useCallback(() => {}, []);
 
-  const handleActionPress = useCallback((action: string) => {
-    console.log("Action pressed:", action);
-    
-    switch (action) {
-      case "QR Code":
-        navigation.navigate('QRScanner');
-        break;
-      case "Géoloc":
-        navigation.navigate('Geoloc');
-        break;
-      case "Historique":
-        // TODO: Naviguer vers l'historique
-        break;
-      case "Rapports":
-        // TODO: Naviguer vers les rapports
-        break;
-      default:
-        break;
-    }
-  }, [navigation]);
+  const handleActionPress = useCallback(
+    (action: string) => {
+      console.log("Action pressed:", action);
+
+      switch (action) {
+        case "QR Code":
+          navigation.navigate("QRScanner");
+          break;
+        case "Géoloc":
+          navigation.navigate("Geoloc");
+          break;
+        case "Historique":
+          navigation.navigate("Historique");
+        case "Rapports":
+          navigation.navigate("Rapports");
+          break;
+        default:
+          break;
+      }
+    },
+    [navigation],
+  );
 
   return (
     <SafeAreaView style={styles.container}>
