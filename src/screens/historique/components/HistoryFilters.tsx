@@ -73,7 +73,6 @@ export const HistoryFilters: React.FC<HistoryFiltersProps> = ({
           </LinearGradient>
 
           <ScrollView style={styles.modalBody}>
-            {/* Recherche */}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Recherche</Text>
               <View style={styles.searchContainer}>
@@ -95,7 +94,6 @@ export const HistoryFilters: React.FC<HistoryFiltersProps> = ({
               </View>
             </View>
 
-            {/* Période */}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Période</Text>
               <View style={styles.dateContainer}>
@@ -113,7 +111,6 @@ export const HistoryFilters: React.FC<HistoryFiltersProps> = ({
               </View>
             </View>
 
-            {/* Statuts */}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Statuts</Text>
               <View style={styles.statusGrid}>
