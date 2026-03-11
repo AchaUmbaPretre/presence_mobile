@@ -27,13 +27,11 @@ const SummaryCard: React.FC<{
 export const ReportSummaryCards: React.FC<ReportSummaryCardsProps> = ({
   summary,
 }) => {
-  // ✅ Valeurs par défaut pour éviter undefined
   const formatHours = (hours?: number) => {
     if (hours === undefined || hours === null) return "0h";
     return hours.toFixed(1) + "h";
   };
 
-  // ✅ Valeurs par défaut avec l'opérateur ?.
   const cards = [
     {
       ...REPORT_SUMMARY_CONFIG[0],
