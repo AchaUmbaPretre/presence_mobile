@@ -3,11 +3,12 @@ import { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "redux/store";
 import { historyService } from "../services/historyService";
-import { HistoryFilters, HistoryItems } from "../types/history.types";
+import { HistoryFilters, HistoryItems, HistoryStats, HistoryResponse } from "../types/history.types";
+import { Alert } from "react-native";
 
 export const useHistory = () => {
   const [history, setHistory] = useState<HistoryItems[]>([]);
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<HistoryStats | null>(null);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 20,
@@ -17,7 +18,7 @@ export const useHistory = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showFilters, setShowFilters] = useState(false); // ← AJOUTÉ
+  const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<HistoryFilters>({
     page: 1,
     limit: 20,
@@ -37,7 +38,8 @@ export const useHistory = () => {
       if (currentFilters.search) {
         const searchLower = currentFilters.search.toLowerCase();
         filtered = filtered.filter((item) => {
-          const siteName = item.site?.name || "";
+          // ✅ Correction: item.site est maintenant une string
+          const siteName = item.site || "";
           const statut = item.statut.toLowerCase();
 
           return (
@@ -80,7 +82,10 @@ export const useHistory = () => {
 
   const loadHistory = useCallback(
     async (showLoading = true) => {
-      if (!userId) return;
+      if (!userId) {
+        setError("Utilisateur non identifié");
+        return;
+      }
 
       if (showLoading) setIsLoading(true);
       setError(null);
@@ -91,9 +96,10 @@ export const useHistory = () => {
         setHistory(response.historique);
         setStats(response.stats);
         setPagination(response.pagination);
-      } catch (err) {
-        setError("Erreur lors du chargement de l'historique");
-        console.error(err);
+      } catch (err: any) {
+        const errorMessage = err?.message || "Erreur lors du chargement de l'historique";
+        setError(errorMessage);
+        console.error("❌ Erreur chargement historique:", err);
       } finally {
         setIsLoading(false);
         setIsRefreshing(false);
@@ -110,14 +116,16 @@ export const useHistory = () => {
   }, [loadHistory]);
 
   const loadMore = useCallback(() => {
-    if (pagination.page < pagination.pages && !isLoading) {
+    if (pagination.page < pagination.pages && !isLoading && !isRefreshing) {
       setFilters((prev) => ({ ...prev, page: prev.page! + 1 }));
     }
-  }, [pagination.page, pagination.pages, isLoading]);
+  }, [pagination.page, pagination.pages, isLoading, isRefreshing]);
 
   const updateFilters = useCallback((newFilters: Partial<HistoryFilters>) => {
     setFilters((prev) => ({ ...prev, ...newFilters, page: 1 }));
     Haptics.selectionAsync();
+    // Optionnel: recharger automatiquement
+    // loadHistory(true);
   }, []);
 
   const resetFilters = useCallback(() => {
@@ -128,37 +136,55 @@ export const useHistory = () => {
       sortOrder: "desc",
     });
     Haptics.selectionAsync();
-  }, []);
+    loadHistory(true);
+  }, [loadHistory]);
 
   const exportHistory = useCallback(async () => {
     try {
-      if (!userId) return;
+      if (!userId) {
+        Alert.alert("Erreur", "Utilisateur non identifié");
+        return;
+      }
+      
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       await historyService.exportHistory(userId);
-      // Optionnel: Afficher un message de succès
+      Alert.alert("Succès", "Historique exporté avec succès");
     } catch (err) {
-      console.error("Erreur export:", err);
+      console.error("❌ Erreur export:", err);
+      Alert.alert("Erreur", "Impossible d'exporter l'historique");
     }
   }, [userId]);
 
+  const getItemById = useCallback((id: number) => {
+    return history.find(item => item.id === id) || null;
+  }, [history]);
+
+  // Recharger quand les filtres changent
   useEffect(() => {
     loadHistory();
-  }, [loadHistory]);
+  }, [filters.page]); // ← Ne recharge que quand la page change
+  // Pour recharger sur tous les filtres, utiliser [filters]
 
   return {
+    // Données
     history,
     stats,
     pagination,
+    
+    // États
     isLoading,
     isRefreshing,
     error,
     filters,
-    showFilters, // ← AJOUTÉ
-    setShowFilters, // ← AJOUTÉ
+    showFilters,
+    
+    // Actions
+    setShowFilters,
     refresh,
     loadMore,
     updateFilters,
     resetFilters,
-    exportHistory, // ← AJOUTÉ
+    exportHistory,
+    getItemById,
   };
 };

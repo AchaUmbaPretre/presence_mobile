@@ -1,8 +1,15 @@
-import { Ionicons } from "@expo/vector-icons";
+export type PresenceStatus = 
+  | "PRESENT" 
+  | "ABSENT" 
+  | "RETARD" 
+  | "CONGE" 
+  | "MISSION" 
+  | "MALADIE"
+  | "JOUR_NON_TRAVAILLE"
+  | "JOUR_FERIE"
+  | "ABSENCE_JUSTIFIEE"
+  | "SUPPLEMENTAIRE";
 
-// ==================== TYPES DE BASE ====================
-
-export type PresenceStatus = "PRESENT" | "ABSENT" | "RETARD" | "CONGE" | "MISSION" | "MALADIE";
 export type SortBy = "date" | "retard" | "heures_supp";
 export type SortOrder = "asc" | "desc";
 export type SourceType = "MANUEL" | "QR_CODE" | "GEOLOC" | "TERMINAL";
@@ -19,28 +26,9 @@ export interface HistoryItems {
   statut: PresenceStatus;
   source: SourceType;
   is_locked: boolean;
-  terminal?: {
-    id: number;
-    name: string;
-    model?: string;
-    sn?: string;
-    ip?: string;
-    mode?: string;
-    enabled?: boolean;
-  } | null;
-  site?: {
-    id?: number;
-    name: string;
-    code?: string;
-    address?: string;
-    phone?: string;
-    state?: string;
-    ref?: string;
-  };
+  site?: string;
   details?: {
     heures_travaillees?: number;
-    est_jour_travaille?: boolean;
-    matricule?: string;
     utilisateur?: string;
   };
 }
@@ -70,7 +58,7 @@ export interface HistoryStats {
 export interface HistoryFilters {
   startDate?: string;
   endDate?: string;
-  status?: PresenceStatus[];  // ← UNIFIÉ avec PresenceStatus[]
+  status?: PresenceStatus[];
   search?: string;
   sortBy?: SortBy;
   sortOrder?: SortOrder;

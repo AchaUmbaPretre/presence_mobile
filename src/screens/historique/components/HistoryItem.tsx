@@ -2,7 +2,7 @@ import { getFontFamily } from "@/constants/typography";
 import { COLORS } from "@/screens/dashboard/constants/color";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
+import React, { useMemo } from "react";
 import {
     Platform,
     StyleSheet,
@@ -18,28 +18,38 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
   onPress,
   showActions = true,
 }) => {
+  // ✅ Vérifier que item.statut est une clé valide de PresenceStatus
   const statut = item.statut as PresenceStatus;
-  const config = STATUS_CONFIG[statut];
 
-  // ✅ Vérifier que config existe
+  // ✅ Vérifier que la configuration existe
+  const config = statut ? STATUS_CONFIG[statut] : undefined;
+
   if (!config) {
     console.warn(`Configuration manquante pour le statut: ${statut}`);
     return null;
   }
 
-  const date = new Date(item.date).toLocaleDateString("fr-FR", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  });
+  // ✅ Mémoïsation de la date
+  const date = useMemo(
+    () =>
+      new Date(item.date).toLocaleDateString("fr-FR", {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+      }),
+    [item.date],
+  );
 
   const formatTime = (time: string | null) => time || "--:--";
 
-  // ✅ Récupérer le nom du site (objet ou string)
-  const siteName =
-    typeof item.site === "string"
-      ? item.site
-      : item.site?.name || "Site inconnu";
+  // ✅ Récupérer le nom du site (string directement maintenant)
+  const siteName = item.site || "Site inconnu";
+
+  // ✅ Formater les heures supplémentaires
+  const formatHeuresSupp = (heures: number) => {
+    if (heures === 0) return null;
+    return heures % 1 === 0 ? `${heures}h` : `${heures}h`;
+  };
 
   return (
     <TouchableOpacity
@@ -65,7 +75,9 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
           {/* Date et site */}
           <View style={styles.infoContainer}>
             <Text style={styles.date}>{date}</Text>
-            {item.site && <Text style={styles.site}>{siteName}</Text>}
+            <Text style={styles.site} numberOfLines={1}>
+              {siteName}
+            </Text>
           </View>
         </View>
 
@@ -100,26 +112,28 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
         </View>
 
         {/* Métriques */}
-        <View style={styles.metricsContainer}>
-          {item.retard_minutes > 0 && (
-            <View style={styles.metric}>
-              <Text
-                style={[styles.metricValue, { color: COLORS.warning.main }]}
-              >
-                +{item.retard_minutes}'
-              </Text>
-            </View>
-          )}
-          {item.heures_supplementaires > 0 && (
-            <View style={styles.metric}>
-              <Text
-                style={[styles.metricValue, { color: COLORS.success.main }]}
-              >
-                +{item.heures_supplementaires}h
-              </Text>
-            </View>
-          )}
-        </View>
+        {(item.retard_minutes > 0 || item.heures_supplementaires > 0) && (
+          <View style={styles.metricsContainer}>
+            {item.retard_minutes > 0 && (
+              <View style={styles.metric}>
+                <Text
+                  style={[styles.metricValue, { color: COLORS.warning.main }]}
+                >
+                  +{item.retard_minutes}'
+                </Text>
+              </View>
+            )}
+            {item.heures_supplementaires > 0 && (
+              <View style={styles.metric}>
+                <Text
+                  style={[styles.metricValue, { color: COLORS.success.main }]}
+                >
+                  +{formatHeuresSupp(item.heures_supplementaires)}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
 
         {/* Flèche */}
         {showActions && (
@@ -174,12 +188,12 @@ const styles = StyleSheet.create({
     fontFamily: getFontFamily("semibold"),
     color: COLORS.gray[900],
     textTransform: "capitalize",
+    marginBottom: 2,
   },
   site: {
     fontSize: 12,
     fontFamily: getFontFamily("regular"),
     color: COLORS.gray[500],
-    marginTop: 2,
   },
   statusBadge: {
     flexDirection: "row",
@@ -200,6 +214,7 @@ const styles = StyleSheet.create({
   },
   timeContainer: {
     gap: 2,
+    minWidth: 70,
   },
   timeRow: {
     flexDirection: "row",
@@ -213,10 +228,14 @@ const styles = StyleSheet.create({
   },
   metricsContainer: {
     alignItems: "flex-end",
+    minWidth: 60,
   },
   metric: {
     paddingHorizontal: 6,
     paddingVertical: 2,
+    borderRadius: 10,
+    backgroundColor: COLORS.gray[100],
+    marginVertical: 1,
   },
   metricValue: {
     fontSize: 11,

@@ -6,7 +6,6 @@ import {
     PresenceStatus,
 } from "../types/history.types";
 
-// ✅ Définir un type explicite pour l'icône
 type IconName = keyof typeof Ionicons.glyphMap;
 
 export const STATUS_CONFIG: Record<
@@ -15,7 +14,7 @@ export const STATUS_CONFIG: Record<
     label: string;
     color: string;
     lightColor: string;
-    icon: IconName; // ← Type explicite pour l'icône
+    icon: IconName; 
     badge: string;
   }
 > = {
@@ -23,7 +22,7 @@ export const STATUS_CONFIG: Record<
     label: "Présent",
     color: COLORS.success.main,
     lightColor: COLORS.success.light,
-    icon: "checkmark-circle", // ← Maintenant typé correctement
+    icon: "checkmark-circle",
     badge: "Présent",
   },
   ABSENT: {
@@ -43,7 +42,7 @@ export const STATUS_CONFIG: Record<
   CONGE: {
     label: "Congé",
     color: COLORS.primary?.main || COLORS.primary.main,
-    lightColor: COLORS.primary?.light || COLORS.primary.light,
+    lightColor: COLORS.primary    ?.light || COLORS.primary.light,
     icon: "umbrella",
     badge: "Congé",
   },
@@ -61,6 +60,35 @@ export const STATUS_CONFIG: Record<
     icon: "medical",
     badge: "Maladie",
   },
+  // ✅ AJOUT DES STATUTS MANQUANTS
+  JOUR_NON_TRAVAILLE: {
+    label: "Non travaillé",
+    color: COLORS.gray[500],
+    lightColor: COLORS.gray[200],
+    icon: "calendar-outline",
+    badge: "Non travaillé",
+  },
+  JOUR_FERIE: {
+    label: "Férié",
+    color: COLORS.warning.main,
+    lightColor: COLORS.warning.light,
+    icon: "gift-outline",
+    badge: "Férié",
+  },
+  ABSENCE_JUSTIFIEE: {
+    label: "Absence justifiée",
+    color: COLORS.primary?.main || COLORS.primary.main,
+    lightColor: COLORS.primary?.light || COLORS.primary.light,
+    icon: "document-text-outline",
+    badge: "Justifié",
+  },
+  SUPPLEMENTAIRE: {
+    label: "Supplémentaire",
+    color: COLORS.success.dark || COLORS.success.main,
+    lightColor: COLORS.success.light,
+    icon: "trending-up-outline",
+    badge: "Suppl.",
+  },
 };
 
 export const SORT_OPTIONS = [
@@ -76,9 +104,13 @@ export const STATUS_OPTIONS = [
   { label: "Présent", value: "PRESENT", color: COLORS.success.main },
   { label: "Absent", value: "ABSENT", color: COLORS.error.main },
   { label: "Retard", value: "RETARD", color: COLORS.warning.main },
-  { label: "Congé", value: "CONGE", color: COLORS.primary.main },
-  { label: "Mission", value: "MISSION", color: COLORS.secondary.main },
+  { label: "Congé", value: "CONGE", color: COLORS.primary?.main || COLORS.primary.main },
+  { label: "Mission", value: "MISSION", color: COLORS.secondary?.main || COLORS.primary.main },
   { label: "Maladie", value: "MALADIE", color: COLORS.warning.dark },
+  { label: "Non travaillé", value: "JOUR_NON_TRAVAILLE", color: COLORS.gray[500] },
+  { label: "Férié", value: "JOUR_FERIE", color: COLORS.warning.main },
+  { label: "Absence justifiée", value: "ABSENCE_JUSTIFIEE", color: COLORS.primary?.main || COLORS.primary.main },
+  { label: "Supplémentaire", value: "SUPPLEMENTAIRE", color: COLORS.success.dark || COLORS.success.main },
 ];
 
 export const MOCK_HISTORY: HistoryItems[] = [
@@ -92,6 +124,7 @@ export const MOCK_HISTORY: HistoryItems[] = [
     statut: "PRESENT",
     site: "Site Principal",
     source: "MANUEL",
+    is_locked: false,
   },
   {
     id: 2,
@@ -103,6 +136,7 @@ export const MOCK_HISTORY: HistoryItems[] = [
     statut: "RETARD",
     site: "Site Principal",
     source: "QR_CODE",
+    is_locked: false,
   },
   {
     id: 3,
@@ -114,6 +148,7 @@ export const MOCK_HISTORY: HistoryItems[] = [
     statut: "ABSENT",
     site: "",
     source: "MANUEL",
+    is_locked: false,
   },
   {
     id: 4,
@@ -125,6 +160,7 @@ export const MOCK_HISTORY: HistoryItems[] = [
     statut: "PRESENT",
     site: "Site Principal",
     source: "GEOLOC",
+    is_locked: false,
   },
   {
     id: 5,
@@ -136,6 +172,7 @@ export const MOCK_HISTORY: HistoryItems[] = [
     statut: "RETARD",
     site: "Site Secondaire",
     source: "TERMINAL",
+    is_locked: false,
   },
 ];
 
@@ -144,8 +181,21 @@ export const MOCK_STATS: HistoryStats = {
   total_presents: 22,
   total_absents: 3,
   total_retards: 5,
-  total_heures: 176,
+  total_heures_supp: 176,
   moyenne_heures: 7.33,
+  total_retard_minutes: 0,
+  objectif_hebdo: 35,
+  objectif_atteint: 176,
+  sites_visites: 2,
+  derniere_presence: "2026-03-10",
+  repartition: {
+    present: 22,
+    absent: 3,
+    justifie: 0,
+    ferie: 0,
+    non_travaille: 0,
+    supplementaire: 0,
+  },
 };
 
 export const HISTORY_MESSAGES = {
