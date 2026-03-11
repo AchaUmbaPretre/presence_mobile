@@ -6,7 +6,6 @@ import React from "react";
 import { Platform, StyleSheet, Text, View } from "react-native";
 import { HistoryStatsProps } from "../types/history.types";
 
-// ==================== STATISTIQUE INDIVIDUELLE ====================
 const StatBlock: React.FC<{
   icon: keyof typeof Ionicons.glyphMap;
   value: number | string;
@@ -27,7 +26,6 @@ const StatBlock: React.FC<{
   </View>
 );
 
-// ==================== COMPOSANT PRINCIPAL ====================
 export const HistoryStats: React.FC<HistoryStatsProps> = ({
   stats,
   period = "Ce mois",
@@ -36,7 +34,6 @@ export const HistoryStats: React.FC<HistoryStatsProps> = ({
   const totalDays = stats.total_jours || 1;
   const presenceRate = Math.round((stats.total_presents / totalDays) * 100);
 
-  // Données structurées
   const mainStats = [
     {
       id: "presence",
