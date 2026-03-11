@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statValue: {
-    fontSize: 13,
+    fontSize: 14,
     fontFamily: getFontFamily("bold"),
     lineHeight: 18,
   },

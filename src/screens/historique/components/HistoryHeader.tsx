@@ -57,7 +57,7 @@ export const HistoryHeader: React.FC<HistoryHeaderProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: Platform.OS === "ios" ? 35 : 40,
+    paddingTop: Platform.OS === "ios" ? 30 : 30,
     paddingBottom: 20,
     paddingHorizontal: 20,
     borderBottomLeftRadius: 30,
