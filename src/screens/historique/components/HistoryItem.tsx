@@ -8,7 +8,7 @@ import {
     StyleSheet,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from "react-native";
 import { STATUS_CONFIG } from "../constants/history.constants";
 import { HistoryItemProps, PresenceStatus } from "../types/history.types";
@@ -57,7 +57,6 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
         style={styles.gradient}
       >
         <View style={styles.leftSection}>
-          {/* Icône de statut */}
           <View
             style={[
               styles.iconContainer,
@@ -76,7 +75,6 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
           </View>
         </View>
 
-        {/* Badge de statut */}
         <View
           style={[styles.statusBadge, { backgroundColor: config.lightColor }]}
         >
