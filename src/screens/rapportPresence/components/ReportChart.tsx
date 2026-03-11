@@ -6,6 +6,7 @@ import { LineChart } from "react-native-chart-kit";
 import { ReportChartProps } from "../types/report.types";
 
 const { width } = Dimensions.get("window");
+const CHART_WIDTH = width - 40; // Largeur fixe
 
 export const ReportChart: React.FC<ReportChartProps> = ({
   data,
@@ -27,7 +28,6 @@ export const ReportChart: React.FC<ReportChartProps> = ({
     },
   };
 
-  // ✅ Convertir les couleurs en fonctions
   const formattedDatasets = data.datasets.map((dataset, index) => {
     const colors = [
       COLORS.primary.main,
@@ -40,7 +40,6 @@ export const ReportChart: React.FC<ReportChartProps> = ({
     return {
       data: dataset.data,
       color: (opacity = 1) => {
-        // Convertir la couleur hex en rgba
         const r = parseInt(datasetColor.slice(1, 3), 16);
         const g = parseInt(datasetColor.slice(3, 5), 16);
         const b = parseInt(datasetColor.slice(5, 7), 16);
@@ -54,37 +53,20 @@ export const ReportChart: React.FC<ReportChartProps> = ({
     <View style={styles.container}>
       <Text style={styles.title}>Évolution des présences</Text>
 
-      {/* Légende des datasets */}
-      {data.datasets.length > 1 && (
-        <View style={styles.legendContainer}>
-          {data.datasets.map((dataset, index) => (
-            <View key={index} style={styles.legendItem}>
-              <View
-                style={[
-                  styles.legendColor,
-                  { backgroundColor: dataset.color || COLORS.primary.main },
-                ]}
-              />
-              <Text style={styles.legendText}>
-                {dataset.label || `Série ${index + 1}`}
-              </Text>
-            </View>
-          ))}
-        </View>
-      )}
-
-      <LineChart
-        data={{
-          labels: data.labels,
-          datasets: formattedDatasets,
-        }}
-        width={width - 40}
-        height={height}
-        chartConfig={chartConfig}
-        bezier
-        style={styles.chart}
-        formatYLabel={(value) => Math.round(Number(value)).toString()}
-      />
+      <View style={styles.chartWrapper}>
+        <LineChart
+          data={{
+            labels: data.labels,
+            datasets: formattedDatasets,
+          }}
+          width={CHART_WIDTH}
+          height={height}
+          chartConfig={chartConfig}
+          bezier
+          style={styles.chart}
+          formatYLabel={(value) => Math.round(Number(value)).toString()}
+        />
+      </View>
     </View>
   );
 };
@@ -98,6 +80,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: COLORS.gray[200],
+    overflow: "hidden", // ← Important !
   },
   title: {
     fontSize: 16,
@@ -105,26 +88,10 @@ const styles = StyleSheet.create({
     color: COLORS.gray[900],
     marginBottom: 12,
   },
-  legendContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    marginBottom: 12,
-    gap: 12,
-  },
-  legendItem: {
-    flexDirection: "row",
+  chartWrapper: {
     alignItems: "center",
-    gap: 4,
-  },
-  legendColor: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
-  legendText: {
-    fontSize: 11,
-    fontFamily: getFontFamily("regular"),
-    color: COLORS.gray[600],
+    justifyContent: "center",
+    marginHorizontal: -16,
   },
   chart: {
     marginVertical: 8,
