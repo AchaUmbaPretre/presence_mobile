@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   period: {
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: getFontFamily("semibold"),
     color: COLORS.gray[700],
   },
@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   totalJours: {
-    fontSize: 11,
+    fontSize: 10,
     fontFamily: getFontFamily("regular"),
     color: COLORS.gray[600],
   },
@@ -322,12 +322,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statValue: {
-    fontSize: 15,
+    fontSize: 13,
     fontFamily: getFontFamily("bold"),
     lineHeight: 18,
   },
   statLabel: {
-    fontSize: 10,
+    fontSize: 8,
     fontFamily: getFontFamily("regular"),
     color: COLORS.gray[500],
     lineHeight: 12,
