@@ -1,11 +1,10 @@
-import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
-import { ReportSummaryCardsProps } from '../types/report.types';
-import { REPORT_SUMMARY_CONFIG } from '../constants/report.constants';
-import { COLORS } from '@/screens/dashboard/constants/color';
-import { getFontFamily } from '@/constants/typography';
+import { getFontFamily } from "@/constants/typography";
+import { COLORS } from "@/screens/dashboard/constants/color";
+import { Ionicons } from "@expo/vector-icons";
+import React from "react";
+import { StyleSheet, Text, View } from "react-native";
+import { REPORT_SUMMARY_CONFIG } from "../constants/report.constants";
+import { ReportSummaryCardsProps } from "../types/report.types";
 
 const SummaryCard: React.FC<{
   icon: keyof typeof Ionicons.glyphMap;
@@ -14,10 +13,7 @@ const SummaryCard: React.FC<{
   color: string;
   lightColor: string;
 }> = ({ icon, value, label, color, lightColor }) => (
-  <LinearGradient
-    colors={[lightColor, COLORS.white]}
-    style={styles.card}
-  >
+  <View style={styles.card}>
     <View style={[styles.cardIcon, { backgroundColor: lightColor }]}>
       <Ionicons name={icon} size={20} color={color} />
     </View>
@@ -25,13 +21,13 @@ const SummaryCard: React.FC<{
       <Text style={[styles.cardValue, { color }]}>{value}</Text>
       <Text style={styles.cardLabel}>{label}</Text>
     </View>
-  </LinearGradient>
+  </View>
 );
 
 export const ReportSummaryCards: React.FC<ReportSummaryCardsProps> = ({
   summary,
 }) => {
-  const formatHours = (hours: number) => hours.toFixed(1) + 'h';
+  const formatHours = (hours: number) => hours.toFixed(1) + "h";
 
   const cards = [
     {
@@ -75,13 +71,13 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   row: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
   },
   card: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 12,
     borderRadius: 16,
     borderWidth: 1,
@@ -92,8 +88,8 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 10,
   },
   cardContent: {
@@ -101,12 +97,12 @@ const styles = StyleSheet.create({
   },
   cardValue: {
     fontSize: 18,
-    fontFamily: getFontFamily('bold'),
+    fontFamily: getFontFamily("bold"),
     lineHeight: 22,
   },
   cardLabel: {
     fontSize: 11,
-    fontFamily: getFontFamily('regular'),
+    fontFamily: getFontFamily("regular"),
     color: COLORS.gray[500],
   },
 });

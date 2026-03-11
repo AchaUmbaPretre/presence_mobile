@@ -1,11 +1,17 @@
-import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Platform } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
-import { ReportHeaderProps } from '../types/report.types';
-import { COLORS } from '@/screens/dashboard/constants/color';
-import { getFontFamily } from '@/constants/typography';
+import { getFontFamily } from "@/constants/typography";
+import { COLORS } from "@/screens/dashboard/constants/color";
+import { Ionicons } from "@expo/vector-icons";
+import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
+import React from "react";
+import {
+    Platform,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import { ReportHeaderProps } from "../types/report.types";
 
 export const ReportHeader: React.FC<ReportHeaderProps> = ({
   title,
@@ -21,7 +27,7 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
       end={{ x: 1, y: 1 }}
       style={styles.container}
     >
-      {Platform.OS === 'ios' && (
+      {Platform.OS === "ios" && (
         <BlurView intensity={20} tint="dark" style={StyleSheet.absoluteFill} />
       )}
 
@@ -40,7 +46,11 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
         <View style={styles.actions}>
           {onExport && (
             <TouchableOpacity onPress={onExport} style={styles.actionButton}>
-              <Ionicons name="download-outline" size={22} color={COLORS.white} />
+              <Ionicons
+                name="download-outline"
+                size={22}
+                color={COLORS.white}
+              />
             </TouchableOpacity>
           )}
           {onShare && (
@@ -56,21 +66,21 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    paddingTop: Platform.OS === "ios" ? 30 : 30,
     paddingBottom: 20,
     paddingHorizontal: 20,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   backButton: {
     width: 40,
     height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 8,
   },
   titleContainer: {
@@ -78,26 +88,26 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontFamily: getFontFamily('bold'),
+    fontFamily: getFontFamily("bold"),
     color: COLORS.white,
     letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 14,
-    fontFamily: getFontFamily('regular'),
-    color: COLORS.white + 'CC',
+    fontFamily: getFontFamily("regular"),
+    color: COLORS.white + "CC",
     marginTop: 2,
   },
   actions: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
   },
   actionButton: {
     width: 40,
     height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.15)",
     borderRadius: 20,
   },
 });
