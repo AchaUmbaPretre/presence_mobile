@@ -1,12 +1,27 @@
 import { getFontFamily } from "@/constants/typography";
 import { COLORS } from "@/screens/dashboard/constants/color";
 import { Ionicons } from "@expo/vector-icons";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useState } from "react";
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+    Alert,
+    Modal,
+    Platform,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import { REPORT_PERIODS } from "../constants/report.constants";
 import { ReportPeriod, ReportPeriodSelectorProps } from "../types/report.types";
+
+// Import conditionnel pour éviter les crashes
+let DateTimePicker: any = null;
+try {
+  DateTimePicker = require("@react-native-community/datetimepicker").default;
+} catch (e) {
+  console.warn("DateTimePicker non disponible");
+}
 
 export const ReportPeriodSelector: React.FC<ReportPeriodSelectorProps> = ({
   period,
@@ -28,6 +43,51 @@ export const ReportPeriodSelector: React.FC<ReportPeriodSelectorProps> = ({
     setShowPeriodModal(false);
   };
 
+  const handleStartDateChange = (event: any, selectedDate?: Date) => {
+    setShowStartPicker(false);
+
+    if (selectedDate) {
+      try {
+        const dateStr = selectedDate.toISOString().split("T")[0];
+        if (onDateRangeChange) {
+          onDateRangeChange(dateStr, endDate || "");
+        }
+      } catch (error) {
+        console.error("Erreur formatage date:", error);
+        Alert.alert("Erreur", "Date invalide");
+      }
+    }
+  };
+
+  const handleEndDateChange = (event: any, selectedDate?: Date) => {
+    setShowEndPicker(false);
+
+    if (selectedDate) {
+      try {
+        const dateStr = selectedDate.toISOString().split("T")[0];
+        if (onDateRangeChange) {
+          onDateRangeChange(startDate || "", dateStr);
+        }
+      } catch (error) {
+        console.error("Erreur formatage date:", error);
+        Alert.alert("Erreur", "Date invalide");
+      }
+    }
+  };
+
+  // Fallback pour Android quand DateTimePicker n'est pas disponible
+  const handleCustomPeriodPress = () => {
+    if (!DateTimePicker) {
+      Alert.alert(
+        "Information",
+        "La sélection de date personnalisée n'est pas disponible sur cette plateforme.\nVeuillez utiliser les périodes prédéfinies.",
+        [{ text: "OK" }],
+      );
+      return;
+    }
+    setShowStartPicker(true);
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.selectorRow}>
@@ -44,7 +104,7 @@ export const ReportPeriodSelector: React.FC<ReportPeriodSelectorProps> = ({
           <View style={styles.dateRangeContainer}>
             <TouchableOpacity
               style={styles.dateButton}
-              onPress={() => setShowStartPicker(true)}
+              onPress={handleCustomPeriodPress}
             >
               <Text style={styles.dateText}>{startDate || "Début"}</Text>
             </TouchableOpacity>
@@ -109,38 +169,34 @@ export const ReportPeriodSelector: React.FC<ReportPeriodSelectorProps> = ({
         </TouchableOpacity>
       </Modal>
 
-      {/* Date pickers */}
-      {showStartPicker && (
+      {/* DatePicker avec vérification */}
+      {showStartPicker && DateTimePicker && (
         <DateTimePicker
-          value={new Date()}
-          mode="date"
-          display="default"
-          onChange={(event, selectedDate) => {
-            setShowStartPicker(false);
-            if (selectedDate && onDateRangeChange) {
-              onDateRangeChange(
-                selectedDate.toISOString().split("T")[0],
-                endDate || "",
-              );
+          value={(() => {
+            try {
+              return startDate ? new Date(startDate) : new Date();
+            } catch {
+              return new Date();
             }
-          }}
+          })()}
+          mode="date"
+          display={Platform.OS === "ios" ? "spinner" : "default"}
+          onChange={handleStartDateChange}
         />
       )}
 
-      {showEndPicker && (
+      {showEndPicker && DateTimePicker && (
         <DateTimePicker
-          value={new Date()}
-          mode="date"
-          display="default"
-          onChange={(event, selectedDate) => {
-            setShowEndPicker(false);
-            if (selectedDate && onDateRangeChange) {
-              onDateRangeChange(
-                startDate || "",
-                selectedDate.toISOString().split("T")[0],
-              );
+          value={(() => {
+            try {
+              return endDate ? new Date(endDate) : new Date();
+            } catch {
+              return new Date();
             }
-          }}
+          })()}
+          mode="date"
+          display={Platform.OS === "ios" ? "spinner" : "default"}
+          onChange={handleEndDateChange}
         />
       )}
     </View>
