@@ -1,17 +1,17 @@
-import React from 'react';
-import { StyleSheet, View, Text, Platform } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
-import { HistoryStatsProps } from '../types/history.types';
-import { COLORS } from '@/screens/dashboard/constants/color';
-import { getFontFamily } from '@/constants/typography';
+import { getFontFamily } from "@/constants/typography";
+import { COLORS } from "@/screens/dashboard/constants/color";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import React from "react";
+import { Platform, StyleSheet, Text, View } from "react-native";
+import { HistoryStatsProps } from "../types/history.types";
 
 export const HistoryStats: React.FC<HistoryStatsProps> = ({
   stats,
-  period = 'Ce mois',
+  period = "Ce mois",
 }) => {
   const formatHours = (hours: number) => {
-    return hours.toFixed(1) + 'h';
+    return hours.toFixed(1) + "h";
   };
 
   return (
@@ -26,15 +26,29 @@ export const HistoryStats: React.FC<HistoryStatsProps> = ({
 
       <View style={styles.statsGrid}>
         <View style={styles.statItem}>
-          <View style={[styles.iconContainer, { backgroundColor: COLORS.success.light }]}>
-            <Ionicons name="checkmark-circle" size={20} color={COLORS.success.main} />
+          <View
+            style={[
+              styles.iconContainer,
+              { backgroundColor: COLORS.success.light },
+            ]}
+          >
+            <Ionicons
+              name="checkmark-circle"
+              size={20}
+              color={COLORS.success.main}
+            />
           </View>
           <Text style={styles.statValue}>{stats.total_presents}</Text>
           <Text style={styles.statLabel}>Présents</Text>
         </View>
 
         <View style={styles.statItem}>
-          <View style={[styles.iconContainer, { backgroundColor: COLORS.error.light }]}>
+          <View
+            style={[
+              styles.iconContainer,
+              { backgroundColor: COLORS.error.light },
+            ]}
+          >
             <Ionicons name="close-circle" size={20} color={COLORS.error.main} />
           </View>
           <Text style={styles.statValue}>{stats.total_absents}</Text>
@@ -42,7 +56,12 @@ export const HistoryStats: React.FC<HistoryStatsProps> = ({
         </View>
 
         <View style={styles.statItem}>
-          <View style={[styles.iconContainer, { backgroundColor: COLORS.warning.light }]}>
+          <View
+            style={[
+              styles.iconContainer,
+              { backgroundColor: COLORS.warning.light },
+            ]}
+          >
             <Ionicons name="time" size={20} color={COLORS.warning.main} />
           </View>
           <Text style={styles.statValue}>{stats.total_retards}</Text>
@@ -50,12 +69,37 @@ export const HistoryStats: React.FC<HistoryStatsProps> = ({
         </View>
 
         <View style={styles.statItem}>
-          <View style={[styles.iconContainer, { backgroundColor: COLORS.primary.light }]}>
-            <Ionicons name="trending-up" size={20} color={COLORS.primary.main} />
+          <View
+            style={[
+              styles.iconContainer,
+              { backgroundColor: COLORS.primary.light },
+            ]}
+          >
+            <Ionicons
+              name="trending-up"
+              size={20}
+              color={COLORS.primary.main}
+            />
           </View>
-          <Text style={styles.statValue}>{formatHours(stats.total_presents)}</Text>
+          <Text style={styles.statValue}>
+            {formatHours(stats.total_presents)}
+          </Text>
           <Text style={styles.statLabel}>Total</Text>
         </View>
+      </View>
+
+      <View style={styles.statItem}>
+        <View
+          style={[styles.iconContainer, { backgroundColor: COLORS.gray[200] }]}
+        >
+          <Ionicons
+            name="calendar-outline"
+            size={20}
+            color={COLORS.gray[500]}
+          />
+        </View>
+        <Text style={styles.statValue}>{stats.total_non_travailles}</Text>
+        <Text style={styles.statLabel}>Non travaillés</Text>
       </View>
 
       <View style={styles.footer}>
@@ -87,59 +131,58 @@ const styles = StyleSheet.create({
     }),
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 16,
   },
   period: {
     fontSize: 16,
-    fontFamily: getFontFamily('semibold'),
+    fontFamily: getFontFamily("semibold"),
     color: COLORS.gray[900],
   },
   totalJours: {
     fontSize: 14,
-    fontFamily: getFontFamily('regular'),
+    fontFamily: getFontFamily("regular"),
     color: COLORS.gray[500],
   },
   statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
     marginBottom: 16,
   },
   statItem: {
-    width: '50%',
-    alignItems: 'center',
+    width: "25%",
+    alignItems: "center",
     marginBottom: 16,
   },
   iconContainer: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 6,
   },
   statValue: {
     fontSize: 18,
-    fontFamily: getFontFamily('bold'),
+    fontFamily: getFontFamily("bold"),
     color: COLORS.gray[900],
     marginBottom: 2,
   },
   statLabel: {
     fontSize: 12,
-    fontFamily: getFontFamily('regular'),
+    fontFamily: getFontFamily("regular"),
     color: COLORS.gray[500],
   },
   footer: {
     borderTopWidth: 1,
     borderTopColor: COLORS.gray[200],
     paddingTop: 12,
-    alignItems: 'center',
+    alignItems: "center",
   },
   moyenne: {
     fontSize: 14,
-    fontFamily: getFontFamily('medium'),
+    fontFamily: getFontFamily("medium"),
     color: COLORS.primary.main,
   },
 });

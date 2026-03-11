@@ -14,7 +14,7 @@ export const STATUS_CONFIG: Record<
     label: string;
     color: string;
     lightColor: string;
-    icon: IconName; 
+    icon: IconName;
     badge: string;
   }
 > = {
@@ -42,7 +42,7 @@ export const STATUS_CONFIG: Record<
   CONGE: {
     label: "Congé",
     color: COLORS.primary?.main || COLORS.primary.main,
-    lightColor: COLORS.primary    ?.light || COLORS.primary.light,
+    lightColor: COLORS.primary?.light || COLORS.primary.light,
     icon: "umbrella",
     badge: "Congé",
   },
@@ -104,13 +104,33 @@ export const STATUS_OPTIONS = [
   { label: "Présent", value: "PRESENT", color: COLORS.success.main },
   { label: "Absent", value: "ABSENT", color: COLORS.error.main },
   { label: "Retard", value: "RETARD", color: COLORS.warning.main },
-  { label: "Congé", value: "CONGE", color: COLORS.primary?.main || COLORS.primary.main },
-  { label: "Mission", value: "MISSION", color: COLORS.secondary?.main || COLORS.primary.main },
+  {
+    label: "Congé",
+    value: "CONGE",
+    color: COLORS.primary?.main || COLORS.primary.main,
+  },
+  {
+    label: "Mission",
+    value: "MISSION",
+    color: COLORS.secondary?.main || COLORS.primary.main,
+  },
   { label: "Maladie", value: "MALADIE", color: COLORS.warning.dark },
-  { label: "Non travaillé", value: "JOUR_NON_TRAVAILLE", color: COLORS.gray[500] },
+  {
+    label: "Non travaillé",
+    value: "JOUR_NON_TRAVAILLE",
+    color: COLORS.gray[500],
+  },
   { label: "Férié", value: "JOUR_FERIE", color: COLORS.warning.main },
-  { label: "Absence justifiée", value: "ABSENCE_JUSTIFIEE", color: COLORS.primary?.main || COLORS.primary.main },
-  { label: "Supplémentaire", value: "SUPPLEMENTAIRE", color: COLORS.success.dark || COLORS.success.main },
+  {
+    label: "Absence justifiée",
+    value: "ABSENCE_JUSTIFIEE",
+    color: COLORS.primary?.main || COLORS.primary.main,
+  },
+  {
+    label: "Supplémentaire",
+    value: "SUPPLEMENTAIRE",
+    color: COLORS.success.dark || COLORS.success.main,
+  },
 ];
 
 export const MOCK_HISTORY: HistoryItems[] = [
@@ -181,9 +201,12 @@ export const MOCK_STATS: HistoryStats = {
   total_presents: 22,
   total_absents: 3,
   total_retards: 5,
+  total_non_travailles: 2, // ← AJOUTÉ
+  total_feries: 1, // ← AJOUTÉ
+  total_justifies: 1, // ← AJOUTÉ
   total_heures_supp: 176,
   moyenne_heures: 7.33,
-  total_retard_minutes: 0,
+  total_retard_minutes: 45,
   objectif_hebdo: 35,
   objectif_atteint: 176,
   sites_visites: 2,
@@ -191,10 +214,10 @@ export const MOCK_STATS: HistoryStats = {
   repartition: {
     present: 22,
     absent: 3,
-    justifie: 0,
-    ferie: 0,
-    non_travaille: 0,
-    supplementaire: 0,
+    justifie: 1,
+    ferie: 1,
+    non_travaille: 2,
+    supplementaire: 1,
   },
 };
 

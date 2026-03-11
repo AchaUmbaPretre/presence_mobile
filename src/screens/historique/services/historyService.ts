@@ -53,23 +53,32 @@ class HistoryService {
           statut: item.statut,
           source: item.source,
           is_locked: item.is_locked,
-          terminal: item.terminal,
           site: item.site,
           details: item.details
         })),
         stats: {
-          total_jours: apiResponse.data.stats.total_jours,
-          total_presents: apiResponse.data.stats.total_presents,
-          total_absents: apiResponse.data.stats.total_absents,
-          total_retards: apiResponse.data.stats.total_retards,
-          total_heures_supp: apiResponse.data.stats.total_heures_supp,
-          moyenne_heures: apiResponse.data.stats.moyenne_heures,
-          total_retard_minutes: apiResponse.data.stats.total_retard_minutes,
-          objectif_hebdo: apiResponse.data.stats.objectif_hebdo,
-          objectif_atteint: apiResponse.data.stats.objectif_atteint,
-          sites_visites: apiResponse.data.stats.sites_visites,
-          derniere_presence: apiResponse.data.stats.derniere_presence,
-          repartition: apiResponse.data.stats.repartition
+          total_jours: apiResponse.data.stats.total_jours || 0,
+          total_presents: apiResponse.data.stats.total_presents || 0,
+          total_absents: apiResponse.data.stats.total_absents || 0,
+          total_retards: apiResponse.data.stats.total_retards || 0,
+          total_non_travailles: apiResponse.data.stats.total_non_travailles || 0,  // ← AJOUTÉ
+          total_feries: apiResponse.data.stats.total_feries || 0,                   // ← AJOUTÉ
+          total_justifies: apiResponse.data.stats.total_justifies || 0,             // ← AJOUTÉ
+          total_heures_supp: apiResponse.data.stats.total_heures_supp || 0,
+          moyenne_heures: apiResponse.data.stats.moyenne_heures || 0,
+          total_retard_minutes: apiResponse.data.stats.total_retard_minutes || 0,
+          objectif_hebdo: apiResponse.data.stats.objectif_hebdo || 35,
+          objectif_atteint: apiResponse.data.stats.objectif_atteint || 0,
+          sites_visites: apiResponse.data.stats.sites_visites || 0,
+          derniere_presence: apiResponse.data.stats.derniere_presence || null,
+          repartition: apiResponse.data.stats.repartition || {
+            present: 0,
+            absent: 0,
+            justifie: 0,
+            ferie: 0,
+            non_travaille: 0,
+            supplementaire: 0
+          }
         },
         pagination: apiResponse.pagination
       };
@@ -96,7 +105,30 @@ class HistoryService {
         throw new Error(apiResponse.message || 'Erreur lors du chargement des stats');
       }
 
-      return apiResponse.data.stats;
+      return {
+        total_jours: apiResponse.data.stats.total_jours || 0,
+        total_presents: apiResponse.data.stats.total_presents || 0,
+        total_absents: apiResponse.data.stats.total_absents || 0,
+        total_retards: apiResponse.data.stats.total_retards || 0,
+        total_non_travailles: apiResponse.data.stats.total_non_travailles || 0,  // ← AJOUTÉ
+        total_feries: apiResponse.data.stats.total_feries || 0,                   // ← AJOUTÉ
+        total_justifies: apiResponse.data.stats.total_justifies || 0,             // ← AJOUTÉ
+        total_heures_supp: apiResponse.data.stats.total_heures_supp || 0,
+        moyenne_heures: apiResponse.data.stats.moyenne_heures || 0,
+        total_retard_minutes: apiResponse.data.stats.total_retard_minutes || 0,
+        objectif_hebdo: apiResponse.data.stats.objectif_hebdo || 35,
+        objectif_atteint: apiResponse.data.stats.objectif_atteint || 0,
+        sites_visites: apiResponse.data.stats.sites_visites || 0,
+        derniere_presence: apiResponse.data.stats.derniere_presence || null,
+        repartition: apiResponse.data.stats.repartition || {
+          present: 0,
+          absent: 0,
+          justifie: 0,
+          ferie: 0,
+          non_travaille: 0,
+          supplementaire: 0
+        }
+      };
     } catch (error) {
       console.error('❌ Erreur chargement stats:', error);
       throw error;
@@ -134,7 +166,6 @@ class HistoryService {
       });
       
       // Pour React Native, on retourne l'URL du blob
-      // À utiliser avec FileSystem de Expo
       const blob = response.data;
       return URL.createObjectURL(blob);
     } catch (error) {

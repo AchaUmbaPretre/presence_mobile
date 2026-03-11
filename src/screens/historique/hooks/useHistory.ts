@@ -38,7 +38,6 @@ export const useHistory = () => {
       if (currentFilters.search) {
         const searchLower = currentFilters.search.toLowerCase();
         filtered = filtered.filter((item) => {
-          // ✅ Correction: item.site est maintenant une string
           const siteName = item.site || "";
           const statut = item.statut.toLowerCase();
 
@@ -74,7 +73,6 @@ export const useHistory = () => {
           return currentFilters.sortOrder === "desc" ? -comparison : comparison;
         });
       }
-
       return filtered;
     },
     [],

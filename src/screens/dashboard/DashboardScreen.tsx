@@ -74,6 +74,7 @@ const DashboardScreen = memo(() => {
           break;
         case "Historique":
           navigation.navigate("Historique");
+          break;
         case "Rapports":
           navigation.navigate("Rapports");
           break;

@@ -38,12 +38,15 @@ export interface HistoryStats {
   total_presents: number;
   total_absents: number;
   total_retards: number;
+  total_non_travailles: number;
+  total_feries: number;
+  total_justifies: number;
   total_heures_supp: number;
   moyenne_heures: number;
   total_retard_minutes: number;
   objectif_hebdo: number;
   objectif_atteint: number;
-  sites_visites: number;
+  sites_visites: number,
   derniere_presence: string | null;
   repartition: {
     present: number;

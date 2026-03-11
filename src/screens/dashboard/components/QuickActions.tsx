@@ -22,7 +22,6 @@ import { ACTIONS_RAPIDES } from "../constants/dashboard.constants";
 import { getFontFamily } from "./../../../constants/typography";
 import { IconWithBackground } from "./IconWithBackground";
 
-// ==================== TYPES ====================
 interface QuickActionsProps {
   onActionPress?: (actionLabel: string) => void;
 }
@@ -87,7 +86,6 @@ export const QuickActions = memo(({ onActionPress }: QuickActionsProps) => {
 
   return (
     <View style={styles.section}>
-      {/* En-tête de section */}
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Actions rapides</Text>
         <TouchableOpacity
