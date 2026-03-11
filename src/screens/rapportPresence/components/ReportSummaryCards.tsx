@@ -29,14 +29,15 @@ export const ReportSummaryCards: React.FC<ReportSummaryCardsProps> = ({
 }) => {
   const formatHours = (hours: number) => hours.toFixed(1) + "h";
 
+  // ✅ Adapter les noms des propriétés de l'API
   const cards = [
     {
       ...REPORT_SUMMARY_CONFIG[0],
-      value: summary.total_presences,
+      value: summary.total_presents, // ← Changé de total_presences à total_presents
     },
     {
       ...REPORT_SUMMARY_CONFIG[1],
-      value: summary.total_absences,
+      value: summary.total_absents, // ← Changé de total_absences à total_absents
     },
     {
       ...REPORT_SUMMARY_CONFIG[2],

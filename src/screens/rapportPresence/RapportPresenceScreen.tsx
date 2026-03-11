@@ -115,7 +115,7 @@ export const RapportPresenceScreen = () => {
                 <View style={styles.statItem}>
                   <Text style={styles.statLabel}>Moyenne/jour</Text>
                   <Text style={styles.statValue}>
-                    {stats.summary.moyenne_heures_jour.toFixed(1)}h
+                    {stats.summary.moyenne_heures.toFixed(1)}h  {/* ← CORRIGÉ */}
                   </Text>
                 </View>
               </View>

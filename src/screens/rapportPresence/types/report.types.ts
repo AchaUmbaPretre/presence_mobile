@@ -1,39 +1,44 @@
-import { Ionicons } from "@expo/vector-icons";
+// src/features/reports/types/report.types.ts
 
 export type ReportPeriod = "day" | "week" | "month" | "quarter" | "year" | "custom";
 export type ReportFormat = "pdf" | "excel" | "csv";
 
-export interface ReportChartData {
-  labels: string[];
-  datasets: {
-    data: number[];
-    color?: string;  
-    label?: string;
-  }[];
-}
-
 export interface ReportFilters {
+  userId?: number;
   period: ReportPeriod;
   startDate?: string;
   endDate?: string;
-  userId?: number;
-  siteId?: number;
-  departmentId?: number;
+  year?: number;
+  month?: number;
 }
 
 export interface ReportSummary {
-  total_presences: number;
-  total_absences: number;
+  total_jours: number;
+  total_presents: number;
+  total_absents: number;
   total_retards: number;
-  total_heures_travaillees: number;
   total_heures_supp: number;
+  total_retard_minutes: number;
+  moyenne_heures: number; 
   taux_presence: number;
-  moyenne_heures_jour: number;
-  jours_travailles: number;
+  total_non_travailles: number;
+  total_feries: number;
+  total_justifies: number;
 }
 
-export interface ReportData {
-  id: string | number;
+export interface ReportChartDataset {
+  data: number[];
+  color: string;
+  label: string;
+}
+
+export interface ReportChartData {
+  labels: string[];
+  datasets: ReportChartDataset[];
+}
+
+export interface ReportTableData {
+  id: number | string;
   date: string;
   present: number;
   absent: number;
@@ -43,23 +48,30 @@ export interface ReportData {
   maladie: number;
 }
 
-export interface ReportChartData {
-  labels: string[];
-  datasets: {
-    data: number[];
-    color?: string;
-    label?: string;
-  }[];
-}
-
 export interface ReportStats {
   summary: ReportSummary;
   chartData: ReportChartData;
-  tableData: ReportData[];
+  tableData: ReportTableData[];
   period: string;
   generatedAt: string;
 }
 
+export interface ReportResponse {
+  success: boolean;
+  data: {
+    periode: {
+      debut: string;
+      fin: string;
+      libelle: string;
+    };
+    summary: ReportSummary;
+    chartData: ReportChartData;
+    tableData: ReportTableData[];
+    generatedAt: string;
+  };
+}
+
+// Props des composants (déjà existants)
 export interface ReportHeaderProps {
   title: string;
   subtitle?: string;
@@ -87,8 +99,8 @@ export interface ReportChartProps {
 }
 
 export interface ReportStatsTableProps {
-  data: ReportData[];
-  onRowPress?: (item: ReportData) => void;
+  data: ReportTableData[];
+  onRowPress?: (item: ReportTableData) => void;
 }
 
 export interface ReportExportButtonProps {
