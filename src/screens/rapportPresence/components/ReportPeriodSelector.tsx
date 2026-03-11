@@ -15,8 +15,8 @@ import {
 import { REPORT_PERIODS } from "../constants/report.constants";
 import { ReportPeriod, ReportPeriodSelectorProps } from "../types/report.types";
 
-// Import conditionnel pour éviter les crashes
 let DateTimePicker: any = null;
+
 try {
   DateTimePicker = require("@react-native-community/datetimepicker").default;
 } catch (e) {
@@ -75,7 +75,6 @@ export const ReportPeriodSelector: React.FC<ReportPeriodSelectorProps> = ({
     }
   };
 
-  // Fallback pour Android quand DateTimePicker n'est pas disponible
   const handleCustomPeriodPress = () => {
     if (!DateTimePicker) {
       Alert.alert(
