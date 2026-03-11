@@ -8,7 +8,7 @@ import {
     StyleSheet,
     Text,
     TouchableOpacity,
-    View,
+    View
 } from "react-native";
 import { STATUS_CONFIG } from "../constants/history.constants";
 import { HistoryItemProps, PresenceStatus } from "../types/history.types";
@@ -18,10 +18,8 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
   onPress,
   showActions = true,
 }) => {
-  // ✅ Vérifier que item.statut est une clé valide de PresenceStatus
   const statut = item.statut as PresenceStatus;
 
-  // ✅ Vérifier que la configuration existe
   const config = statut ? STATUS_CONFIG[statut] : undefined;
 
   if (!config) {
@@ -29,7 +27,6 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
     return null;
   }
 
-  // ✅ Mémoïsation de la date
   const date = useMemo(
     () =>
       new Date(item.date).toLocaleDateString("fr-FR", {
@@ -42,10 +39,8 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
 
   const formatTime = (time: string | null) => time || "--:--";
 
-  // ✅ Récupérer le nom du site (string directement maintenant)
   const siteName = item.site || "Site inconnu";
 
-  // ✅ Formater les heures supplémentaires
   const formatHeuresSupp = (heures: number) => {
     if (heures === 0) return null;
     return heures % 1 === 0 ? `${heures}h` : `${heures}h`;
@@ -135,7 +130,6 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
           </View>
         )}
 
-        {/* Flèche */}
         {showActions && (
           <Ionicons name="chevron-forward" size={20} color={COLORS.gray[400]} />
         )}
