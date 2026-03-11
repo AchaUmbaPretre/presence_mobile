@@ -1,21 +1,21 @@
+import { getFontFamily } from "@/constants/typography";
 import { COLORS } from "@/screens/dashboard/constants/color";
 import { useNavigation } from "@react-navigation/native";
 import React, { useCallback } from "react";
 import {
+  ActivityIndicator,
   SafeAreaView,
   StatusBar,
   StyleSheet,
-  View,
-  ActivityIndicator,
   Text,
+  View,
 } from "react-native";
-import { useHistory } from "./hooks/useHistory";
-import { HistoryHeader } from "./components/HistoryHeader";
-import { HistoryStats } from "./components/HistoryStats";
-import { HistoryList } from "./components/HistoryList";
 import { HistoryFilters } from "./components/HistoryFilters";
+import { HistoryHeader } from "./components/HistoryHeader";
+import { HistoryList } from "./components/HistoryList";
+import { HistoryStats } from "./components/HistoryStats";
+import { useHistory } from "./hooks/useHistory";
 import { HistoryItems } from "./types/history.types";
-import { getFontFamily } from "@/constants/typography";
 
 export const HistoryScreen = () => {
   const navigation = useNavigation();
@@ -62,7 +62,10 @@ export const HistoryScreen = () => {
   if (isLoading && !isRefreshing && history.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor={COLORS.primary.main} />
+        <StatusBar
+          barStyle="light-content"
+          backgroundColor={COLORS.primary.main}
+        />
         <HistoryHeader
           title="Historique"
           subtitle="Vos présences"
@@ -80,7 +83,10 @@ export const HistoryScreen = () => {
   if (error && history.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor={COLORS.primary.main} />
+        <StatusBar
+          barStyle="light-content"
+          backgroundColor={COLORS.primary.main}
+        />
         <HistoryHeader
           title="Historique"
           subtitle="Vos présences"
@@ -95,7 +101,10 @@ export const HistoryScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.primary.main} />
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor={COLORS.primary.main}
+      />
 
       <HistoryHeader
         title="Historique"
