@@ -87,13 +87,13 @@ export const ReportStatsTable: React.FC<ReportStatsTableProps> = ({
                 { backgroundColor: COLORS.success.main },
               ]}
             />
-            <Text style={styles.legendText}>Présent</Text>
+            <Text style={styles.legendText}>P: Présent</Text>
           </View>
           <View style={styles.legendItem}>
             <View
               style={[styles.legendDot, { backgroundColor: COLORS.error.main }]}
             />
-            <Text style={styles.legendText}>Absent</Text>
+            <Text style={styles.legendText}>A: Absent</Text>
           </View>
           <View style={styles.legendItem}>
             <View
@@ -102,7 +102,37 @@ export const ReportStatsTable: React.FC<ReportStatsTableProps> = ({
                 { backgroundColor: COLORS.warning.main },
               ]}
             />
-            <Text style={styles.legendText}>Retard</Text>
+            <Text style={styles.legendText}>R: Retard</Text>
+          </View>
+          <View style={styles.legendItem}>
+            <View
+              style={[
+                styles.legendDot,
+                { backgroundColor: COLORS.primary.main },
+              ]}
+            />
+            <Text style={styles.legendText}>C: Congé</Text>
+          </View>
+          <View style={styles.legendItem}>
+            <View
+              style={[
+                styles.legendDot,
+                {
+                  backgroundColor:
+                    COLORS.secondary?.main || COLORS.primary.main,
+                },
+              ]}
+            />
+            <Text style={styles.legendText}>M: Mission</Text>
+          </View>
+          <View style={styles.legendItem}>
+            <View
+              style={[
+                styles.legendDot,
+                { backgroundColor: COLORS.warning.dark },
+              ]}
+            />
+            <Text style={styles.legendText}>Mal: Maladie</Text>
           </View>
         </View>
       </LinearGradient>
@@ -196,8 +226,9 @@ const styles = StyleSheet.create({
   },
   legend: {
     flexDirection: "row",
+    flexWrap: "wrap",
     justifyContent: "center",
-    gap: 16,
+    gap: 12,
   },
   legendItem: {
     flexDirection: "row",

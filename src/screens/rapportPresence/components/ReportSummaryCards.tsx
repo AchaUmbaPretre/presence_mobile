@@ -27,25 +27,29 @@ const SummaryCard: React.FC<{
 export const ReportSummaryCards: React.FC<ReportSummaryCardsProps> = ({
   summary,
 }) => {
-  const formatHours = (hours: number) => hours.toFixed(1) + "h";
+  // ✅ Valeurs par défaut pour éviter undefined
+  const formatHours = (hours?: number) => {
+    if (hours === undefined || hours === null) return "0h";
+    return hours.toFixed(1) + "h";
+  };
 
-  // ✅ Adapter les noms des propriétés de l'API
+  // ✅ Valeurs par défaut avec l'opérateur ?.
   const cards = [
     {
       ...REPORT_SUMMARY_CONFIG[0],
-      value: summary.total_presents, // ← Changé de total_presences à total_presents
+      value: summary?.total_presents ?? 0,
     },
     {
       ...REPORT_SUMMARY_CONFIG[1],
-      value: summary.total_absents, // ← Changé de total_absences à total_absents
+      value: summary?.total_absents ?? 0,
     },
     {
       ...REPORT_SUMMARY_CONFIG[2],
-      value: summary.total_retards,
+      value: summary?.total_retards ?? 0,
     },
     {
       ...REPORT_SUMMARY_CONFIG[3],
-      value: formatHours(summary.total_heures_supp),
+      value: formatHours(summary?.total_heures_supp),
     },
   ];
 

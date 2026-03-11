@@ -1,14 +1,12 @@
-import { api } from '@/api/client';
-import { 
-  ReportFilters, 
-  ReportStats, 
-  ReportFormat, 
-  ReportPeriod,
-  ReportSummary,
-  ReportChartData,
-  ReportTableData
-} from '../types/report.types';
-import { MOCK_REPORT_STATS } from '../constants/report.constants';
+import { api } from "@/api/client";
+import {
+    ReportChartData,
+    ReportFilters,
+    ReportFormat,
+    ReportPeriod,
+    ReportSummary,
+    ReportTableData,
+} from "../types/report.types";
 
 class ReportService {
   private static instance: ReportService;
@@ -20,10 +18,7 @@ class ReportService {
     return ReportService.instance;
   }
 
-  /**
-   * Récupère les statistiques du rapport
-   */
-  async getReportStats(filters: ReportFilters): Promise<ReportStats> {
+  async getReportStats(filters: ReportFilters) {
     try {
       // Construction des paramètres de requête
       const params: any = {
@@ -45,12 +40,16 @@ class ReportService {
       }
 
       // Appel API réel
-      const response = await api.get('/presence/rapportPresenceById', { params });
-      
+      const response = await api.get("/api/presence/rapportPresenceById", {
+        params,
+      });
+
       const apiResponse = response.data;
-      
+
       if (!apiResponse.success) {
-        throw new Error(apiResponse.message || 'Erreur lors du chargement du rapport');
+        throw new Error(
+          apiResponse.message || "Erreur lors du chargement du rapport",
+        );
       }
 
       // ✅ Adaptation de la réponse API au format attendu par les composants
@@ -68,7 +67,7 @@ class ReportService {
         total_non_travailles: data.summary.total_non_travailles,
         total_feries: data.summary.total_feries,
         total_justifies: data.summary.total_justifies,
-        total_jours: data.summary.total_jours
+        total_jours: data.summary.total_jours,
       };
 
       // Structure pour ReportChart
@@ -77,8 +76,8 @@ class ReportService {
         datasets: data.chartData.datasets.map((dataset: any) => ({
           data: dataset.data,
           color: dataset.color,
-          label: dataset.label
-        }))
+          label: dataset.label,
+        })),
       };
 
       // Structure pour ReportStatsTable
@@ -90,7 +89,7 @@ class ReportService {
         retard: row.retard,
         conge: row.conge,
         mission: row.mission,
-        maladie: row.maladie
+        maladie: row.maladie,
       }));
 
       return {
@@ -98,30 +97,28 @@ class ReportService {
         chartData,
         tableData,
         period: data.periode.libelle,
-        generatedAt: data.generatedAt
+        generatedAt: data.generatedAt,
       };
-
     } catch (error) {
-      console.error('❌ Erreur chargement rapport:', error);
-      
+      console.error("❌ Erreur chargement rapport:", error);
+
       // Fallback aux données mockées en cas d'erreur
-      console.log('⚠️ Utilisation des données mockées');
-      return {
-        ...MOCK_REPORT_STATS,
-        period: this.getPeriodLabel(filters.period),
-      };
+      console.log("⚠️ Utilisation des données mockées");
     }
   }
 
   /**
    * Exporte le rapport au format spécifié
    */
-  async exportReport(filters: ReportFilters, format: ReportFormat): Promise<string> {
+  async exportReport(
+    filters: ReportFilters,
+    format: ReportFormat,
+  ): Promise<string> {
     try {
       const params: any = {
         userId: filters.userId,
         period: filters.period,
-        format
+        format,
       };
 
       if (filters.startDate) {
@@ -131,17 +128,16 @@ class ReportService {
         params.endDate = filters.endDate;
       }
 
-      const response = await api.get('/presence/exportRapport', {
+      const response = await api.get("/presence/exportRapport", {
         params,
-        responseType: 'blob',
+        responseType: "blob",
       });
-      
+
       // Pour React Native, on retourne l'URL du blob
       const blob = response.data;
       return URL.createObjectURL(blob);
-      
     } catch (error) {
-      console.error('❌ Erreur export rapport:', error);
+      console.error("❌ Erreur export rapport:", error);
       throw error;
     }
   }
@@ -151,13 +147,13 @@ class ReportService {
    */
   async getAvailablePeriods(userId: number): Promise<string[]> {
     try {
-      const response = await api.get('/presence/periodes-disponibles', {
-        params: { userId }
+      const response = await api.get("/presence/periodes-disponibles", {
+        params: { userId },
       });
-      
+
       return response.data.data || [];
     } catch (error) {
-      console.error('❌ Erreur chargement périodes:', error);
+      console.error("❌ Erreur chargement périodes:", error);
       return [];
     }
   }
@@ -168,23 +164,26 @@ class ReportService {
   private getPeriodLabel(period: ReportPeriod): string {
     const now = new Date();
     switch (period) {
-      case 'day': 
-        return now.toLocaleDateString('fr-FR', { 
-          weekday: 'long', 
-          day: 'numeric', 
-          month: 'long', 
-          year: 'numeric' 
+      case "day":
+        return now.toLocaleDateString("fr-FR", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric",
         });
-      case 'week': 
-        return `Semaine du ${now.toLocaleDateString('fr-FR')}`;
-      case 'month': 
-        return now.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
-      case 'quarter': 
+      case "week":
+        return `Semaine du ${now.toLocaleDateString("fr-FR")}`;
+      case "month":
+        return now.toLocaleDateString("fr-FR", {
+          month: "long",
+          year: "numeric",
+        });
+      case "quarter":
         return `T${Math.floor(now.getMonth() / 3) + 1} ${now.getFullYear()}`;
-      case 'year': 
+      case "year":
         return now.getFullYear().toString();
-      default: 
-        return 'Période personnalisée';
+      default:
+        return "Période personnalisée";
     }
   }
 }

@@ -1,25 +1,27 @@
-import React, { useCallback } from 'react';
+import { getFontFamily } from "@/constants/typography";
+import { COLORS } from "@/screens/dashboard/constants/color";
+import { useNavigation } from "@react-navigation/native";
+import React, { useCallback, useEffect } from "react";
 import {
-  StyleSheet,
-  SafeAreaView,
-  StatusBar,
-  ScrollView,
-  View,
-  ActivityIndicator,
-  Text,
-  RefreshControl,
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { COLORS } from '@/screens/dashboard/constants/color';
-import { getFontFamily } from '@/constants/typography';
-import { useReports } from './hooks/useReports';
-import { ReportHeader } from './components/ReportHeader';
-import { ReportEmpty } from './components/ReportEmpty';
-import { ReportPeriodSelector } from './components/ReportPeriodSelector';
-import { ReportSummaryCards } from './components/ReportSummaryCards';
-import { ReportChart } from './components/ReportChart';
-import { ReportStatsTable } from './components/ReportStatsTable';
-import { ReportExportButton } from './components/ReportExportButton';
+    ActivityIndicator,
+    RefreshControl,
+    SafeAreaView,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    View,
+} from "react-native";
+import { useSelector } from "react-redux";
+import { RootState } from "redux/store";
+import { ReportChart } from "./components/ReportChart";
+import { ReportEmpty } from "./components/ReportEmpty";
+import { ReportExportButton } from "./components/ReportExportButton";
+import { ReportHeader } from "./components/ReportHeader";
+import { ReportPeriodSelector } from "./components/ReportPeriodSelector";
+import { ReportStatsTable } from "./components/ReportStatsTable";
+import { ReportSummaryCards } from "./components/ReportSummaryCards";
+import { useReports } from "./hooks/useReports";
 
 export const RapportPresenceScreen = () => {
   const navigation = useNavigation();
@@ -35,27 +37,51 @@ export const RapportPresenceScreen = () => {
     shareReport,
   } = useReports();
 
+  const currentUser = useSelector((state: RootState) => state.auth.currentUser);
+
+  useEffect(() => {
+    if (currentUser?.id) {
+      updateFilters({ userId: currentUser.id });
+    }
+  }, [currentUser?.id]);
+
   const handleBack = useCallback(() => {
     navigation.goBack();
   }, [navigation]);
 
-  const handlePeriodChange = useCallback((period: any) => {
-    updateFilters({ period });
-  }, [updateFilters]);
+  const handlePeriodChange = useCallback(
+    (period: any) => {
+      updateFilters({ period });
+    },
+    [updateFilters],
+  );
 
-  const handleDateRangeChange = useCallback((start: string, end: string) => {
-    updateFilters({ startDate: start, endDate: end });
-  }, [updateFilters]);
+  const handleDateRangeChange = useCallback(
+    (start: string, end: string) => {
+      updateFilters({ startDate: start, endDate: end });
+    },
+    [updateFilters],
+  );
 
-  const handleExport = useCallback((format: any) => {
-    exportReport(format);
-  }, [exportReport]);
+  const handleExport = useCallback(
+    (format: any) => {
+      exportReport(format);
+    },
+    [exportReport],
+  );
 
   if (isLoading && !isRefreshing && !stats) {
     return (
       <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor={COLORS.primary.main} />
-        <ReportHeader title="Rapports" subtitle="Statistiques de présence" onBack={handleBack} />
+        <StatusBar
+          barStyle="light-content"
+          backgroundColor={COLORS.primary.main}
+        />
+        <ReportHeader
+          title="Rapports"
+          subtitle="Statistiques de présence"
+          onBack={handleBack}
+        />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.primary.main} />
           <Text style={styles.loadingText}>Génération du rapport...</Text>
@@ -67,8 +93,15 @@ export const RapportPresenceScreen = () => {
   if (error && !stats) {
     return (
       <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor={COLORS.primary.main} />
-        <ReportHeader title="Rapports" subtitle="Statistiques de présence" onBack={handleBack} />
+        <StatusBar
+          barStyle="light-content"
+          backgroundColor={COLORS.primary.main}
+        />
+        <ReportHeader
+          title="Rapports"
+          subtitle="Statistiques de présence"
+          onBack={handleBack}
+        />
         <ReportEmpty message={error} onRefresh={refresh} />
       </SafeAreaView>
     );
@@ -76,7 +109,10 @@ export const RapportPresenceScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.primary.main} />
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor={COLORS.primary.main}
+      />
 
       <ReportHeader
         title="Rapports"
@@ -109,13 +145,15 @@ export const RapportPresenceScreen = () => {
               <View style={styles.statsRow}>
                 <View style={styles.statItem}>
                   <Text style={styles.statLabel}>Taux de présence</Text>
-                  <Text style={styles.statValue}>{stats.summary.taux_presence}%</Text>
+                  <Text style={styles.statValue}>
+                    {stats.summary.taux_presence}%
+                  </Text>
                 </View>
                 <View style={styles.statDivider} />
                 <View style={styles.statItem}>
                   <Text style={styles.statLabel}>Moyenne/jour</Text>
                   <Text style={styles.statValue}>
-                    {stats.summary.moyenne_heures.toFixed(1)}h  {/* ← CORRIGÉ */}
+                    {stats.summary.moyenne_heures.toFixed(1)}h
                   </Text>
                 </View>
               </View>
@@ -125,13 +163,14 @@ export const RapportPresenceScreen = () => {
 
             <ReportStatsTable
               data={stats.tableData}
-              onRowPress={(item) => console.log('Row pressed:', item)}
+              onRowPress={(item) => console.log("Item pressé:", item.id)}
             />
 
             <View style={styles.exportContainer}>
               <ReportExportButton onExport={handleExport} />
               <Text style={styles.generatedAt}>
-                Généré le {new Date(stats.generatedAt).toLocaleDateString('fr-FR')}
+                Généré le{" "}
+                {new Date(stats.generatedAt).toLocaleDateString("fr-FR")}
               </Text>
             </View>
           </>
@@ -151,13 +190,13 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     gap: 16,
   },
   loadingText: {
     fontSize: 14,
-    fontFamily: getFontFamily('regular'),
+    fontFamily: getFontFamily("regular"),
     color: COLORS.gray[500],
   },
   statsContainer: {
@@ -170,22 +209,22 @@ const styles = StyleSheet.create({
     borderColor: COLORS.gray[200],
   },
   statsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   statItem: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
   },
   statLabel: {
     fontSize: 12,
-    fontFamily: getFontFamily('regular'),
+    fontFamily: getFontFamily("regular"),
     color: COLORS.gray[500],
     marginBottom: 4,
   },
   statValue: {
     fontSize: 24,
-    fontFamily: getFontFamily('bold'),
+    fontFamily: getFontFamily("bold"),
     color: COLORS.primary.main,
   },
   statDivider: {
@@ -195,13 +234,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
   exportContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginVertical: 16,
     gap: 8,
   },
   generatedAt: {
     fontSize: 11,
-    fontFamily: getFontFamily('regular'),
+    fontFamily: getFontFamily("regular"),
     color: COLORS.gray[400],
   },
 });
