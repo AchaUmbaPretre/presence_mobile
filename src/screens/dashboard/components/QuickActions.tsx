@@ -55,7 +55,6 @@ export const QuickActions = memo(({ onActionPress }: QuickActionsProps) => {
     [onActionPress],
   );
 
-  // Styles animés pour chaque action
   const getAnimatedStyle = (index: number) => {
     return useAnimatedStyle(() => ({
       transform: [{ scale: scaleValues[index].value }],
@@ -68,7 +67,6 @@ export const QuickActions = memo(({ onActionPress }: QuickActionsProps) => {
     }));
   };
 
-  // Couleurs spécifiques par action
   const getActionColor = (label: string): string => {
     switch (label) {
       case "QR Code":
