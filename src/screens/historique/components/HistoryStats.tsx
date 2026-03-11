@@ -6,26 +6,6 @@ import React from "react";
 import { Platform, StyleSheet, Text, View } from "react-native";
 import { HistoryStatsProps } from "../types/history.types";
 
-// ==================== STYLE SIGNATURE ====================
-const DESIGN_SIGNATURE = {
-  borderRadius: {
-    primary: 16,
-    secondary: 24,
-    pill: 40,
-  },
-  spacing: {
-    xs: 4,
-    sm: 8,
-    md: 12,
-    lg: 16,
-    xl: 20,
-  },
-  elevation: {
-    light: Platform.select({ ios: 0.05, android: 2 }),
-    medium: Platform.select({ ios: 0.1, android: 4 }),
-  },
-};
-
 // ==================== STATISTIQUE INDIVIDUELLE ====================
 const StatBlock: React.FC<{
   icon: keyof typeof Ionicons.glyphMap;
