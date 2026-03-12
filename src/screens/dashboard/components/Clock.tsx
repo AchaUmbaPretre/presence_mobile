@@ -1,19 +1,19 @@
 import { LinearGradient } from "expo-linear-gradient";
 import React, { memo, useEffect, useRef } from "react";
 import {
-    Platform,
-    Animated as RNAnimated,
-    StyleSheet,
-    Text,
-    View,
+  Platform,
+  Animated as RNAnimated,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 import Animated, {
-    FadeInRight,
-    useAnimatedStyle,
-    useSharedValue,
-    withRepeat,
-    withSequence,
-    withTiming,
+  FadeInRight,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
 } from "react-native-reanimated";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { getFontFamily } from "./../../../constants/typography";
@@ -24,7 +24,7 @@ const BLUE_PRO = {
   light: "#E8F0FE",
   dark: "#07317A",
   textLight: "#FFFFFF",
-  textBlue: "#8e9dc4ff",
+  textBlue: "#bad5f7ff",
   textMuted: "#5A6B7A",
 } as const;
 
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 13,
     fontFamily: getFontFamily("medium"),
-    color: BLUE_PRO.textBlue, // Changé de textDark à textBlue
+    color: BLUE_PRO.dark,
     marginLeft: 6,
     textTransform: "capitalize",
   },

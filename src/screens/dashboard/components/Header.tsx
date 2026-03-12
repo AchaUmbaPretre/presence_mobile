@@ -3,19 +3,19 @@ import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { memo, useCallback } from "react";
 import {
-    Platform,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import Animated, {
-    FadeInDown,
-    FadeInRight,
-    useAnimatedStyle,
-    useSharedValue,
-    withSpring,
-    withTiming,
+  FadeInDown,
+  FadeInRight,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
 } from "react-native-reanimated";
 import { COLORS } from "../constants/color";
 import { HeaderProps } from "../types/presence.types";
@@ -27,7 +27,7 @@ const BLUE_PRO = {
   secondary: "#1E6EC7",
   light: "#E8F0FE",
   dark: "#07317A",
-  textLight: "#FFFFFF",
+  textLight: "#bad5f7ff",
   textDark: "#1E293B",
 } as const;
 
