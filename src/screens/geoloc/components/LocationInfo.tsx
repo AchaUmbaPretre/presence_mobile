@@ -4,19 +4,17 @@ import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useMemo } from "react";
-import { Dimensions, Platform, StyleSheet, Text, View } from "react-native";
+import { Platform, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { LOCATION_MESSAGES, ZONE_COLORS } from "../constants/geoloc.constants";
 import { LocationStatus } from "../types/geoloc.types";
 
-const { width } = Dimensions.get("window");
 
 interface LocationInfoProps {
   status: LocationStatus;
   isLoading: boolean;
 }
 
-// ==================== COMPOSANT D'INDICATEUR DE PRÉCISION ====================
 const AccuracyIndicator: React.FC<{ accuracy: number; color: string }> = ({
   accuracy,
   color,
