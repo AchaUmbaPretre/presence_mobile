@@ -168,7 +168,6 @@ export const ReportPeriodSelector: React.FC<ReportPeriodSelectorProps> = ({
         </TouchableOpacity>
       </Modal>
 
-      {/* DatePicker avec vérification */}
       {showStartPicker && DateTimePicker && (
         <DateTimePicker
           value={(() => {

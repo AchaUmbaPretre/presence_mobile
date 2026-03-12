@@ -6,7 +6,7 @@ import { LineChart } from "react-native-chart-kit";
 import { ReportChartProps } from "../types/report.types";
 
 const { width } = Dimensions.get("window");
-const CHART_WIDTH = width - 40; // Largeur fixe
+const CHART_WIDTH = width - 40;
 
 export const ReportChart: React.FC<ReportChartProps> = ({
   data,
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: COLORS.gray[200],
-    overflow: "hidden", // ← Important !
+    overflow: "hidden",
   },
   title: {
     fontSize: 16,

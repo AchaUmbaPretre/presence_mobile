@@ -93,11 +93,9 @@ export const useReports = () => {
       return;
     }
 
-    // TODO: Implémenter le partage avec expo-sharing
     Alert.alert("Partage", "Fonctionnalité à venir");
   }, [stats]);
 
-  // ✅ Recharger quand les filtres changent
   useEffect(() => {
     loadReport();
   }, [filters.period, filters.startDate, filters.endDate, filters.userId]);
