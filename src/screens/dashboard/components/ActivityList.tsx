@@ -136,7 +136,7 @@ const ANIMATION = {
 } as const;
 
 // ==================== UTILS ====================
-const getActivityConfig = (type: string): ActivityConfig => 
+const getActivityConfig = (type: string): ActivityConfig =>
   ACTIVITY_CONFIG[type] ?? ACTIVITY_CONFIG.break;
 
 // ==================== COMPOSANT ACTIVITY ROW ====================
@@ -154,9 +154,13 @@ const ActivityRow = memo(({ activity, index, onPress }: ActivityRowProps) => {
   const handlePress = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-    scale.value = withSpring(ANIMATION.SCALE_TO, { damping: ANIMATION.DAMPING }, () => {
-      scale.value = withSpring(1);
-    });
+    scale.value = withSpring(
+      ANIMATION.SCALE_TO,
+      { damping: ANIMATION.DAMPING },
+      () => {
+        scale.value = withSpring(1);
+      },
+    );
 
     glow.value = withTiming(1, { duration: ANIMATION.GLOW_DURATION }, () => {
       glow.value = withTiming(0, { duration: ANIMATION.FADE_DURATION });
@@ -174,12 +178,27 @@ const ActivityRow = memo(({ activity, index, onPress }: ActivityRowProps) => {
 
   return (
     <Animated.View
-      entering={FadeInDown.delay(100 + index * ANIMATION.DELAY_STEP).springify()}
+      entering={FadeInDown.delay(
+        100 + index * ANIMATION.DELAY_STEP,
+      ).springify()}
       style={[styles.row, animatedStyle]}
     >
-      <TouchableOpacity style={styles.touchable} onPress={handlePress} activeOpacity={0.9}>
-        <LinearGradient colors={[COLORS.white, COLORS.gray[50]]} style={styles.gradient}>
-          <Animated.View style={[styles.glow, { backgroundColor: config.colors.primary }, glowStyle]} />
+      <TouchableOpacity
+        style={styles.touchable}
+        onPress={handlePress}
+        activeOpacity={0.9}
+      >
+        <LinearGradient
+          colors={[COLORS.white, COLORS.gray[50]]}
+          style={styles.gradient}
+        >
+          <Animated.View
+            style={[
+              styles.glow,
+              { backgroundColor: config.colors.primary },
+              glowStyle,
+            ]}
+          />
 
           <View style={styles.item}>
             <LinearGradient colors={config.colors.gradient} style={styles.icon}>
@@ -189,9 +208,21 @@ const ActivityRow = memo(({ activity, index, onPress }: ActivityRowProps) => {
             <View style={styles.content}>
               <View style={styles.header}>
                 <Text style={styles.title}>{config.label}</Text>
-                <View style={[styles.badge, { backgroundColor: `${config.colors.primary}12` }]}>
-                  <View style={[styles.dot, { backgroundColor: config.colors.primary }]} />
-                  <Text style={[styles.badgeText, { color: config.colors.primary }]}>
+                <View
+                  style={[
+                    styles.badge,
+                    { backgroundColor: `${config.colors.primary}12` },
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.dot,
+                      { backgroundColor: config.colors.primary },
+                    ]}
+                  />
+                  <Text
+                    style={[styles.badgeText, { color: config.colors.primary }]}
+                  >
                     {config.badge}
                   </Text>
                 </View>
@@ -199,7 +230,11 @@ const ActivityRow = memo(({ activity, index, onPress }: ActivityRowProps) => {
 
               <View style={styles.details}>
                 <View style={styles.time}>
-                  <Ionicons name="time-outline" size={12} color={COLORS.gray[400]} />
+                  <Ionicons
+                    name="time-outline"
+                    size={12}
+                    color={COLORS.gray[400]}
+                  />
                   <Text style={styles.timeText}>{activity.time}</Text>
                 </View>
                 {activity.status && (
@@ -211,8 +246,17 @@ const ActivityRow = memo(({ activity, index, onPress }: ActivityRowProps) => {
               </View>
             </View>
 
-            <View style={[styles.arrow, { backgroundColor: `${config.colors.primary}08` }]}>
-              <Ionicons name="chevron-forward" size={16} color={config.colors.primary} />
+            <View
+              style={[
+                styles.arrow,
+                { backgroundColor: `${config.colors.primary}08` },
+              ]}
+            >
+              <Ionicons
+                name="chevron-forward"
+                size={16}
+                color={config.colors.primary}
+              />
             </View>
           </View>
         </LinearGradient>
@@ -222,74 +266,101 @@ const ActivityRow = memo(({ activity, index, onPress }: ActivityRowProps) => {
 });
 
 // ==================== COMPOSANT PRINCIPAL ====================
-export const ActivityList = memo(({ 
-  activities, 
-  onSeeAll, 
-  onActivityPress, 
-  maxItems = 5 
-}: ActivityListProps) => {
-  const displayed = useMemo(() => activities.slice(0, maxItems), [activities, maxItems]);
-  const hasMore = activities.length > maxItems;
+export const ActivityList = memo(
+  ({
+    activities,
+    onSeeAll,
+    onActivityPress,
+    maxItems = 5,
+  }: ActivityListProps) => {
+    const displayed = useMemo(
+      () => activities.slice(0, maxItems),
+      [activities, maxItems],
+    );
+    const hasMore = activities.length > maxItems;
 
-  if (displayed.length === 0) {
+    if (displayed.length === 0) {
+      return (
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.titleContainer}>
+              <Text style={styles.sectionTitle}>Activité récente</Text>
+            </View>
+          </View>
+          <Animated.View entering={FadeInDown.springify()} style={styles.empty}>
+            <LinearGradient
+              colors={[COLORS.gray[50], COLORS.white]}
+              style={styles.emptyGradient}
+            >
+              <View style={styles.emptyIcon}>
+                <Ionicons
+                  name="time-outline"
+                  size={32}
+                  color={COLORS.gray[300]}
+                />
+              </View>
+              <Text style={styles.emptyTitle}>Aucune activité</Text>
+              <Text style={styles.emptyText}>
+                Les activités récentes apparaîtront ici
+              </Text>
+            </LinearGradient>
+          </Animated.View>
+        </View>
+      );
+    }
+
     return (
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <View style={styles.titleContainer}>
             <Text style={styles.sectionTitle}>Activité récente</Text>
-          </View>
-        </View>
-        <Animated.View entering={FadeInDown.springify()} style={styles.empty}>
-          <LinearGradient colors={[COLORS.gray[50], COLORS.white]} style={styles.emptyGradient}>
-            <View style={styles.emptyIcon}>
-              <Ionicons name="time-outline" size={32} color={COLORS.gray[300]} />
+            <View style={styles.count}>
+              <Text style={styles.countText}>{activities.length}</Text>
             </View>
-            <Text style={styles.emptyTitle}>Aucune activité</Text>
-            <Text style={styles.emptyText}>Les activités récentes apparaîtront ici</Text>
-          </LinearGradient>
-        </Animated.View>
+          </View>
+          {onSeeAll && hasMore && (
+            <TouchableOpacity onPress={onSeeAll} activeOpacity={0.7}>
+              <LinearGradient
+                colors={[COLORS.primary.light, COLORS.primary.main]}
+                style={styles.seeAll}
+              >
+                <Text style={styles.seeAllText}>Voir tout</Text>
+                <Ionicons name="arrow-forward" size={14} color={COLORS.white} />
+              </LinearGradient>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        <View style={styles.container}>
+          {displayed.map((activity, index) => (
+            <React.Fragment key={activity.id}>
+              <ActivityRow
+                activity={activity}
+                index={index}
+                onPress={onActivityPress}
+              />
+              {index < displayed.length - 1 && (
+                <LinearGradient
+                  colors={[
+                    COLORS.gray[100],
+                    COLORS.gray[200],
+                    COLORS.gray[100],
+                  ]}
+                  style={styles.divider}
+                />
+              )}
+            </React.Fragment>
+          ))}
+        </View>
       </View>
     );
-  }
-
-  return (
-    <View style={styles.section}>
-      <View style={styles.sectionHeader}>
-        <View style={styles.titleContainer}>
-          <Text style={styles.sectionTitle}>Activité récente</Text>
-          <View style={styles.count}>
-            <Text style={styles.countText}>{activities.length}</Text>
-          </View>
-        </View>
-        {onSeeAll && hasMore && (
-          <TouchableOpacity onPress={onSeeAll} activeOpacity={0.7}>
-            <LinearGradient colors={[COLORS.primary.light, COLORS.primary.main]} style={styles.seeAll}>
-              <Text style={styles.seeAllText}>Voir tout</Text>
-              <Ionicons name="arrow-forward" size={14} color={COLORS.white} />
-            </LinearGradient>
-          </TouchableOpacity>
-        )}
-      </View>
-
-      <View style={styles.container}>
-        {displayed.map((activity, index) => (
-          <React.Fragment key={activity.id}>
-            <ActivityRow activity={activity} index={index} onPress={onActivityPress} />
-            {index < displayed.length - 1 && (
-              <LinearGradient colors={[COLORS.gray[100], COLORS.gray[200], COLORS.gray[100]]} style={styles.divider} />
-            )}
-          </React.Fragment>
-        ))}
-      </View>
-    </View>
-  );
-});
+  },
+);
 
 // ==================== STYLES ====================
 const styles = StyleSheet.create({
   section: {
     marginBottom: 28,
-    paddingHorizontal: 20,
   },
   sectionHeader: {
     flexDirection: "row",
