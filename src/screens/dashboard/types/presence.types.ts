@@ -40,14 +40,6 @@ export interface ActivityItem {
   date: string;
 }
 
-export interface WeekDay {
-  letter: string;
-  present: boolean;
-  partial: boolean;
-  date: Date;
-  heures?: number;
-}
-
 export interface HeaderProps {
   userName?: string;
   userRole?: string;

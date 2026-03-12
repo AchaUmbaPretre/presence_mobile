@@ -22,13 +22,12 @@ import { MetricsCard } from "./components/MetricsCard";
 import { PresenceCards } from "./components/PresenceCards";
 import { QuickActions } from "./components/QuickActions";
 import { WeekIndicator } from "./components/WeekIndicator";
-import { WEEK_DAYS } from "./constants/dashboard.constants";
 import { useActivities } from "./hooks/useActivities";
 import { useCombinedAnimation } from "./hooks/useAnimation";
 import { useCurrentTime } from "./hooks/useCurrentTime";
 import { usePresence } from "./hooks/usePresence";
+import { useWeekIndicator } from "./hooks/useWeekIndicator";
 
-// Palette de couleurs
 const BLUE_PRO = {
   primary: "#0A4DA4",
   secondary: "#1E6EC7",
@@ -40,40 +39,29 @@ const BLUE_PRO = {
 type AppNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const DashboardScreen = memo(() => {
-  const { presence, isLoading, handlePointage, metrics, handleMetricPress } =
-    usePresence();
-
+  const navigation = useNavigation<AppNavigationProp>();
   const data = useSelector((state: RootState) => state.auth.currentUser);
 
-  // ✅ Passer l'ID utilisateur à useActivities
+  const { presence, isLoading, handlePointage, metrics, handleMetricPress } =
+    usePresence();
+  const { activities, refreshActivities, handleActivityPress, handleSeeAll } =
+    useActivities(data?.id);
   const {
-    activities,
-    error: activitiesError,
-    refreshActivities,
-    handleActivityPress,
-    handleSeeAll,
-  } = useActivities(data?.id);
-
+    days: weekDays,
+    refresh: refreshWeek,
+    handleDayPress,
+  } = useWeekIndicator(data?.id);
   const { formattedDate, formattedTime, formattedSeconds } = useCurrentTime();
   const { animatedStyle } = useCombinedAnimation();
-  const navigation = useNavigation<AppNavigationProp>();
-
-  const weekDays = WEEK_DAYS.map((day, index) => ({
-    ...day,
-    present: index < 4,
-    partial: index === 4,
-    date: new Date(),
-  }));
 
   const handleRefresh = useCallback(() => {
     refreshActivities();
-    // Autres rafraîchissements si nécessaire
-  }, [refreshActivities]);
+    refreshWeek();
+  }, [refreshActivities, refreshWeek]);
 
   const handleActionPress = useCallback(
     (action: string) => {
       console.log("Action pressed:", action);
-
       switch (action) {
         case "QR Code":
           navigation.navigate("QRScanner");
@@ -93,33 +81,23 @@ const DashboardScreen = memo(() => {
     },
     [navigation],
   );
-
+  
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={BLUE_PRO.primary} />
-
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl
-            refreshing={isLoading}
-            onRefresh={handleRefresh}
-            tintColor={BLUE_PRO.primary}
-            colors={[BLUE_PRO.primary]}
-          />
+          <RefreshControl refreshing={isLoading} onRefresh={handleRefresh} />
         }
       >
         <Animated.View style={[styles.content, animatedStyle]}>
-          {/* Section header avec dégradé */}
           <LinearGradient
             colors={[BLUE_PRO.primary, BLUE_PRO.dark]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
             style={styles.headerSection}
           >
             <View style={styles.shineEffect} />
-
             <View style={styles.headerContent}>
               <Header
                 userName={data?.nom || "Utilisateur"}
@@ -138,7 +116,6 @@ const DashboardScreen = memo(() => {
             </View>
           </LinearGradient>
 
-          {/* Section des métriques */}
           <View style={styles.metricsSection}>
             <MetricsCard
               retard={metrics.retard}
@@ -153,7 +130,11 @@ const DashboardScreen = memo(() => {
               onActivityPress={handleActivityPress}
               maxItems={5}
             />
-            <WeekIndicator days={weekDays} />
+            <WeekIndicator
+              days={weekDays}
+              onDayPress={handleDayPress}
+              showHours={true}
+            />
           </View>
         </Animated.View>
       </ScrollView>
@@ -162,16 +143,9 @@ const DashboardScreen = memo(() => {
 });
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: BLUE_PRO.light,
-  },
-  scrollContent: {
-    flexGrow: 1,
-  },
-  content: {
-    flex: 1,
-  },
+  container: { flex: 1, backgroundColor: BLUE_PRO.light },
+  scrollContent: { flexGrow: 1 },
+  content: { flex: 1 },
   headerSection: {
     paddingTop: Platform.OS === "android" ? 16 : 0,
     paddingBottom: 24,
@@ -184,9 +158,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 12,
       },
-      android: {
-        elevation: 8,
-      },
+      android: { elevation: 8 },
     }),
     position: "relative",
     overflow: "hidden",
@@ -199,14 +171,8 @@ const styles = StyleSheet.create({
     height: "100%",
     backgroundColor: "rgba(255, 255, 255, 0.03)",
   },
-  headerContent: {
-    paddingHorizontal: 20,
-    zIndex: 2,
-  },
-  metricsSection: {
-    paddingTop: 16,
-    paddingHorizontal: 20,
-  },
+  headerContent: { paddingHorizontal: 20, zIndex: 2 },
+  metricsSection: { paddingTop: 16, paddingHorizontal: 20 },
 });
 
 export default DashboardScreen;

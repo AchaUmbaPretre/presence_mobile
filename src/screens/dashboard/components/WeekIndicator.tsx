@@ -1,166 +1,174 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { memo, useCallback } from "react";
-import { Platform, StyleSheet, Text, View } from "react-native";
+import React, { memo, useCallback, useMemo } from "react";
+import {
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import Animated, {
-    FadeInDown,
-    interpolate,
-    useAnimatedStyle,
-    useSharedValue,
-    withSpring,
-    withTiming,
+  FadeInDown,
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
 } from "react-native-reanimated";
-import { COLORS } from "../constants/color";
-import { WeekDay } from "../types/presence.types";
-import { getFontFamily } from "./../../../constants/typography";
 
-// ==================== TYPES ====================
+import { getFontFamily } from "../../../constants/typography";
+import { COLORS } from "../constants/color";
+import { WeekDay } from "../types/weekIndication.type";
+
 interface WeekIndicatorProps {
   days: WeekDay[];
   onDayPress?: (day: WeekDay, index: number) => void;
   showHours?: boolean;
 }
 
-// ==================== COMPOSANT PRINCIPAL ====================
+type Status = "present" | "partial" | "absent";
+
+const STATUS_CONFIG = {
+  present: {
+    color: COLORS.success.main,
+    gradient: [COLORS.success.light, COLORS.success.main] as const,
+    icon: "checkmark-circle",
+    label: "Présent",
+  },
+  partial: {
+    color: COLORS.warning.main,
+    gradient: [COLORS.warning.light, COLORS.warning.main] as const,
+    icon: "time",
+    label: "Partiel",
+  },
+  absent: {
+    color: COLORS.gray[300],
+    gradient: [COLORS.gray[200], COLORS.gray[300]] as const,
+    icon: "close-circle",
+    label: "Absent",
+  },
+};
+
+const getDayStatus = (day: WeekDay): Status => {
+  if (day.present && day.partial) return "partial";
+  if (day.present) return "present";
+  return "absent";
+};
+
+const DayItem = memo(
+  ({
+    day,
+    index,
+    onPress,
+    showHours,
+  }: {
+    key: number;
+    day: WeekDay;
+    index: number;
+    onPress?: (day: WeekDay, index: number) => void;
+    showHours: boolean;
+  }) => {
+    const scale = useSharedValue(1);
+    const glow = useSharedValue(0);
+
+    const status = getDayStatus(day);
+    const config = STATUS_CONFIG[status];
+
+    const handlePress = useCallback(() => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+      scale.value = withSpring(0.92, { damping: 12 }, () => {
+        scale.value = withSpring(1);
+      });
+
+      glow.value = withTiming(1, { duration: 120 }, () => {
+        glow.value = withTiming(0, { duration: 180 });
+      });
+
+      onPress?.(day, index);
+    }, [day, index, onPress]);
+
+    const animatedStyle = useAnimatedStyle(() => ({
+      transform: [{ scale: scale.value }],
+    }));
+
+    const glowStyle = useAnimatedStyle(() => ({
+      opacity: interpolate(glow.value, [0, 1], [0, 0.25]),
+    }));
+
+    return (
+      <Animated.View
+        entering={FadeInDown.delay(80 + index * 40).springify()}
+        style={[styles.weekDayWrapper, animatedStyle]}
+      >
+        <TouchableOpacity onPress={handlePress} activeOpacity={0.75}>
+          <Animated.View
+            style={[
+              styles.glowEffect,
+              { backgroundColor: config.color },
+              glowStyle,
+            ]}
+          />
+
+          <View style={styles.weekDayContent}>
+            <Text style={styles.weekDayLetter}>{day.letter}</Text>
+
+            <LinearGradient
+              colors={config.gradient}
+              style={[
+                styles.weekDayIndicator,
+                { opacity: status !== "absent" ? 1 : 0.35 },
+              ]}
+            >
+              {status !== "absent" && (
+                <Ionicons
+                  name={config.icon as any}
+                  size={10}
+                  color={COLORS.white}
+                />
+              )}
+            </LinearGradient>
+
+            {showHours && day.heures !== undefined && (
+              <Text style={styles.weekDayHours}>{day.heures}h</Text>
+            )}
+          </View>
+        </TouchableOpacity>
+      </Animated.View>
+    );
+  },
+);
+
+DayItem.displayName = "DayItem";
+
 export const WeekIndicator = memo(
   ({ days, onDayPress, showHours = false }: WeekIndicatorProps) => {
-    // Rendu d'un jour avec animation
-    const renderDay = useCallback(
+    const stats = useMemo(() => {
+      let present = 0;
+      let partial = 0;
+
+      for (const d of days) {
+        if (d.partial) partial++;
+        else if (d.present) present++;
+      }
+
+      return { present, partial };
+    }, [days]);
+
+    const handlePress = useCallback(
       (day: WeekDay, index: number) => {
-        const scale = useSharedValue(1);
-        const glow = useSharedValue(0);
-
-        // Déterminer le statut du jour
-        const getDayStatus = () => {
-          if (day.present && day.partial) return "partial";
-          if (day.present) return "present";
-          return "absent";
-        };
-
-        const status = getDayStatus();
-
-        // Configuration selon le statut avec `as const` pour les gradients
-        const getStatusConfig = () => {
-          switch (status) {
-            case "present":
-              return {
-                color: COLORS.success.main,
-                gradient: [COLORS.success.light, COLORS.success.main] as const,
-                icon: "checkmark-circle" as const,
-                label: "Présent",
-              };
-            case "partial":
-              return {
-                color: COLORS.warning.main,
-                gradient: [COLORS.warning.light, COLORS.warning.main] as const,
-                icon: "time" as const,
-                label: "Partiel",
-              };
-            default:
-              return {
-                color: COLORS.gray[300],
-                gradient: [COLORS.gray[200], COLORS.gray[300]] as const,
-                icon: "close-circle" as const,
-                label: "Absent",
-              };
-          }
-        };
-
-        const config = getStatusConfig();
-
-        // Gestion du clic
-        const handlePress = () => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
-          scale.value = withSpring(0.92, { damping: 12 }, () => {
-            scale.value = withSpring(1);
-          });
-
-          glow.value = withTiming(1, { duration: 120 }, () => {
-            glow.value = withTiming(0, { duration: 180 });
-          });
-
-          onDayPress?.(day, index);
-        };
-
-        // Styles animés
-        const animatedStyle = useAnimatedStyle(() => ({
-          transform: [{ scale: scale.value }],
-        }));
-
-        const glowStyle = useAnimatedStyle(() => ({
-          opacity: interpolate(glow.value, [0, 1], [0, 0.25]),
-        }));
-
-        return (
-          <Animated.View
-            key={index}
-            entering={FadeInDown.delay(100 + index * 50).springify()}
-            style={[styles.weekDayWrapper, animatedStyle]}
-          >
-            <Animated.View
-              style={[
-                styles.glowEffect,
-                { backgroundColor: config.color },
-                glowStyle,
-              ]}
-            />
-
-            <View style={styles.weekDayContent}>
-              {/* Lettre du jour */}
-              <Text style={styles.weekDayLetter}>{day.letter}</Text>
-
-              {/* Indicateur avec gradient */}
-              <LinearGradient
-                colors={config.gradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={[
-                  styles.weekDayIndicator,
-                  { opacity: status !== "absent" ? 1 : 0.3 },
-                ]}
-              >
-                {status !== "absent" && (
-                  <Ionicons name={config.icon} size={10} color={COLORS.white} />
-                )}
-              </LinearGradient>
-
-              {/* Heures (optionnel) */}
-              {showHours && day.heures && (
-                <Text style={styles.weekDayHours}>{day.heures}h</Text>
-              )}
-            </View>
-
-            {/* Label du statut au survol (pour les grands écrans) */}
-            {Platform.OS === "web" && (
-              <View
-                style={[
-                  styles.statusTooltip,
-                  { backgroundColor: config.color },
-                ]}
-              >
-                <Text style={styles.statusTooltipText}>{config.label}</Text>
-              </View>
-            )}
-          </Animated.View>
-        );
+        onDayPress?.(day, index);
       },
-      [onDayPress, showHours],
+      [onDayPress],
     );
-
-    // Calcul des statistiques de la semaine
-    const stats = {
-      present: days.filter((d) => d.present && !d.partial).length,
-      partial: days.filter((d) => d.partial).length,
-      total: days.length,
-    };
 
     return (
       <View style={styles.section}>
-        {/* En-tête avec statistiques */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Cette semaine</Text>
+
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
               <View
@@ -171,6 +179,7 @@ export const WeekIndicator = memo(
               />
               <Text style={styles.statText}>{stats.present}</Text>
             </View>
+
             <View style={styles.statItem}>
               <View
                 style={[
@@ -183,30 +192,29 @@ export const WeekIndicator = memo(
           </View>
         </View>
 
-        {/* Conteneur de la semaine */}
         <LinearGradient
-          colors={[COLORS.white, COLORS.gray[50]] as const}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+          colors={[COLORS.white, COLORS.gray[50]]}
           style={styles.weekContainer}
         >
-          {/* Grille des jours */}
           <View style={styles.weekGrid}>
-            {days.map((day, index) => renderDay(day, index))}
+            {days.map((day, index) => (
+              <DayItem
+                key={index}
+                day={day}
+                index={index}
+                onPress={handlePress}
+                showHours={showHours}
+              />
+            ))}
           </View>
 
-          {/* Ligne décorative */}
           <View style={styles.decorativeLine}>
             <LinearGradient
-              colors={
-                [
-                  COLORS.primary.light,
-                  COLORS.primary.main,
-                  COLORS.primary.light,
-                ] as const
-              }
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
+              colors={[
+                COLORS.primary.light,
+                COLORS.primary.main,
+                COLORS.primary.light,
+              ]}
               style={styles.decorativeGradient}
             />
           </View>
@@ -216,10 +224,10 @@ export const WeekIndicator = memo(
   },
 );
 
+WeekIndicator.displayName = "WeekIndicator";
+
 const styles = StyleSheet.create({
-  section: {
-    marginBottom: 90,
-  },
+  section: { marginBottom: 90 },
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -232,20 +240,9 @@ const styles = StyleSheet.create({
     color: COLORS.gray[900],
     letterSpacing: -0.5,
   },
-  statsContainer: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  statItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  statDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
+  statsContainer: { flexDirection: "row", gap: 12 },
+  statItem: { flexDirection: "row", alignItems: "center", gap: 4 },
+  statDot: { width: 8, height: 8, borderRadius: 4 },
   statText: {
     fontSize: 13,
     fontFamily: getFontFamily("medium"),
@@ -263,9 +260,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.05,
         shadowRadius: 8,
       },
-      android: {
-        elevation: 2,
-      },
+      android: { elevation: 2 },
     }),
   },
   weekGrid: {
@@ -277,7 +272,6 @@ const styles = StyleSheet.create({
   weekDayWrapper: {
     alignItems: "center",
     position: "relative",
-    padding: 8,
   },
   glowEffect: {
     position: "absolute",
@@ -288,10 +282,7 @@ const styles = StyleSheet.create({
     opacity: 0,
     borderRadius: 12,
   },
-  weekDayContent: {
-    alignItems: "center",
-    gap: 8,
-  },
+  weekDayContent: { alignItems: "center", gap: 8 },
   weekDayLetter: {
     fontSize: 15,
     fontFamily: getFontFamily("semibold"),
@@ -311,9 +302,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 4,
       },
-      android: {
-        elevation: 2,
-      },
+      android: { elevation: 2 },
     }),
   },
   weekDayHours: {
@@ -322,38 +311,14 @@ const styles = StyleSheet.create({
     color: COLORS.gray[500],
     marginTop: 4,
   },
-  statusTooltip: {
-    position: "absolute",
-    top: -30,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    opacity: 0,
-    ...Platform.select({
-      web: {
-        transition: "opacity 0.2s",
-        ":hover": {
-          opacity: 1,
-        },
-      },
-    }),
-  },
-  statusTooltipText: {
-    color: COLORS.white,
-    fontSize: 10,
-    fontFamily: getFontFamily("medium"),
-  },
   decorativeLine: {
     height: 2,
     width: "80%",
     alignSelf: "center",
     marginBottom: 8,
   },
-  decorativeGradient: {
-    flex: 1,
-    height: "100%",
-  },
+  decorativeGradient: { flex: 1, height: "100%" },
 });
 
-// Ajout du display name
+DayItem.displayName = "DayItem";
 WeekIndicator.displayName = "WeekIndicator";
