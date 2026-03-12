@@ -82,7 +82,6 @@ export const LocationInfo: React.FC<LocationInfoProps> = ({
       entering={FadeInDown.delay(100).springify()}
       style={styles.content}
     >
-      {/* En-tête avec icône */}
       <View style={styles.header}>
         <LinearGradient
           colors={[`${statusColor}15`, `${statusColor}05`]}
@@ -178,13 +177,10 @@ export const LocationInfo: React.FC<LocationInfoProps> = ({
 };
 
 const styles = StyleSheet.create({
-  // ✅ Base container commun
   baseContainer: {
-    marginHorizontal: 16,
     marginVertical: 8,
   },
 
-  // ✅ Container iOS
   iosContainer: {
     borderRadius: 24,
     overflow: "hidden",
@@ -194,7 +190,6 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
   },
 
-  // ✅ Container Android
   androidContainer: {
     borderRadius: 24,
     borderWidth: 1,
