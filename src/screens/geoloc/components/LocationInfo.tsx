@@ -9,7 +9,6 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { LOCATION_MESSAGES, ZONE_COLORS } from "../constants/geoloc.constants";
 import { LocationStatus } from "../types/geoloc.types";
 
-
 interface LocationInfoProps {
   status: LocationStatus;
   isLoading: boolean;
@@ -46,7 +45,6 @@ const AccuracyIndicator: React.FC<{ accuracy: number; color: string }> = ({
   );
 };
 
-// ==================== COMPOSANT PRINCIPAL ====================
 export const LocationInfo: React.FC<LocationInfoProps> = ({
   status,
   isLoading,
@@ -73,9 +71,10 @@ export const LocationInfo: React.FC<LocationInfoProps> = ({
     return `${(meters / 1000).toFixed(1)} km`;
   };
 
+  // ✅ Styles conditionnels séparés
   const containerStyle = Platform.select({
-    ios: styles.blurContainer,
-    android: styles.gradientContainer,
+    ios: [styles.baseContainer, styles.iosContainer],
+    android: [styles.baseContainer, styles.androidContainer],
   });
 
   const content = (
@@ -131,10 +130,8 @@ export const LocationInfo: React.FC<LocationInfoProps> = ({
             </View>
           </View>
 
-          {/* Indicateur de précision */}
           <AccuracyIndicator accuracy={status.accuracy} color={statusColor} />
 
-          {/* Timestamp */}
           <View style={styles.timestamp}>
             <Ionicons name="time-outline" size={12} color={COLORS.gray[400]} />
             <Text style={styles.timestampText}>
@@ -181,30 +178,30 @@ export const LocationInfo: React.FC<LocationInfoProps> = ({
 };
 
 const styles = StyleSheet.create({
-  blurContainer: {
+  // ✅ Base container commun
+  baseContainer: {
+    marginHorizontal: 16,
+    marginVertical: 8,
+  },
+
+  // ✅ Container iOS
+  iosContainer: {
     borderRadius: 24,
     overflow: "hidden",
-    marginVertical: 8,
-    ...Platform.select({
-      ios: {
-        shadowColor: COLORS.black,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 12,
-      },
-    }),
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
   },
-  gradientContainer: {
+
+  // ✅ Container Android
+  androidContainer: {
     borderRadius: 24,
-    marginVertical: 8,
     borderWidth: 1,
     borderColor: COLORS.gray[200],
-    ...Platform.select({
-      android: {
-        elevation: 4,
-      },
-    }),
+    elevation: 4,
   },
+
   content: {},
   header: {
     flexDirection: "row",
