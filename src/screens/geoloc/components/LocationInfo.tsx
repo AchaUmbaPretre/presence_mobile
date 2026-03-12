@@ -3,82 +3,170 @@ import { COLORS } from "@/screens/dashboard/constants/color";
 import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
-import { Platform, StyleSheet, Text, View } from "react-native";
+import React, { useMemo } from "react";
+import { Dimensions, Platform, StyleSheet, Text, View } from "react-native";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { LOCATION_MESSAGES, ZONE_COLORS } from "../constants/geoloc.constants";
 import { LocationStatus } from "../types/geoloc.types";
+
+const { width } = Dimensions.get("window");
 
 interface LocationInfoProps {
   status: LocationStatus;
   isLoading: boolean;
 }
 
+// ==================== COMPOSANT D'INDICATEUR DE PRÉCISION ====================
+const AccuracyIndicator: React.FC<{ accuracy: number; color: string }> = ({
+  accuracy,
+  color,
+}) => {
+  const getAccuracyLevel = () => {
+    if (accuracy < 10) return { label: "Haute", value: 90 };
+    if (accuracy < 30) return { label: "Bonne", value: 70 };
+    if (accuracy < 50) return { label: "Moyenne", value: 50 };
+    return { label: "Faible", value: 30 };
+  };
+
+  const level = getAccuracyLevel();
+
+  return (
+    <View style={styles.accuracyContainer}>
+      <View style={styles.accuracyHeader}>
+        <Text style={styles.accuracyLabel}>Précision</Text>
+        <Text style={[styles.accuracyLevel, { color }]}>{level.label}</Text>
+      </View>
+      <View style={styles.accuracyBar}>
+        <View
+          style={[
+            styles.accuracyFill,
+            { width: `${level.value}%`, backgroundColor: color },
+          ]}
+        />
+      </View>
+    </View>
+  );
+};
+
+// ==================== COMPOSANT PRINCIPAL ====================
 export const LocationInfo: React.FC<LocationInfoProps> = ({
   status,
   isLoading,
 }) => {
-  const getStatusColor = () => {
+  const statusColor = useMemo(() => {
     if (isLoading) return COLORS.gray[400];
     return status.isWithinZone ? ZONE_COLORS.authorized : ZONE_COLORS.forbidden;
-  };
+  }, [isLoading, status.isWithinZone]);
 
-  const getStatusIcon = () => {
+  const statusIcon = useMemo(() => {
     if (isLoading) return "time-outline";
     return status.isWithinZone ? "checkmark-circle" : "alert-circle";
-  };
+  }, [isLoading, status.isWithinZone]);
 
-  const getStatusMessage = () => {
+  const statusMessage = useMemo(() => {
     if (isLoading) return LOCATION_MESSAGES.loading;
     if (!status.isWithinZone) return LOCATION_MESSAGES.outsideZone;
     if (status.accuracy > 50) return LOCATION_MESSAGES.poorAccuracy;
     return LOCATION_MESSAGES.withinZone;
-  };
+  }, [isLoading, status.isWithinZone, status.accuracy]);
 
   const formatDistance = (meters: number) => {
-    if (meters < 1000) return `${meters} m`;
+    if (meters < 1000) return `${Math.round(meters)} m`;
     return `${(meters / 1000).toFixed(1)} km`;
   };
 
+  const containerStyle = Platform.select({
+    ios: styles.blurContainer,
+    android: styles.gradientContainer,
+  });
+
   const content = (
-    <View style={styles.container}>
-      <View
-        style={[
-          styles.iconContainer,
-          { backgroundColor: getStatusColor() + "15" },
-        ]}
-      >
-        <Ionicons name={getStatusIcon()} size={28} color={getStatusColor()} />
+    <Animated.View
+      entering={FadeInDown.delay(100).springify()}
+      style={styles.content}
+    >
+      {/* En-tête avec icône */}
+      <View style={styles.header}>
+        <LinearGradient
+          colors={[`${statusColor}15`, `${statusColor}05`]}
+          style={[styles.iconContainer, { borderColor: statusColor }]}
+        >
+          <Ionicons name={statusIcon} size={32} color={statusColor} />
+        </LinearGradient>
+
+        <View style={styles.headerText}>
+          <Text style={[styles.title, { color: statusColor }]}>
+            {status.isWithinZone ? "Zone Autorisée" : "Hors Zone"}
+          </Text>
+          <Text style={styles.message}>{statusMessage}</Text>
+        </View>
       </View>
 
-      <View style={styles.textContainer}>
-        <Text style={[styles.message, { color: getStatusColor() }]}>
-          {getStatusMessage()}
-        </Text>
-
-        {!isLoading && (
-          <View style={styles.details}>
-            <View style={styles.detailRow}>
-              <Ionicons name="resize" size={14} color={COLORS.gray[500]} />
-              <Text style={styles.detailText}>
-                Distance: {formatDistance(status.distance)}
+      {/* Informations détaillées */}
+      {!isLoading && (
+        <View style={styles.detailsCard}>
+          <View style={styles.detailsRow}>
+            <View style={styles.detailItem}>
+              <Ionicons
+                name="navigate-outline"
+                size={16}
+                color={COLORS.gray[500]}
+              />
+              <Text style={styles.detailLabel}>Distance</Text>
+              <Text style={[styles.detailValue, { color: statusColor }]}>
+                {formatDistance(status.distance)}
               </Text>
             </View>
 
-            <View style={styles.detailRow}>
-              <Ionicons name="speedometer" size={14} color={COLORS.gray[500]} />
-              <Text style={styles.detailText}>
-                Précision: ±{Math.round(status.accuracy)} m
+            <View style={styles.detailDivider} />
+
+            <View style={styles.detailItem}>
+              <Ionicons
+                name="speedometer-outline"
+                size={16}
+                color={COLORS.gray[500]}
+              />
+              <Text style={styles.detailLabel}>Précision</Text>
+              <Text style={[styles.detailValue, { color: statusColor }]}>
+                ±{Math.round(status.accuracy)}m
               </Text>
             </View>
           </View>
-        )}
-      </View>
-    </View>
+
+          {/* Indicateur de précision */}
+          <AccuracyIndicator accuracy={status.accuracy} color={statusColor} />
+
+          {/* Timestamp */}
+          <View style={styles.timestamp}>
+            <Ionicons name="time-outline" size={12} color={COLORS.gray[400]} />
+            <Text style={styles.timestampText}>
+              Mis à jour à{" "}
+              {new Date(status.timestamp).toLocaleTimeString("fr-FR")}
+            </Text>
+          </View>
+        </View>
+      )}
+
+      {/* Loader */}
+      {isLoading && (
+        <View style={styles.loadingContainer}>
+          <View style={styles.loadingDots}>
+            {[0, 1, 2].map((i) => (
+              <Animated.View
+                key={i}
+                entering={FadeInDown.delay(200 + i * 100).springify()}
+                style={[styles.loadingDot, { backgroundColor: statusColor }]}
+              />
+            ))}
+          </View>
+        </View>
+      )}
+    </Animated.View>
   );
 
   if (Platform.OS === "ios") {
     return (
-      <BlurView intensity={80} tint="light" style={styles.blurContainer}>
+      <BlurView intensity={80} tint="light" style={containerStyle}>
         {content}
       </BlurView>
     );
@@ -87,7 +175,7 @@ export const LocationInfo: React.FC<LocationInfoProps> = ({
   return (
     <LinearGradient
       colors={[COLORS.white, COLORS.gray[50]]}
-      style={styles.gradientContainer}
+      style={containerStyle}
     >
       {content}
     </LinearGradient>
@@ -96,49 +184,144 @@ export const LocationInfo: React.FC<LocationInfoProps> = ({
 
 const styles = StyleSheet.create({
   blurContainer: {
-    borderRadius: 16,
+    borderRadius: 24,
     overflow: "hidden",
-    marginBottom: 16,
+    marginVertical: 8,
+    ...Platform.select({
+      ios: {
+        shadowColor: COLORS.black,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
+      },
+    }),
   },
   gradientContainer: {
+    borderRadius: 24,
+    marginVertical: 8,
+    borderWidth: 1,
+    borderColor: COLORS.gray[200],
+    ...Platform.select({
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  content: {},
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  iconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 16,
+    borderWidth: 2,
+    borderColor: COLORS.success.main,
+  },
+  headerText: {
+    flex: 1,
+  },
+  title: {
+    fontSize: 18,
+    fontFamily: getFontFamily("bold"),
+    marginBottom: 2,
+  },
+  message: {
+    fontSize: 13,
+    fontFamily: getFontFamily("regular"),
+    color: COLORS.gray[600],
+  },
+  detailsCard: {
+    backgroundColor: COLORS.gray[50],
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
     borderColor: COLORS.gray[200],
+  },
+  detailsRow: {
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 16,
   },
-  container: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 16,
-  },
-  iconContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-  },
-  textContainer: {
+  detailItem: {
     flex: 1,
-  },
-  message: {
-    fontSize: 15,
-    fontFamily: getFontFamily("semibold"),
-    marginBottom: 4,
-  },
-  details: {
-    gap: 4,
-  },
-  detailRow: {
-    flexDirection: "row",
     alignItems: "center",
-    gap: 6,
   },
-  detailText: {
+  detailLabel: {
+    fontSize: 11,
+    fontFamily: getFontFamily("regular"),
+    color: COLORS.gray[500],
+    marginTop: 4,
+    marginBottom: 2,
+  },
+  detailValue: {
+    fontSize: 16,
+    fontFamily: getFontFamily("bold"),
+  },
+  detailDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: COLORS.gray[300],
+    marginHorizontal: 12,
+  },
+  accuracyContainer: {
+    marginTop: 8,
+  },
+  accuracyHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  accuracyLabel: {
     fontSize: 12,
     fontFamily: getFontFamily("regular"),
     color: COLORS.gray[600],
+  },
+  accuracyLevel: {
+    fontSize: 12,
+    fontFamily: getFontFamily("semibold"),
+  },
+  accuracyBar: {
+    height: 6,
+    backgroundColor: COLORS.gray[300],
+    borderRadius: 3,
+    overflow: "hidden",
+  },
+  accuracyFill: {
+    height: "100%",
+    borderRadius: 3,
+  },
+  timestamp: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 12,
+    gap: 4,
+  },
+  timestampText: {
+    fontSize: 11,
+    fontFamily: getFontFamily("regular"),
+    color: COLORS.gray[400],
+    fontStyle: "italic",
+  },
+  loadingContainer: {
+    alignItems: "center",
+    paddingVertical: 12,
+  },
+  loadingDots: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  loadingDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    opacity: 0.6,
   },
 });

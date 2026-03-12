@@ -16,14 +16,7 @@ export const ZoneIndicator: React.FC<ZoneIndicatorProps> = ({
   status,
   maxDistance = 200,
 }) => {
-  const progress = Math.min(status.distance / maxDistance, 1);
   const percentage = Math.min(100 - (status.distance / maxDistance) * 100, 100);
-
-  const getProgressColor = () => {
-    if (status.isWithinZone) return ZONE_COLORS.authorized;
-    if (status.distance > maxDistance) return ZONE_COLORS.forbidden;
-    return ZONE_COLORS.warning;
-  };
 
   return (
     <View style={styles.container}>
