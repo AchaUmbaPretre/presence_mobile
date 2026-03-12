@@ -101,14 +101,12 @@ export const useReports = () => {
   }, [filters.period, filters.startDate, filters.endDate, filters.userId]);
 
   return {
-    // Données
     stats,
     isLoading,
     isRefreshing,
     error,
     filters,
 
-    // Actions
     refresh,
     updateFilters,
     resetFilters,
