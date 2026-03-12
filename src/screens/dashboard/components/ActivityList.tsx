@@ -31,16 +31,7 @@ interface ActivityListProps {
 }
 
 // ==================== CONFIGURATION DES ACTIVITÉS ====================
-type ActivityType =
-  | "arrival"
-  | "departure"
-  | "break"
-  | "absent"
-  | "non_travaille"
-  | "ferie"
-  | "justifie";
-
-interface ActivityConfig {
+type ActivityConfig = {
   label: string;
   icon: keyof typeof Ionicons.glyphMap;
   colors: {
@@ -49,9 +40,8 @@ interface ActivityConfig {
     gradient: readonly [string, string];
   };
   badge: string;
-}
+};
 
-// Configuration des activités avec tous les statuts
 const ACTIVITY_CONFIG: Record<string, ActivityConfig> = {
   arrival: {
     label: "Arrivée",
@@ -135,19 +125,19 @@ const ACTIVITY_CONFIG: Record<string, ActivityConfig> = {
   },
 };
 
-// Fonction de mapping simplifiée
-const getActivityConfig = (type: string): ActivityConfig => {
-  console.log(`🔍 Recherche config pour type: "${type}"`);
+// ==================== CONSTANTES ====================
+const ANIMATION = {
+  SCALE_TO: 0.97,
+  DAMPING: 12,
+  GLOW_DURATION: 100,
+  FADE_DURATION: 200,
+  DELAY_STEP: 50,
+  OPACITY_MAX: 0.15,
+} as const;
 
-  // Retourner la config si elle existe
-  if (ACTIVITY_CONFIG[type]) {
-    return ACTIVITY_CONFIG[type];
-  }
-
-  // Fallback
-  console.warn(`⚠️ Type inconnu: "${type}", fallback sur break`);
-  return ACTIVITY_CONFIG.break;
-};
+// ==================== UTILS ====================
+const getActivityConfig = (type: string): ActivityConfig => 
+  ACTIVITY_CONFIG[type] ?? ACTIVITY_CONFIG.break;
 
 // ==================== COMPOSANT ACTIVITY ROW ====================
 interface ActivityRowProps {
@@ -159,131 +149,70 @@ interface ActivityRowProps {
 const ActivityRow = memo(({ activity, index, onPress }: ActivityRowProps) => {
   const scale = useSharedValue(1);
   const glow = useSharedValue(0);
+  const config = getActivityConfig(activity.type);
 
-  // Récupérer la configuration
-  const config = useMemo(
-    () => getActivityConfig(activity.type),
-    [activity.type],
-  );
-
-  // Debug - pour voir les types reçus
-  console.log(`📝 Type reçu: "${activity.type}" → Config:`, config.label);
-
-  // Gestion du clic
   const handlePress = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-    scale.value = withSpring(0.97, { damping: 12 }, () => {
+    scale.value = withSpring(ANIMATION.SCALE_TO, { damping: ANIMATION.DAMPING }, () => {
       scale.value = withSpring(1);
     });
 
-    glow.value = withTiming(1, { duration: 100 }, () => {
-      glow.value = withTiming(0, { duration: 200 });
-      if (onPress) {
-        runOnJS(onPress)(activity);
-      }
+    glow.value = withTiming(1, { duration: ANIMATION.GLOW_DURATION }, () => {
+      glow.value = withTiming(0, { duration: ANIMATION.FADE_DURATION });
+      if (onPress) runOnJS(onPress)(activity);
     });
-  }, [activity, onPress, scale, glow]);
+  }, [activity, onPress]);
 
-  // Styles animés
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
   }));
 
   const glowStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(glow.value, [0, 1], [0, 0.15]),
+    opacity: interpolate(glow.value, [0, 1], [0, ANIMATION.OPACITY_MAX]),
   }));
 
   return (
     <Animated.View
-      entering={FadeInDown.delay(100 + index * 50).springify()}
-      style={[styles.activityRowWrapper, animatedStyle]}
+      entering={FadeInDown.delay(100 + index * ANIMATION.DELAY_STEP).springify()}
+      style={[styles.row, animatedStyle]}
     >
-      <TouchableOpacity
-        style={styles.activityTouchable}
-        onPress={handlePress}
-        activeOpacity={0.9}
-      >
-        <LinearGradient
-          colors={[COLORS.white, COLORS.gray[50]]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.activityGradient}
-        >
-          {/* Effet de glow */}
-          <Animated.View
-            style={[
-              styles.glowEffect,
-              { backgroundColor: config.colors.primary },
-              glowStyle,
-            ]}
-          />
+      <TouchableOpacity style={styles.touchable} onPress={handlePress} activeOpacity={0.9}>
+        <LinearGradient colors={[COLORS.white, COLORS.gray[50]]} style={styles.gradient}>
+          <Animated.View style={[styles.glow, { backgroundColor: config.colors.primary }, glowStyle]} />
 
-          <View style={styles.activityItem}>
-            {/* Icône avec gradient */}
-            <LinearGradient
-              colors={config.colors.gradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.iconContainer}
-            >
+          <View style={styles.item}>
+            <LinearGradient colors={config.colors.gradient} style={styles.icon}>
               <Ionicons name={config.icon} size={18} color={COLORS.white} />
             </LinearGradient>
 
-            {/* Contenu principal */}
-            <View style={styles.activityContent}>
-              <View style={styles.titleRow}>
-                <Text style={styles.activityTitle}>{config.label}</Text>
-                <View
-                  style={[
-                    styles.typeBadge,
-                    { backgroundColor: `${config.colors.primary}12` },
-                  ]}
-                >
-                  <View
-                    style={[
-                      styles.typeDot,
-                      { backgroundColor: config.colors.primary },
-                    ]}
-                  />
-                  <Text
-                    style={[styles.typeText, { color: config.colors.primary }]}
-                  >
+            <View style={styles.content}>
+              <View style={styles.header}>
+                <Text style={styles.title}>{config.label}</Text>
+                <View style={[styles.badge, { backgroundColor: `${config.colors.primary}12` }]}>
+                  <View style={[styles.dot, { backgroundColor: config.colors.primary }]} />
+                  <Text style={[styles.badgeText, { color: config.colors.primary }]}>
                     {config.badge}
                   </Text>
                 </View>
               </View>
 
-              <View style={styles.detailsRow}>
-                <View style={styles.timeContainer}>
-                  <Ionicons
-                    name="time-outline"
-                    size={12}
-                    color={COLORS.gray[400]}
-                  />
-                  <Text style={styles.activityTime}>{activity.time}</Text>
+              <View style={styles.details}>
+                <View style={styles.time}>
+                  <Ionicons name="time-outline" size={12} color={COLORS.gray[400]} />
+                  <Text style={styles.timeText}>{activity.time}</Text>
                 </View>
                 {activity.status && (
                   <>
-                    <View style={styles.statusDot} />
-                    <Text style={styles.activityStatus}>{activity.status}</Text>
+                    <View style={styles.separator} />
+                    <Text style={styles.status}>{activity.status}</Text>
                   </>
                 )}
               </View>
             </View>
 
-            {/* Flèche de navigation */}
-            <View
-              style={[
-                styles.arrowContainer,
-                { backgroundColor: `${config.colors.primary}08` },
-              ]}
-            >
-              <Ionicons
-                name="chevron-forward"
-                size={16}
-                color={config.colors.primary}
-              />
+            <View style={[styles.arrow, { backgroundColor: `${config.colors.primary}08` }]}>
+              <Ionicons name="chevron-forward" size={16} color={config.colors.primary} />
             </View>
           </View>
         </LinearGradient>
@@ -293,118 +222,74 @@ const ActivityRow = memo(({ activity, index, onPress }: ActivityRowProps) => {
 });
 
 // ==================== COMPOSANT PRINCIPAL ====================
-export const ActivityList = memo(
-  ({
-    activities,
-    onSeeAll,
-    onActivityPress,
-    maxItems = 5,
-  }: ActivityListProps) => {
-    const displayedActivities = useMemo(
-      () => activities.slice(0, maxItems),
-      [activities, maxItems],
-    );
+export const ActivityList = memo(({ 
+  activities, 
+  onSeeAll, 
+  onActivityPress, 
+  maxItems = 5 
+}: ActivityListProps) => {
+  const displayed = useMemo(() => activities.slice(0, maxItems), [activities, maxItems]);
+  const hasMore = activities.length > maxItems;
 
-    const hasMore = activities.length > maxItems;
-
-    // État vide
-    if (displayedActivities.length === 0) {
-      return (
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <View style={styles.titleContainer}>
-              <Text style={styles.sectionTitle}>Activité récente</Text>
-            </View>
-          </View>
-          <Animated.View
-            entering={FadeInDown.springify()}
-            style={styles.emptyContainer}
-          >
-            <LinearGradient
-              colors={[COLORS.gray[50], COLORS.white]}
-              style={styles.emptyGradient}
-            >
-              <View style={styles.emptyIconContainer}>
-                <Ionicons
-                  name="time-outline"
-                  size={32}
-                  color={COLORS.gray[300]}
-                />
-              </View>
-              <Text style={styles.emptyTitle}>Aucune activité</Text>
-              <Text style={styles.emptyText}>
-                Les activités récentes apparaîtront ici
-              </Text>
-            </LinearGradient>
-          </Animated.View>
-        </View>
-      );
-    }
-
+  if (displayed.length === 0) {
     return (
       <View style={styles.section}>
-        {/* En-tête de section */}
         <View style={styles.sectionHeader}>
           <View style={styles.titleContainer}>
             <Text style={styles.sectionTitle}>Activité récente</Text>
-            <View style={styles.countBadge}>
-              <Text style={styles.countText}>{activities.length}</Text>
-            </View>
           </View>
-          {onSeeAll && hasMore && (
-            <TouchableOpacity
-              onPress={() => {
-                Haptics.selectionAsync();
-                onSeeAll();
-              }}
-              activeOpacity={0.7}
-            >
-              <LinearGradient
-                colors={[COLORS.primary.light, COLORS.primary.main]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.seeAllButton}
-              >
-                <Text style={styles.sectionLink}>Voir tout</Text>
-                <Ionicons name="arrow-forward" size={14} color={COLORS.white} />
-              </LinearGradient>
-            </TouchableOpacity>
-          )}
         </View>
-
-        {/* Liste des activités */}
-        <View style={styles.activityContainer}>
-          {displayedActivities.map((activity, index) => (
-            <React.Fragment key={activity.id}>
-              <ActivityRow
-                activity={activity}
-                index={index}
-                onPress={onActivityPress}
-              />
-              {index < displayedActivities.length - 1 && (
-                <LinearGradient
-                  colors={[
-                    COLORS.gray[100],
-                    COLORS.gray[200],
-                    COLORS.gray[100],
-                  ]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.divider}
-                />
-              )}
-            </React.Fragment>
-          ))}
-        </View>
+        <Animated.View entering={FadeInDown.springify()} style={styles.empty}>
+          <LinearGradient colors={[COLORS.gray[50], COLORS.white]} style={styles.emptyGradient}>
+            <View style={styles.emptyIcon}>
+              <Ionicons name="time-outline" size={32} color={COLORS.gray[300]} />
+            </View>
+            <Text style={styles.emptyTitle}>Aucune activité</Text>
+            <Text style={styles.emptyText}>Les activités récentes apparaîtront ici</Text>
+          </LinearGradient>
+        </Animated.View>
       </View>
     );
-  },
-);
+  }
+
+  return (
+    <View style={styles.section}>
+      <View style={styles.sectionHeader}>
+        <View style={styles.titleContainer}>
+          <Text style={styles.sectionTitle}>Activité récente</Text>
+          <View style={styles.count}>
+            <Text style={styles.countText}>{activities.length}</Text>
+          </View>
+        </View>
+        {onSeeAll && hasMore && (
+          <TouchableOpacity onPress={onSeeAll} activeOpacity={0.7}>
+            <LinearGradient colors={[COLORS.primary.light, COLORS.primary.main]} style={styles.seeAll}>
+              <Text style={styles.seeAllText}>Voir tout</Text>
+              <Ionicons name="arrow-forward" size={14} color={COLORS.white} />
+            </LinearGradient>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      <View style={styles.container}>
+        {displayed.map((activity, index) => (
+          <React.Fragment key={activity.id}>
+            <ActivityRow activity={activity} index={index} onPress={onActivityPress} />
+            {index < displayed.length - 1 && (
+              <LinearGradient colors={[COLORS.gray[100], COLORS.gray[200], COLORS.gray[100]]} style={styles.divider} />
+            )}
+          </React.Fragment>
+        ))}
+      </View>
+    </View>
+  );
+});
 
 // ==================== STYLES ====================
 const styles = StyleSheet.create({
   section: {
     marginBottom: 28,
+    paddingHorizontal: 20,
   },
   sectionHeader: {
     flexDirection: "row",
@@ -423,7 +308,7 @@ const styles = StyleSheet.create({
     color: COLORS.gray[900],
     letterSpacing: -0.5,
   },
-  countBadge: {
+  count: {
     backgroundColor: COLORS.primary.light,
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -434,7 +319,7 @@ const styles = StyleSheet.create({
     fontFamily: getFontFamily("semibold"),
     color: COLORS.primary.main,
   },
-  seeAllButton: {
+  seeAll: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
@@ -448,17 +333,15 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.15,
         shadowRadius: 4,
       },
-      android: {
-        elevation: 3,
-      },
+      android: { elevation: 3 },
     }),
   },
-  sectionLink: {
+  seeAllText: {
     fontSize: 13,
     fontFamily: getFontFamily("medium"),
     color: COLORS.white,
   },
-  activityContainer: {
+  container: {
     backgroundColor: COLORS.white,
     borderRadius: 20,
     overflow: "hidden",
@@ -471,23 +354,17 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.05,
         shadowRadius: 8,
       },
-      android: {
-        elevation: 2,
-      },
+      android: { elevation: 2 },
     }),
   },
-  activityRowWrapper: {
-    width: "100%",
-  },
-  activityTouchable: {
-    width: "100%",
-  },
-  activityGradient: {
+  row: { width: "100%" },
+  touchable: { width: "100%" },
+  gradient: {
     padding: 16,
     position: "relative",
     overflow: "hidden",
   },
-  glowEffect: {
+  glow: {
     position: "absolute",
     top: 0,
     left: 0,
@@ -495,12 +372,12 @@ const styles = StyleSheet.create({
     bottom: 0,
     opacity: 0,
   },
-  activityItem: {
+  item: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
   },
-  iconContainer: {
+  icon: {
     width: 40,
     height: 40,
     borderRadius: 12,
@@ -513,26 +390,22 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 4,
       },
-      android: {
-        elevation: 2,
-      },
+      android: { elevation: 2 },
     }),
   },
-  activityContent: {
-    flex: 1,
-  },
-  titleRow: {
+  content: { flex: 1 },
+  header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 4,
   },
-  activityTitle: {
+  title: {
     fontSize: 15,
     fontFamily: getFontFamily("semibold"),
     color: COLORS.gray[900],
   },
-  typeBadge: {
+  badge: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
@@ -540,42 +413,35 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 12,
   },
-  typeDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  typeText: {
-    fontSize: 10,
-    fontFamily: getFontFamily("medium"),
-  },
-  detailsRow: {
+  dot: { width: 6, height: 6, borderRadius: 3 },
+  badgeText: { fontSize: 10, fontFamily: getFontFamily("medium") },
+  details: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
   },
-  timeContainer: {
+  time: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
   },
-  activityTime: {
+  timeText: {
     fontSize: 12,
     fontFamily: getFontFamily("regular"),
     color: COLORS.gray[500],
   },
-  statusDot: {
+  separator: {
     width: 3,
     height: 3,
     borderRadius: 1.5,
     backgroundColor: COLORS.gray[300],
   },
-  activityStatus: {
+  status: {
     fontSize: 12,
     fontFamily: getFontFamily("medium"),
     color: COLORS.gray[600],
   },
-  arrowContainer: {
+  arrow: {
     width: 32,
     height: 32,
     borderRadius: 16,
@@ -586,7 +452,7 @@ const styles = StyleSheet.create({
     height: 1,
     marginHorizontal: 16,
   },
-  emptyContainer: {
+  empty: {
     borderRadius: 20,
     overflow: "hidden",
     borderWidth: 1,
@@ -596,7 +462,7 @@ const styles = StyleSheet.create({
     padding: 32,
     alignItems: "center",
   },
-  emptyIconContainer: {
+  emptyIcon: {
     width: 64,
     height: 64,
     borderRadius: 32,
@@ -619,6 +485,5 @@ const styles = StyleSheet.create({
   },
 });
 
-// Ajout des display names
 ActivityRow.displayName = "ActivityRow";
 ActivityList.displayName = "ActivityList";
