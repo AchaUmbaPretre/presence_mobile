@@ -13,7 +13,7 @@ export const useWeekIndicator = (userId?: number) => {
   const loadWeekData = useCallback(async () => {
     if (!userId) {
       setDays([]);
-      setStats({ present: 0, partial: 0, total: 7 });
+      setStats({ present: 0, partial: 0, total: 7 });                         
       setPeriod({ debut: "", fin: "" });
       return;
     }
