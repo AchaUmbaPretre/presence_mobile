@@ -61,7 +61,6 @@ const DashboardScreen = memo(() => {
 
   const handleActionPress = useCallback(
     (action: string) => {
-      console.log("Action pressed:", action);
       switch (action) {
         case "QR Code":
           navigation.navigate("QRScanner");

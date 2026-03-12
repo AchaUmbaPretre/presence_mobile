@@ -1,5 +1,5 @@
 import { api } from "@/api/client";
-import { ActivityItem } from "../types/presence.types";
+import { ActivityItem } from "../types/activity.types";
 
 export interface ActivityResponse {
   success: boolean;
@@ -7,7 +7,6 @@ export interface ActivityResponse {
   total: number;
 }
 
-// Interface pour la réponse de l'API
 interface ApiResponse {
   success?: boolean;
   data?: ActivityItem[];

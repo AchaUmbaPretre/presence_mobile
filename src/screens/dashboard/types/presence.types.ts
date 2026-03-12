@@ -32,14 +32,6 @@ export interface PointageResponse {
   };
 }
 
-export interface ActivityItem {
-  id: string;
-  type: "arrival" | "departure" | "break";
-  time: string;
-  status: string;
-  date: string;
-}
-
 export interface HeaderProps {
   userName?: string;
   userRole?: string;

@@ -1,7 +1,7 @@
 import * as Haptics from "expo-haptics";
 import { useCallback, useEffect, useState } from "react";
 import { getActivityListe } from "../services/activityService";
-import { ActivityItem } from "../types/presence.types";
+import { ActivityItem } from "../types/activity.types";
 
 export const useActivities = (userId?: number) => {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
@@ -23,11 +23,9 @@ export const useActivities = (userId?: number) => {
 
         if (response.success) {
           setActivities(response.data);
-          console.log(`✅ ${response.data.length} activités chargées`);
         } else {
           setActivities([]);
           if (response.data.length === 0) {
-            console.log("ℹ️ Aucune activité trouvée");
           } else {
             throw new Error("Erreur de chargement");
           }
