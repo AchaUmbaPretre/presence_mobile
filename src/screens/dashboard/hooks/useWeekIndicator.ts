@@ -4,7 +4,6 @@ import { getSemainePresence } from "../services/weekService";
 import { WeekDay } from "../types/weekIndication.type";
 
 export const useWeekIndicator = (userId?: number) => {
-  // ✅ TOUJOURS LE MÊME NOMBRE DE HOOKS, même si userId est undefined
   const [days, setDays] = useState<WeekDay[]>([]);
   const [stats, setStats] = useState({ present: 0, partial: 0, total: 7 });
   const [period, setPeriod] = useState({ debut: "", fin: "" });
@@ -12,8 +11,6 @@ export const useWeekIndicator = (userId?: number) => {
   const [error, setError] = useState<string | null>(null);
 
   const loadWeekData = useCallback(async () => {
-    // ✅ Ne pas faire de return conditionnel avant les hooks
-    // Mais on peut avoir une condition dans la fonction
     if (!userId) {
       setDays([]);
       setStats({ present: 0, partial: 0, total: 7 });
@@ -51,7 +48,7 @@ export const useWeekIndicator = (userId?: number) => {
 
   useEffect(() => {
     loadWeekData();
-  }, [loadWeekData]); // ← ICI, on utilise loadWeekData, pas userId
+  }, [loadWeekData]);
 
   return {
     days,
