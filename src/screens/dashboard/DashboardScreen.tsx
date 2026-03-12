@@ -22,7 +22,8 @@ import { MetricsCard } from "./components/MetricsCard";
 import { PresenceCards } from "./components/PresenceCards";
 import { QuickActions } from "./components/QuickActions";
 import { WeekIndicator } from "./components/WeekIndicator";
-import { ACTIVITES_RECENTES, WEEK_DAYS } from "./constants/dashboard.constants";
+import { WEEK_DAYS } from "./constants/dashboard.constants";
+import { useActivities } from "./hooks/useActivities";
 import { useCombinedAnimation } from "./hooks/useAnimation";
 import { useCurrentTime } from "./hooks/useCurrentTime";
 import { usePresence } from "./hooks/usePresence";
@@ -41,9 +42,20 @@ type AppNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 const DashboardScreen = memo(() => {
   const { presence, isLoading, handlePointage, metrics, handleMetricPress } =
     usePresence();
+
+  const data = useSelector((state: RootState) => state.auth.currentUser);
+
+  // ✅ Passer l'ID utilisateur à useActivities
+  const {
+    activities,
+    error: activitiesError,
+    refreshActivities,
+    handleActivityPress,
+    handleSeeAll,
+  } = useActivities(data?.id);
+
   const { formattedDate, formattedTime, formattedSeconds } = useCurrentTime();
   const { animatedStyle } = useCombinedAnimation();
-  const data = useSelector((state: RootState) => state.auth.currentUser);
   const navigation = useNavigation<AppNavigationProp>();
 
   const weekDays = WEEK_DAYS.map((day, index) => ({
@@ -53,13 +65,10 @@ const DashboardScreen = memo(() => {
     date: new Date(),
   }));
 
-  const activities = ACTIVITES_RECENTES.map((item) => ({
-    ...item,
-    id: item.id,
-    date: new Date().toISOString(),
-  }));
-
-  const handleRefresh = useCallback(() => {}, []);
+  const handleRefresh = useCallback(() => {
+    refreshActivities();
+    // Autres rafraîchissements si nécessaire
+  }, [refreshActivities]);
 
   const handleActionPress = useCallback(
     (action: string) => {
@@ -138,7 +147,12 @@ const DashboardScreen = memo(() => {
               objectifAtteint={metrics.objectifAtteint}
             />
             <QuickActions onActionPress={handleActionPress} />
-            <ActivityList activities={activities} onSeeAll={() => {}} />
+            <ActivityList
+              activities={activities}
+              onSeeAll={handleSeeAll}
+              onActivityPress={handleActivityPress}
+              maxItems={5}
+            />
             <WeekIndicator days={weekDays} />
           </View>
         </Animated.View>

@@ -1,14 +1,13 @@
 import { tokenManager } from "@/utils/tokenManager";
 import axios, {
-    AxiosError,
-    AxiosInstance,
-    InternalAxiosRequestConfig,
+  AxiosError,
+  AxiosInstance,
+  InternalAxiosRequestConfig,
 } from "axios";
 import { isAuthError } from "./../utils/errorHandler";
 import { API_ENDPOINTS } from "./endpoints";
 
-const DOMAIN =
-  process.env.EXPO_PUBLIC_API_URL || "https://apidlog.loginsmart-cd.com";
+const DOMAIN = process.env.EXPO_PUBLIC_API_URL || "http://192.168.1.67:8080";
 
 // Configuration du client axios
 export const api: AxiosInstance = axios.create({

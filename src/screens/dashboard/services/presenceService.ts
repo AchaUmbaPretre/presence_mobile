@@ -30,10 +30,3 @@ export const getHebdomadaireById = async (params: HebdomadaireParams) => {
     },
   });
 };
-
-/**
- * Récupère les statistiques de présence pour un utilisateur
- */
-export const getPresenceStats = async (id_utilisateur: number) => {
-  return api.get(`/api/presence/stats/${id_utilisateur}`);
-};

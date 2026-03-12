@@ -13,18 +13,16 @@ import {
 import { COLORS } from "../constants/color";
 import { getFontFamily } from "./../../../constants/typography";
 
-// ==================== PALETTE DE BLEUS ====================
 const BLUE_PRO = {
   primary: "#0A4DA4",
   secondary: "#1E6EC7",
   light: "#E8F0FE",
   dark: "#07317A",
   textLight: "#FFFFFF",
-  textBlue: "#1E3A5F", // Bleu profond élégant
-  textMuted: "#5A6B7A", // Bleu-gris secondaire
+  textBlue: "#1E3A5F",
+  textMuted: "#5A6B7A",
 } as const;
 
-// ==================== TYPES ====================
 interface MetricItemProps {
   value: number;
   unit: string;
@@ -54,7 +52,6 @@ const MetricItem = memo(
     trend,
     onPress,
   }: MetricItemProps) => {
-    // Animation de pulsation pour les valeurs importantes
     const pulseAnim = useRef(new Animated.Value(1)).current;
 
     useEffect(() => {
