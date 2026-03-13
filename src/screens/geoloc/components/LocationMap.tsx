@@ -5,6 +5,7 @@ import { Dimensions, StyleSheet, View } from "react-native";
 import MapView, { Circle, Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { ZONE_COLORS } from "../constants/geoloc.constants";
 import { Coordinates } from "../types/geoloc.types";
+import { BlurView } from "expo-blur";
 
 const { width, height } = Dimensions.get("window");
 
@@ -40,6 +41,23 @@ export const LocationMap: React.FC<LocationMapProps> = ({
     if (isWithinZone === undefined) return ZONE_COLORS.neutral;
     return isWithinZone ? ZONE_COLORS.authorized : ZONE_COLORS.forbidden;
   };
+
+  // Ajouter ce composant dans le même fichier
+const MapLegend: React.FC<{ isWithinZone?: boolean }> = ({ isWithinZone }) => (
+  <BlurView intensity={80} tint="dark" style={styles.legendContainer}>
+    <View style={styles.legendContent}>
+      <View style={[styles.legendDot, { 
+        backgroundColor: isWithinZone ? COLORS.success.main : COLORS.error.main 
+      }]} />
+      <Text style={styles.legendText}>
+        {isWithinZone ? '✅ Dans la zone' : '❌ Hors zone'}
+      </Text>
+    </View>
+  </BlurView>
+);
+
+// Dans le return du composant principal, après MapView
+{userLocation && <MapLegend isWithinZone={isWithinZone} />}
 
   return (
     <View style={styles.container}>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import * as Location from 'expo-location';
 import * as Haptics from 'expo-haptics';
+import NetInfo from '@react-native-community/netinfo'; 
 import { Coordinates, LocationStatus, LocationError, LocationPermission } from '../types/geoloc.types';
 import { LOCATION_ACCURACY, LOCATION_MESSAGES } from '../constants/geoloc.constants';
 
@@ -140,6 +141,28 @@ export const useLocation = ({
     }
   }, [checkZone, requestPermission]);
 
+const checkNetworkAndGPS = useCallback(async () => {
+  const hasNetwork = await NetInfo.fetch().then(state => state.isConnected);
+  if (!hasNetwork) {
+    setError({
+      code: 'NETWORK_ERROR',
+      message: 'Pas de connexion réseau. Activez les données mobiles.'
+    });
+    return false;
+  }
+  
+  const isGPSEnabled = await Location.hasServicesEnabledAsync();
+  if (!isGPSEnabled) {
+    setError({
+      code: 'GPS_DISABLED',
+      message: 'Le GPS est désactivé. Activez-le dans les paramètres.'
+    });
+    return false;
+  }
+  
+  return true;
+}, []);
+
   // Rafraîchir périodiquement
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -162,5 +185,6 @@ export const useLocation = ({
     permission,
     getCurrentLocation,
     requestPermission,
+    checkNetworkAndGPS
   };
 };
