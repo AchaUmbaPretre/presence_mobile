@@ -1,3 +1,5 @@
+// types/geoloc.types.ts
+import type { LocationObject } from "expo-location";
 
 export interface Coordinates {
   latitude: number;
@@ -9,6 +11,7 @@ export interface LocationStatus {
   distance: number;
   accuracy: number;
   timestamp: number;
+  currentZone?: ZoneInfo | null; // Ajout
 }
 
 export interface LocationError {
@@ -36,18 +39,6 @@ export interface SiteZone {
   address?: string;
 }
 
-export interface Coordinates {
-  latitude: number;
-  longitude: number;
-}
-
-export interface PointageLocation {
-  latitude: number;
-  longitude: number;
-  accuracy: number;
-  timestamp: number;
-}
-
 export interface ZoneInfo {
   id_zone: number;
   nom_zone: string;
@@ -64,14 +55,35 @@ export interface ZoneInfo {
   est_principal?: boolean;
 }
 
+export interface ZoneVerificationData {
+  dans_zone: boolean;
+  zone: ZoneInfo | null;
+  zone_plus_proche: ZoneInfo;
+  zones_utilisateur: ZoneInfo[];
+  sites_autorises: number[];
+  timestamp: string;
+}
+
 export interface ZoneVerification {
   success: boolean;
-  data: {
-    dans_zone: boolean;
-    zone: ZoneInfo | null;
-    zone_plus_proche: ZoneInfo;
-    zones_utilisateur: ZoneInfo[];
-    sites_autorises: number[];
-    timestamp: string;
-  };
+  data: ZoneVerificationData;
+  message?: string;
+}
+
+export interface UseLocationProps {
+  siteCoordinates: Coordinates;
+  siteRadius: number;
+  onStatusChange?: (status: LocationStatus) => void;
+}
+
+export interface UseLocationReturn {
+  location: LocationObject | null;
+  status: LocationStatus;
+  zoneVerification: ZoneVerification | null;
+  error: LocationError | null;
+  isLoading: boolean;
+  permission: LocationPermission;
+  getCurrentLocation: () => Promise<void>;
+  requestPermission: () => Promise<boolean>;
+  checkNetworkAndGPS: () => Promise<boolean>;
 }

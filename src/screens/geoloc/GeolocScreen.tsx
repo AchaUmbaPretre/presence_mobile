@@ -7,6 +7,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import React, { useCallback, useState } from "react";
 import {
     ActivityIndicator,
+    Alert,
     Platform,
     SafeAreaView,
     ScrollView,
@@ -16,20 +17,26 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { useSelector } from "react-redux";
+import { RootState } from "redux/store";
 import { LocationInfo } from "./components/LocationInfo";
 import { LocationMap } from "./components/LocationMap";
 import { LocationPermission } from "./components/LocationPermission";
 import { ZoneIndicator } from "./components/ZoneIndicator";
 import { DEFAULT_SITE } from "./constants/geoloc.constants";
 import { useLocation } from "./hooks/useLocation";
+import { locationService } from "./services/locationService";
+import { PointageLocation } from "./types/geoloc.types";
 
 export const GeolocScreen = () => {
   const navigation = useNavigation();
   const [isPointing, setIsPointing] = useState(false);
+  const currentUser = useSelector((state: RootState) => state.auth.currentUser);
 
   const {
     location,
     status,
+    zoneVerification,
     error,
     isLoading,
     permission,
@@ -41,38 +48,106 @@ export const GeolocScreen = () => {
   });
 
   const handlePointage = useCallback(async () => {
-    if (!status.isWithinZone) {
+    // Vérification 1: Utilisateur connecté
+    if (!currentUser?.id) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Alert.alert("❌ Erreur", "Utilisateur non connecté");
       return;
     }
 
-    if (!location) return;
+    // Vérification 2: Dans la zone (via API ou local)
+    if (!status.isWithinZone) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      
+      // Message plus précis si on a des infos de l'API
+      if (zoneVerification?.data?.zone_plus_proche) {
+        const zoneProche = zoneVerification.data.zone_plus_proche;
+        Alert.alert(
+          "❌ Hors zone",
+          `Vous êtes à ${zoneProche.distance}m de "${zoneProche.nom_site}". Rapprochez-vous pour pointer.`
+        );
+      } else {
+        Alert.alert("❌ Hors zone", "Vous devez être dans la zone pour pointer");
+      }
+      return;
+    }
+
+    // Vérification 3: Position disponible
+    if (!location) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Alert.alert("❌ Erreur", "Position non disponible");
+      return;
+    }
 
     setIsPointing(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
-      // Simuler un appel API (à remplacer par votre vrai service)
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Préparer les données de localisation
+      const pointageLocation: PointageLocation = {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        accuracy: location.coords.accuracy || 0,
+        timestamp: Date.now(),
+      };
 
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      // Appel au service d'enregistrement
+      const result = await locationService.recordPointageWithLocation(
+        currentUser.id,
+        pointageLocation
+      );
 
-      // Retour au dashboard après succès
-      setTimeout(() => {
-        navigation.goBack();
-      }, 1000);
-    } catch (err) {
+      if (result?.success) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        
+        // Message personnalisé si on a des infos de zone
+        const zoneName = zoneVerification?.data?.zone?.nom_site || DEFAULT_SITE.name;
+        
+        Alert.alert(
+          "✅ Pointage réussi",
+          `Votre présence a été enregistrée sur "${zoneName}"`,
+          [
+            {
+              text: "OK",
+              onPress: () => navigation.goBack(),
+            },
+          ]
+        );
+      } else {
+        throw new Error(result?.message || "Erreur de pointage");
+      }
+    } catch (err: any) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      console.error(err);
+      Alert.alert(
+        "❌ Erreur",
+        err.message || "Impossible d'enregistrer le pointage"
+      );
+      console.error("Erreur pointage:", err);
     } finally {
       setIsPointing(false);
     }
-  }, [status.isWithinZone, location, navigation]);
+  }, [status.isWithinZone, location, navigation, currentUser?.id, zoneVerification]);
 
   const handleRefresh = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     getCurrentLocation();
   }, [getCurrentLocation]);
+
+  // Afficher une erreur si présente
+  if (error) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Ionicons name="warning" size={48} color={COLORS.warning.main} />
+          <Text style={styles.errorTitle}>Erreur de localisation</Text>
+          <Text style={styles.errorText}>{error.message}</Text>
+          <TouchableOpacity style={styles.errorButton} onPress={handleRefresh}>
+            <Text style={styles.errorButtonText}>Réessayer</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   if (!permission.granted) {
     return (
@@ -135,15 +210,30 @@ export const GeolocScreen = () => {
         {/* Indicateur de zone */}
         <ZoneIndicator status={status} maxDistance={200} />
 
+        {/* Informations API (optionnel) */}
+        {zoneVerification?.data?.zone && (
+          <View style={styles.apiInfoBox}>
+            <Text style={styles.apiInfoTitle}>Site détecté</Text>
+            <Text style={styles.apiInfoText}>
+              {zoneVerification.data.zone.nom_site}
+            </Text>
+            {zoneVerification.data.zone.est_principal && (
+              <View style={styles.principalBadge}>
+                <Text style={styles.principalBadgeText}>Site principal</Text>
+              </View>
+            )}
+          </View>
+        )}
+
         {/* Bouton de pointage */}
         <TouchableOpacity
           style={[
             styles.pointageButton,
-            (!status.isWithinZone || isPointing) &&
+            (!status.isWithinZone || isPointing || isLoading) &&
               styles.pointageButtonDisabled,
           ]}
           onPress={handlePointage}
-          disabled={!status.isWithinZone || isPointing}
+          disabled={!status.isWithinZone || isPointing || isLoading}
           activeOpacity={0.8}
         >
           <LinearGradient
@@ -175,12 +265,17 @@ export const GeolocScreen = () => {
 
         {/* Informations complémentaires */}
         <View style={styles.infoBox}>
-          <Text style={styles.infoTitle}>Site de pointage</Text>
+          <Text style={styles.infoTitle}>Site de pointage par défaut</Text>
           <Text style={styles.infoText}>{DEFAULT_SITE.name}</Text>
           <Text style={styles.infoAddress}>{DEFAULT_SITE.address}</Text>
           <Text style={styles.infoRadius}>
             Rayon autorisé: {DEFAULT_SITE.radius} mètres
           </Text>
+          {location?.coords.accuracy && (
+            <Text style={styles.infoAccuracy}>
+              Précision GPS: {Math.round(location.coords.accuracy)} mètres
+            </Text>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -290,6 +385,75 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: getFontFamily("regular"),
     color: COLORS.primary.main,
+    marginBottom: 4,
+  },
+  infoAccuracy: {
+    fontSize: 13,
+    fontFamily: getFontFamily("regular"),
+    color: COLORS.gray[500],
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  errorTitle: {
+    fontSize: 20,
+    fontFamily: getFontFamily("bold"),
+    color: COLORS.gray[900],
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  errorText: {
+    fontSize: 16,
+    fontFamily: getFontFamily("regular"),
+    color: COLORS.gray[600],
+    textAlign: "center",
+    marginBottom: 24,
+  },
+  errorButton: {
+    backgroundColor: COLORS.primary.main,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  errorButtonText: {
+    fontSize: 16,
+    fontFamily: getFontFamily("semibold"),
+    color: COLORS.white,
+  },
+  apiInfoBox: {
+    backgroundColor: COLORS.primary.light + '20',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: COLORS.primary.main + '40',
+  },
+  apiInfoTitle: {
+    fontSize: 12,
+    fontFamily: getFontFamily("regular"),
+    color: COLORS.gray[600],
+    marginBottom: 2,
+  },
+  apiInfoText: {
+    fontSize: 16,
+    fontFamily: getFontFamily("semibold"),
+    color: COLORS.primary.main,
+  },
+  principalBadge: {
+    backgroundColor: COLORS.primary.main,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginTop: 4,
+  },
+  principalBadgeText: {
+    fontSize: 10,
+    fontFamily: getFontFamily("medium"),
+    color: COLORS.white,
   },
 });
 

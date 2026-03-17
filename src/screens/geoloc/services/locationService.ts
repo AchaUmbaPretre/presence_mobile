@@ -1,5 +1,5 @@
 import { api } from "@/api/client";
-import { Coordinates, PointageLocation, ZoneVerification } from "../types/geoloc.types";
+import { PointageLocation, ZoneVerification } from "../types/geoloc.types";
 
 class LocationService {
   private static instance: LocationService;
@@ -11,29 +11,24 @@ class LocationService {
     return LocationService.instance;
   }
 
-  /**
-   * Vérifie si l'utilisateur est dans une zone autorisée
-   * @param userId - ID de l'utilisateur
-   * @param latitude - Latitude de la position
-   * @param longitude - Longitude de la position
-   * @param precision - Précision GPS en mètres
-   */
   async verifierZone(
     userId: number,
     latitude: number,
     longitude: number,
-    precision: number
+    precision: number,
   ): Promise<ZoneVerification> {
     try {
-      const response = await api.get("/api/geoloc/verifierZone", {
+      // CORRECTION: Les paramètres sont dans params, pas dans body
+      const response = await api.get(`/api/presence/verifierZone`, {
         params: {
           userId,
           latitude,
           longitude,
-          precision
-        }
+          precision,
+        },
       });
-      
+
+      console.log("✅ Réponse vérification zone:", response.data);
       return response.data;
     } catch (error) {
       console.error("❌ Erreur vérification zone:", error);
@@ -41,44 +36,34 @@ class LocationService {
     }
   }
 
-  /**
-   * Valide la localisation (ancienne méthode - à garder pour compatibilité)
-   */
-  async validateLocation(location: PointageLocation): Promise<boolean> {
-    try {
-      const response = await api.post("/api/location/validate", location);
-      return response.data.valid;
-    } catch (error) {
-      console.error("Erreur validation location:", error);
-      return false;
-    }
-  }
-
-  /**
-   * Récupère les coordonnées d'un site
-   */
-  async getSiteCoordinates(siteId: number): Promise<Coordinates> {
-    try {
-      const response = await api.get(`/api/sites/${siteId}/coordinates`);
-      return response.data;
-    } catch (error) {
-      console.error("Erreur récupération site:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Enregistre un pointage avec géolocalisation
-   */
   async recordPointageWithLocation(
     userId: number,
     location: PointageLocation,
   ): Promise<any> {
     try {
-      const response = await api.post("/api/presence/geoloc", {
-        userId,
-        ...location,
-      });
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      const hours = String(now.getHours()).padStart(2, "0");
+      const minutes = String(now.getMinutes()).padStart(2, "0");
+      const seconds = String(now.getSeconds()).padStart(2, "0");
+
+      const payload = {
+        id_utilisateur: userId,
+        date_presence: `${year}-${month}-${day}`,
+        datetime: `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`,
+        source: "MANUEL",
+        permissions: ["attendance.events.approve"],
+        location: {
+          latitude: location.latitude,
+          longitude: location.longitude,
+          accuracy: location.accuracy,
+          timestamp: location.timestamp,
+        },
+      };
+
+      const response = await api.post("/api/presence", payload);
       return response.data;
     } catch (error) {
       console.error("Erreur pointage géoloc:", error);
@@ -93,12 +78,16 @@ class LocationService {
     userId: number,
     latitude: number,
     longitude: number,
-    precision: number
+    precision: number,
   ): Promise<any> {
     try {
-      // 1. D'abord vérifier la zone
-      const verification = await this.verifierZone(userId, latitude, longitude, precision);
-      
+      const verification = await this.verifierZone(
+        userId,
+        latitude,
+        longitude,
+        precision,
+      );
+
       if (!verification.data?.dans_zone) {
         throw new Error("Hors zone de pointage");
       }
@@ -108,12 +97,12 @@ class LocationService {
         latitude,
         longitude,
         accuracy: precision,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
 
       return {
         verification,
-        pointage
+        pointage,
       };
     } catch (error) {
       console.error("❌ Erreur vérification et pointage:", error);

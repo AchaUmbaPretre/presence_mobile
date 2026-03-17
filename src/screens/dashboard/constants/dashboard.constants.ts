@@ -80,10 +80,7 @@ export const ACTIONS_RAPIDES = [
     color: COLORS.secondary?.main || COLORS.primary.main,
     description: "Visualisation",
     route: "Reports",
-    gradient: [
-      COLORS.secondary?.light || COLORS.primary.light,
-      COLORS.secondary?.main || COLORS.primary.main,
-    ] as const, // ← AJOUTÉ
+    gradient: [COLORS.secondary?.light || COLORS.primary.light, COLORS.secondary?.main || COLORS.primary.main] as const, // ← AJOUTÉ
   },
 ] as const;
 

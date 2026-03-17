@@ -1,28 +1,43 @@
-import { useState, useEffect, useCallback } from 'react';
-import * as Location from 'expo-location';
-import * as Haptics from 'expo-haptics';
-import NetInfo from '@react-native-community/netinfo'; 
-import { Coordinates, LocationStatus, LocationError, LocationPermission } from '../types/geoloc.types';
-import { LOCATION_ACCURACY, LOCATION_MESSAGES } from '../constants/geoloc.constants';
-
-interface UseLocationProps {
-  siteCoordinates: Coordinates;
-  siteRadius: number;
-  onStatusChange?: (status: LocationStatus) => void;
-}
+// hooks/useLocation.ts
+import NetInfo from "@react-native-community/netinfo";
+import * as Haptics from "expo-haptics";
+import * as Location from "expo-location";
+import { useCallback, useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "redux/store";
+import {
+    LOCATION_ACCURACY,
+    LOCATION_MESSAGES,
+} from "../constants/geoloc.constants";
+import { locationService } from "../services/locationService";
+import {
+    Coordinates,
+    LocationError,
+    LocationPermission,
+    LocationStatus,
+    UseLocationProps,
+    UseLocationReturn,
+    ZoneInfo,
+    ZoneVerification,
+} from "../types/geoloc.types";
 
 export const useLocation = ({
   siteCoordinates,
   siteRadius,
   onStatusChange,
-}: UseLocationProps) => {
-  const [location, setLocation] = useState<Location.LocationObject | null>(null);
+}: UseLocationProps): UseLocationReturn => {
+  const [location, setLocation] = useState<Location.LocationObject | null>(
+    null,
+  );
   const [status, setStatus] = useState<LocationStatus>({
     isWithinZone: false,
     distance: 0,
     accuracy: 0,
     timestamp: 0,
+    currentZone: null, // Ajout pour stocker la zone actuelle
   });
+  const [zoneVerification, setZoneVerification] =
+    useState<ZoneVerification | null>(null);
   const [error, setError] = useState<LocationError | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [permission, setPermission] = useState<LocationPermission>({
@@ -30,138 +45,240 @@ export const useLocation = ({
     canAskAgain: true,
   });
 
-  const calculateDistance = useCallback((lat1: number, lon1: number, lat2: number, lon2: number) => {
-    const R = 6371e3; // Rayon de la Terre en mètres
-    const φ1 = lat1 * Math.PI / 180;
-    const φ2 = lat2 * Math.PI / 180;
-    const Δφ = (lat2 - lat1) * Math.PI / 180;
-    const Δλ = (lon2 - lon1) * Math.PI / 180;
+  // Récupérer l'utilisateur connecté
+  const currentUser = useSelector((state: RootState) => state.auth.currentUser);
 
-    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-              Math.cos(φ1) * Math.cos(φ2) *
-              Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const calculateDistance = useCallback(
+    (lat1: number, lon1: number, lat2: number, lon2: number) => {
+      const R = 6371e3; // Rayon de la Terre en mètres
+      const φ1 = (lat1 * Math.PI) / 180;
+      const φ2 = (lat2 * Math.PI) / 180;
+      const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+      const Δλ = ((lon2 - lon1) * Math.PI) / 180;
 
-    return R * c; // Distance en mètres
-  }, []);
+      const a =
+        Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+        Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-  const checkZone = useCallback((coords: Coordinates) => {
-    const distance = calculateDistance(
-      coords.latitude,
-      coords.longitude,
-      siteCoordinates.latitude,
-      siteCoordinates.longitude
-    );
+      return R * c; // Distance en mètres
+    },
+    [],
+  );
 
-    const isWithinZone = distance <= siteRadius;
+  // Vérification locale de la zone (fallback)
+  const checkZoneLocally = useCallback(
+    (coords: Coordinates) => {
+      const distance = calculateDistance(
+        coords.latitude,
+        coords.longitude,
+        siteCoordinates.latitude,
+        siteCoordinates.longitude,
+      );
 
-    const newStatus: LocationStatus = {
-      isWithinZone,
-      distance: Math.round(distance),
-      accuracy: 0,
-      timestamp: Date.now(),
-    };
+      return {
+        isWithinZone: distance <= siteRadius,
+        distance: Math.round(distance),
+      };
+    },
+    [siteCoordinates, siteRadius, calculateDistance],
+  );
 
-    setStatus(newStatus);
-    onStatusChange?.(newStatus);
+  // APPEL DU SERVICE VERIFIER ZONE (avec req.query)
+  const checkZoneWithAPI = useCallback(
+    async (
+      coords: Coordinates,
+      accuracy: number,
+    ): Promise<{ isWithinZone: boolean; zoneInfo?: ZoneInfo }> => {
+      if (!currentUser?.id) {
+        console.log(
+          "Utilisateur non connecté, utilisation de la vérification locale",
+        );
+        const localCheck = checkZoneLocally(coords);
+        return { isWithinZone: localCheck.isWithinZone };
+      }
 
-    // Feedback haptique selon la zone
-    if (isWithinZone) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } else if (distance > siteRadius * 2) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-    }
+      try {
+        console.log(
+          "📍 Vérification zone avec API pour userId:",
+          currentUser.id,
+        );
 
-    return newStatus;
-  }, [siteCoordinates, siteRadius, calculateDistance, onStatusChange]);
+        // Appel au service verifierZone (GET avec params)
+        const response = await locationService.verifierZone(
+          currentUser.id,
+          coords.latitude,
+          coords.longitude,
+          accuracy,
+        );
 
-  const requestPermission = useCallback(async () => {
+        console.log("✅ Réponse API zone:", response);
+
+        if (response.success) {
+          setZoneVerification(response);
+
+          // Si une zone valide est trouvée
+          if (response.data.zone) {
+            console.log(
+              `🎯 Zone valide trouvée: ${response.data.zone.nom_site} à ${response.data.zone.distance}m`,
+            );
+            return {
+              isWithinZone: true,
+              zoneInfo: response.data.zone,
+            };
+          }
+
+          // Sinon, on utilise la zone la plus proche pour l'info
+          console.log(
+            `⚠️ Aucune zone valide, la plus proche: ${response.data.zone_plus_proche.nom_site} à ${response.data.zone_plus_proche.distance}m`,
+          );
+          return {
+            isWithinZone: false,
+            zoneInfo: response.data.zone_plus_proche,
+          };
+        }
+
+        // Fallback sur la vérification locale si l'API échoue
+        console.log("⚠️ API verification failed, using local check");
+        const localCheck = checkZoneLocally(coords);
+        return { isWithinZone: localCheck.isWithinZone };
+      } catch (error) {
+        console.error("❌ Erreur lors de la vérification API:", error);
+        // Fallback sur la vérification locale
+        const localCheck = checkZoneLocally(coords);
+        return { isWithinZone: localCheck.isWithinZone };
+      }
+    },
+    [currentUser?.id, checkZoneLocally],
+  );
+
+  const requestPermission = useCallback(async (): Promise<boolean> => {
     try {
-      const { status: existingStatus } = await Location.getForegroundPermissionsAsync();
-      
-      if (existingStatus === 'granted') {
+      const { status: existingStatus } =
+        await Location.getForegroundPermissionsAsync();
+
+      if (existingStatus === "granted") {
         setPermission({ granted: true, canAskAgain: true });
         return true;
       }
 
-      const { status, canAskAgain } = await Location.requestForegroundPermissionsAsync();
-      setPermission({ granted: status === 'granted', canAskAgain });
-      
-      return status === 'granted';
+      const { status, canAskAgain } =
+        await Location.requestForegroundPermissionsAsync();
+      setPermission({ granted: status === "granted", canAskAgain });
+
+      return status === "granted";
     } catch (err) {
-      setError({ code: 'PERMISSION_ERROR', message: String(err) });
+      setError({ code: "PERMISSION_ERROR", message: String(err) });
       return false;
     }
   }, []);
 
-  const getCurrentLocation = useCallback(async () => {
+  const checkNetworkAndGPS = useCallback(async (): Promise<boolean> => {
+    try {
+      const netState = await NetInfo.fetch();
+      if (!netState.isConnected) {
+        setError({
+          code: "NETWORK_ERROR",
+          message: "Pas de connexion réseau. Activez les données mobiles.",
+        });
+        return false;
+      }
+
+      const isGPSEnabled = await Location.hasServicesEnabledAsync();
+      if (!isGPSEnabled) {
+        setError({
+          code: "GPS_DISABLED",
+          message: "Le GPS est désactivé. Activez-le dans les paramètres.",
+        });
+        return false;
+      }
+
+      return true;
+    } catch (err) {
+      console.error("Erreur vérification réseau/GPS:", err);
+      return false;
+    }
+  }, []);
+
+  const getCurrentLocation = useCallback(async (): Promise<void> => {
     setIsLoading(true);
     setError(null);
 
     try {
+      // 1. Vérifier réseau et GPS
+      const isOk = await checkNetworkAndGPS();
+      if (!isOk) {
+        setIsLoading(false);
+        return;
+      }
+
+      // 2. Vérifier la permission
       const hasPermission = await requestPermission();
       if (!hasPermission) {
         setError({
-          code: 'PERMISSION_DENIED',
+          code: "PERMISSION_DENIED",
           message: LOCATION_MESSAGES.permissionDenied,
         });
         setIsLoading(false);
         return;
       }
 
+      // 3. Obtenir la position
       const location = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.High,
       });
 
       setLocation(location);
-      
-      const status = checkZone({
+
+      const accuracy = location.coords.accuracy || 0;
+      const coords = {
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
-      });
+      };
 
-      setStatus(prev => ({
-        ...prev,
-        accuracy: location.coords.accuracy || 0,
-      }));
+      // 4. Vérifier la zone avec l'API (si utilisateur connecté)
+      const zoneCheck = await checkZoneWithAPI(coords, accuracy);
 
-      // Vérifier la précision
-      if (location.coords.accuracy && location.coords.accuracy > LOCATION_ACCURACY.medium) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      // 5. Mise à jour du statut
+      const newStatus: LocationStatus = {
+        isWithinZone: zoneCheck.isWithinZone,
+        distance:
+          zoneCheck.zoneInfo?.distance || checkZoneLocally(coords).distance,
+        accuracy: accuracy,
+        timestamp: Date.now(),
+        currentZone: zoneCheck.zoneInfo, // Stocker la zone actuelle
+      };
+
+      setStatus(newStatus);
+      onStatusChange?.(newStatus);
+
+      // Feedback haptique selon la zone
+      if (zoneCheck.isWithinZone) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      } else {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       }
 
+      // Vérifier la précision
+      if (accuracy > LOCATION_ACCURACY.medium) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      }
     } catch (err) {
       setError({
-        code: 'LOCATION_ERROR',
+        code: "LOCATION_ERROR",
         message: LOCATION_MESSAGES.error,
       });
       console.error(err);
     } finally {
       setIsLoading(false);
     }
-  }, [checkZone, requestPermission]);
-
-const checkNetworkAndGPS = useCallback(async () => {
-  const hasNetwork = await NetInfo.fetch().then(state => state.isConnected);
-  if (!hasNetwork) {
-    setError({
-      code: 'NETWORK_ERROR',
-      message: 'Pas de connexion réseau. Activez les données mobiles.'
-    });
-    return false;
-  }
-  
-  const isGPSEnabled = await Location.hasServicesEnabledAsync();
-  if (!isGPSEnabled) {
-    setError({
-      code: 'GPS_DISABLED',
-      message: 'Le GPS est désactivé. Activez-le dans les paramètres.'
-    });
-    return false;
-  }
-  
-  return true;
-}, []);
+  }, [
+    checkZoneWithAPI,
+    requestPermission,
+    checkNetworkAndGPS,
+    checkZoneLocally,
+    onStatusChange,
+  ]);
 
   // Rafraîchir périodiquement
   useEffect(() => {
@@ -180,11 +297,12 @@ const checkNetworkAndGPS = useCallback(async () => {
   return {
     location,
     status,
+    zoneVerification,
     error,
     isLoading,
     permission,
     getCurrentLocation,
     requestPermission,
-    checkNetworkAndGPS
+    checkNetworkAndGPS,
   };
 };
