@@ -1,4 +1,3 @@
-// hooks/useLocation.ts
 import NetInfo from "@react-native-community/netinfo";
 import * as Haptics from "expo-haptics";
 import * as Location from "expo-location";
@@ -20,6 +19,7 @@ import {
     ZoneInfo,
     ZoneVerification,
 } from "../types/geoloc.types";
+import { calculateDistance } from "../utils/calculateDistance";
 
 export const useLocation = ({
   siteCoordinates,
@@ -34,7 +34,7 @@ export const useLocation = ({
     distance: 0,
     accuracy: 0,
     timestamp: 0,
-    currentZone: null, // Ajout pour stocker la zone actuelle
+    currentZone: null, 
   });
   const [zoneVerification, setZoneVerification] =
     useState<ZoneVerification | null>(null);
@@ -45,28 +45,9 @@ export const useLocation = ({
     canAskAgain: true,
   });
 
-  // Récupérer l'utilisateur connecté
   const currentUser = useSelector((state: RootState) => state.auth.currentUser);
 
-  const calculateDistance = useCallback(
-    (lat1: number, lon1: number, lat2: number, lon2: number) => {
-      const R = 6371e3; // Rayon de la Terre en mètres
-      const φ1 = (lat1 * Math.PI) / 180;
-      const φ2 = (lat2 * Math.PI) / 180;
-      const Δφ = ((lat2 - lat1) * Math.PI) / 180;
-      const Δλ = ((lon2 - lon1) * Math.PI) / 180;
 
-      const a =
-        Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-        Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-      return R * c; // Distance en mètres
-    },
-    [],
-  );
-
-  // Vérification locale de la zone (fallback)
   const checkZoneLocally = useCallback(
     (coords: Coordinates) => {
       const distance = calculateDistance(
@@ -280,13 +261,12 @@ export const useLocation = ({
     onStatusChange,
   ]);
 
-  // Rafraîchir périodiquement
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
     if (permission.granted) {
       getCurrentLocation();
-      interval = setInterval(getCurrentLocation, 30000); // Toutes les 30 secondes
+      interval = setInterval(getCurrentLocation, 30000); 
     }
 
     return () => {

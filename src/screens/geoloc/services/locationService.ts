@@ -18,7 +18,6 @@ class LocationService {
     precision: number,
   ): Promise<ZoneVerification> {
     try {
-      // CORRECTION: Les paramètres sont dans params, pas dans body
       const response = await api.get(`/api/presence/verifierZone`, {
         params: {
           userId,
