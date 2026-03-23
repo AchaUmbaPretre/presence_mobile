@@ -65,7 +65,6 @@ export const useLocation = ({
     [siteCoordinates, siteRadius, calculateDistance],
   );
 
-  // APPEL DU SERVICE VERIFIER ZONE (avec req.query)
   const checkZoneWithAPI = useCallback(
     async (
       coords: Coordinates,
@@ -80,12 +79,7 @@ export const useLocation = ({
       }
 
       try {
-        console.log(
-          "📍 Vérification zone avec API pour userId:",
-          currentUser.id,
-        );
 
-        // Appel au service verifierZone (GET avec params)
         const response = await locationService.verifierZone(
           currentUser.id,
           coords.latitude,
@@ -93,25 +87,18 @@ export const useLocation = ({
           accuracy,
         );
 
-        console.log("✅ Réponse API zone:", response);
-
         if (response.success) {
           setZoneVerification(response);
 
-          // Si une zone valide est trouvée
           if (response.data.zone) {
-            console.log(
-              `🎯 Zone valide trouvée: ${response.data.zone.nom_site} à ${response.data.zone.distance}m`,
-            );
             return {
               isWithinZone: true,
               zoneInfo: response.data.zone,
             };
           }
 
-          // Sinon, on utilise la zone la plus proche pour l'info
           console.log(
-            `⚠️ Aucune zone valide, la plus proche: ${response.data.zone_plus_proche.nom_site} à ${response.data.zone_plus_proche.distance}m`,
+            `Aucune zone valide, la plus proche: ${response.data.zone_plus_proche.nom_site} à ${response.data.zone_plus_proche.distance}m`,
           );
           return {
             isWithinZone: false,

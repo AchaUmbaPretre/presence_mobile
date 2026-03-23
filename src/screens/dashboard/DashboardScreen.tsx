@@ -80,7 +80,7 @@ const DashboardScreen = memo(() => {
     },
     [navigation],
   );
-  
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={BLUE_PRO.primary} />
