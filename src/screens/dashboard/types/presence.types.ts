@@ -41,3 +41,10 @@ export interface HeaderProps {
   userAvatar?: string | null; // Rendre optionnel avec ?
 
 }
+
+export interface ValideData {
+  code: string;
+  latitude: string;
+  longitude: string;
+  accuracy: string;
+}
