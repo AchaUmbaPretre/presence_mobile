@@ -43,3 +43,19 @@ export interface QRResultProps {
   onClose: () => void;
   onRetry?: () => void;
 }
+
+/* type RootStackParamList = {
+  Tabs: undefined;
+  Historique: undefined;
+  QRSuccess: {
+    message: string;
+    typeScan: ScanType;
+    siteName: string;
+    zoneName?: string;
+    distance?: number;
+    isWithinZone?: boolean;
+    retard_minutes?: number;
+    heures_supplementaires?: number;
+    scan_time?: string;
+  };
+}; */

@@ -80,7 +80,10 @@ export const ACTIONS_RAPIDES = [
     color: COLORS.secondary?.main || COLORS.primary.main,
     description: "Visualisation",
     route: "Reports",
-    gradient: [COLORS.secondary?.light || COLORS.primary.light, COLORS.secondary?.main || COLORS.primary.main] as const, // ← AJOUTÉ
+    gradient: [
+      COLORS.secondary?.light || COLORS.primary.light,
+      COLORS.secondary?.main || COLORS.primary.main,
+    ] as const, // ← AJOUTÉ
   },
 ] as const;
 
@@ -355,4 +358,25 @@ export const isThisWeek = (date: Date): boolean => {
   const weekStart = new Date(today.setDate(today.getDate() - today.getDay()));
   const weekEnd = new Date(today.setDate(today.getDate() + 6));
   return date >= weekStart && date <= weekEnd;
+};
+
+export interface FormattedDateTime {
+  date: string;
+  time: string;
+}
+
+export const formatDateTime = (date: Date): FormattedDateTime => {
+  return {
+    date: date.toLocaleDateString("fr-FR", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }),
+    time: date.toLocaleTimeString("fr-FR", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    }),
+  };
 };
