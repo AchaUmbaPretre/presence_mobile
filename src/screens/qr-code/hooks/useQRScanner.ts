@@ -4,43 +4,7 @@ import { useCallback, useRef, useState, useEffect } from "react";
 import { Alert, Vibration, Platform, Linking } from "react-native";
 import * as Location from "expo-location";
 import { qrService } from "../services/qrService";
-import { QRPayload, QRScanResult, QRScanState } from "../types/qr.types";
-
-interface UseQRScannerProps {
-  onScanSuccess?: (data: QRPayload) => void;
-  onScanError?: (error: string) => void;
-  onScanStart?: () => void;
-  onScanEnd?: () => void;
-  autoClose?: boolean;
-  closeDelay?: number;
-  vibrationEnabled?: boolean;
-  hapticEnabled?: boolean;
-}
-
-interface UseQRScannerReturn {
-  // État
-  permission: any;
-  state: QRScanState & {
-    flashEnabled: boolean;
-    location: any;
-    locationError: string | null;
-  };
-  lastResult: QRScanResult | null;
-  
-  // Actions
-  handleScan: (data: string) => Promise<void>;
-  resetScanner: () => void;
-  stopScanning: () => void;
-  startScanning: () => void;
-  requestCameraPermission: () => Promise<void>;
-  toggleFlash: () => void;
-  goBack: () => void;
-  retryLocation: () => Promise<void>;
-  
-  // Utilitaires
-  isScanning: boolean;
-  scanned: boolean;
-}
+import { QRScanResult, QRScanState, UseQRScannerProps, UseQRScannerReturn } from "../types/qr.types";
 
 export const useQRScanner = ({
   onScanSuccess,
@@ -106,7 +70,6 @@ export const useQRScanner = ({
     setIsProcessing(false);
   }, []);
 
-  // Nettoyage à la destruction
   useEffect(() => {
     isMounted.current = true;
     getCurrentLocation();
@@ -298,10 +261,8 @@ export const useQRScanner = ({
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }, []);
 
-  // Go back
   const goBack = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    // Navigation sera gérée par le composant parent
   }, []);
 
   // Retry location

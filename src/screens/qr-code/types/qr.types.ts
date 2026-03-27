@@ -104,3 +104,38 @@ export interface PermissionRequestProps {
   onClose: () => void;
   message?: string;
 }
+
+export interface UseQRScannerProps {
+  onScanSuccess?: (data: QRPayload) => void;
+  onScanError?: (error: string) => void;
+  onScanStart?: () => void;
+  onScanEnd?: () => void;
+  autoClose?: boolean;
+  closeDelay?: number;
+  vibrationEnabled?: boolean;
+  hapticEnabled?: boolean;
+}
+
+export interface UseQRScannerReturn {
+  permission: any;
+  state: QRScanState & {
+    flashEnabled: boolean;
+    location: any;
+    locationError: string | null;
+  };
+  lastResult: QRScanResult | null;
+  
+  // Actions
+  handleScan: (data: string) => Promise<void>;
+  resetScanner: () => void;
+  stopScanning: () => void;
+  startScanning: () => void;
+  requestCameraPermission: () => Promise<void>;
+  toggleFlash: () => void;
+  goBack: () => void;
+  retryLocation: () => Promise<void>;
+  
+  // Utilitaires
+  isScanning: boolean;
+  scanned: boolean;
+}
