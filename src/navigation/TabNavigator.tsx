@@ -5,12 +5,12 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { BlurView } from "expo-blur";
 import React, { useRef } from "react";
 import {
-    Animated,
-    Platform,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Animated,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import DashboardScreen from "../screens/dashboard/DashboardScreen";
@@ -67,7 +67,6 @@ const TAB_CONFIG: TabConfig[] = [
   },
 ];
 
-// ==================== COMPOSANT TAB BAR PERSONNALISÉ ====================
 const CustomTabBar = ({ state, descriptors, navigation }: any) => {
   const insets = useSafeAreaInsets();
   const scaleAnims = useRef(
@@ -86,15 +85,11 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
     });
 
     if (!isFocused && !event.defaultPrevented) {
-      // ✅ Correction: Utiliser UN SEUL jeu de paramètres
       Animated.sequence([
         Animated.spring(scaleAnims[index], {
           toValue: 0.85,
           useNativeDriver: true,
-          speed: 20, // ← Utiliser speed seulement
-          // friction: 5,    // ← Ne pas utiliser friction avec speed
-          // damping: 10,    // ← Ne pas utiliser damping
-          // stiffness: 100, // ← Ne pas utiliser stiffness
+          speed: 20,
         }),
         Animated.spring(scaleAnims[index], {
           toValue: 1,
@@ -113,7 +108,7 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
         styles.tabBarContainer,
         {
           paddingBottom: insets.bottom > 0 ? insets.bottom : 10,
-          height: 70 + (insets.bottom > 0 ? insets.bottom : 0),
+          height: 35 + (insets.bottom > 0 ? insets.bottom : 0),
         },
       ]}
     >
