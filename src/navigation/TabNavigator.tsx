@@ -184,7 +184,6 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
   );
 };
 
-// ==================== COMPOSANT PRINCIPAL ====================
 const Tab = createBottomTabNavigator<TabParamList>();
 
 const TabNavigator = () => {
