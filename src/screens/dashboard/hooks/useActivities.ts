@@ -48,14 +48,10 @@ export const useActivities = (userId?: number) => {
 
   const handleActivityPress = useCallback((activity: ActivityItem) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    console.log("Activité pressée:", activity.id);
-    // Navigation vers le détail de l'activité
   }, []);
 
   const handleSeeAll = useCallback(() => {
     Haptics.selectionAsync();
-    console.log("Voir toutes les activités");
-    // Navigation vers l'écran d'historique
   }, []);
 
   useEffect(() => {
