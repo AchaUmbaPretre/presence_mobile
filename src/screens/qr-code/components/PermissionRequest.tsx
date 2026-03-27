@@ -1,15 +1,9 @@
-// screens/qr-code/components/PermissionRequest.tsx
 import { COLORS } from "@/screens/dashboard/constants/color";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { styles } from "../styles/QRScannerStyles";
-
-interface PermissionRequestProps {
-  onRetry: () => void;
-  onClose: () => void;
-  message?: string;
-}
+import { PermissionRequestProps } from "../types/qr.types";
 
 export const PermissionRequest: React.FC<PermissionRequestProps> = ({
   onRetry,

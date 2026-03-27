@@ -1,4 +1,3 @@
-// screens/qr-code/QRScannerScreen.tsx
 import { useNavigation } from "@react-navigation/native";
 import React from "react";
 import { StatusBar, View } from "react-native";
@@ -11,7 +10,6 @@ import { styles } from "./styles/QRScannerStyles";
 export const QRScannerScreen = () => {
   const navigation = useNavigation();
   
-  // ✅ Déstructuration directe des actions
   const {
     state,
     handleScan,
@@ -42,14 +40,13 @@ export const QRScannerScreen = () => {
   if (state.hasPermission === false) {
     return (
       <PermissionRequest
-        onRetry={requestCameraPermission}  // ✅ Utilisation directe
+        onRetry={requestCameraPermission}
         onClose={goBack}
         message="Veuillez autoriser l'accès à la caméra pour scanner les QR codes"
       />
     );
   }
 
-  // Permission accordée - afficher la caméra
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#000" />

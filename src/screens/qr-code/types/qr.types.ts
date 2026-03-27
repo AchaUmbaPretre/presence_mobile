@@ -98,3 +98,9 @@ export interface CameraViewProps {
   onClose: () => void;
   onLocationRetry?: () => void;
 }
+
+export interface PermissionRequestProps {
+  onRetry: () => void;
+  onClose: () => void;
+  message?: string;
+}

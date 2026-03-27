@@ -7,14 +7,14 @@ interface UseQRGeneratorProps {
   terminalId: number;
   siteId: number;
   autoRefresh?: boolean;
-  refreshInterval?: number; // en ms
+  refreshInterval?: number;
 }
 
 export const useQRGenerator = ({
   terminalId,
   siteId,
   autoRefresh = true,
-  refreshInterval = 30000, // 30 secondes
+  refreshInterval = 30000,
 }: UseQRGeneratorProps) => {
   const [qrData, setQrData] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -42,7 +42,6 @@ export const useQRGenerator = ({
   useEffect(() => {
     generateQR();
     
-    // Récupérer les infos du terminal
     const loadTerminalInfo = async () => {
       try {
         const response = await fetch(`/api/terminals/${terminalId}`);
