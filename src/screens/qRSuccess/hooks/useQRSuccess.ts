@@ -1,5 +1,3 @@
-// screens/qr-success/hooks/useQRSuccess.ts
-import { AppStackParamList } from "@/navigation/AppNavigator";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import * as Haptics from "expo-haptics";
@@ -12,6 +10,7 @@ import {
 import { createAnimations } from "../animations/createAnimations";
 import { getSuccessConfig } from "../config/successConfig";
 import { formatDateTime } from "@/screens/dashboard/constants/dashboard.constants";
+import { AppStackParamList } from "@/navigation/types";
 
 export interface QRSuccessParams {
   message: string;
