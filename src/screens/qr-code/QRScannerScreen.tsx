@@ -1,15 +1,14 @@
-// screens/qr-code/QRScannerScreen.tsx
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import React, { useCallback } from "react";
 import { StatusBar, View } from "react-native";
-import { AppStackParamList } from "@/navigation/AppNavigator";
 import { CameraView } from "./components/CameraView";
 import { LoadingState } from "./components/LoadingState";
 import { PermissionRequest } from "./components/PermissionRequest";
 import { useQRScanner } from "./hooks/useQRScanner";
 import { styles } from "./styles/QRScannerStyles";
 import { QRPayload } from "./types/qr.types";
+import { AppStackParamList } from "@/navigation/types";
 
 // Type pour les données de succès
 interface QRSuccessData extends QRPayload {
