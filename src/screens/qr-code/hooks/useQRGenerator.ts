@@ -54,7 +54,6 @@ export const useQRGenerator = ({
     loadTerminalInfo();
   }, [terminalId]);
 
-  // Auto-refresh
   useEffect(() => {
     if (!autoRefresh) return;
 
@@ -65,7 +64,6 @@ export const useQRGenerator = ({
     return () => clearInterval(interval);
   }, [autoRefresh, refreshInterval, generateQR]);
 
-  // Timer pour afficher le temps restant
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeRemaining(prev => Math.max(0, prev - 1));

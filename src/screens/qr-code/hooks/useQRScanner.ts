@@ -1,4 +1,3 @@
-// screens/qr-code/hooks/useQRScanner.ts
 import { useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
 import { useCallback, useRef, useState, useEffect } from "react";
