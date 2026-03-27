@@ -10,7 +10,6 @@ import { styles } from "./styles/QRScannerStyles";
 import { QRPayload } from "./types/qr.types";
 import { AppStackParamList } from "@/navigation/types";
 
-// Type pour les données de succès
 interface QRSuccessData extends QRPayload {
   message?: string;
   type_scan?: "ENTREE" | "SORTIE";
