@@ -117,7 +117,6 @@ export const Clock = memo(
         entering={animated ? FadeInRight.springify().damping(15) : undefined}
         style={styles.container}
       >
-        {/* Date chip avec dégradé bleu */}
         <LinearGradient
           colors={[BLUE_PRO.light, BLUE_PRO.light + "80"]}
           start={{ x: 0, y: 0 }}

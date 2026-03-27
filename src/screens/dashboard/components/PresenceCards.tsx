@@ -24,25 +24,22 @@ import { PresenceState } from "../types/presence.types";
 import { getFontFamily } from "./../../../constants/typography";
 import { Card } from "./Card";
 
-// ==================== PALETTE DE BLEUS ====================
 const BLUE_PRO = {
   primary: "#0A4DA4",
   secondary: "#1E6EC7",
   light: "#E8F0FE",
   dark: "#07317A",
   textLight: "#FFFFFF",
-  textBlue: "#1E3A5F", // Bleu profond élégant
-  textMuted: "#5A6B7A", // Bleu-gris secondaire
+  textBlue: "#1E3A5F",
+  textMuted: "#5A6B7A",
 } as const;
 
-// ==================== TYPES ====================
 interface PresenceCardsProps {
   presence: PresenceState;
   onPointage: (type: "ENTREE" | "SORTIE") => void;
   isLoading?: boolean;
 }
 
-// ==================== COMPOSANT PRINCIPAL ====================
 export const PresenceCards = memo(
   ({ presence, onPointage, isLoading = false }: PresenceCardsProps) => {
     const isEntryDisabled = !!presence.heure_entree;
@@ -81,7 +78,6 @@ export const PresenceCards = memo(
       [isEntryDisabled, isExitDisabled, isLoading, onPointage],
     );
 
-    // Styles animés
     const entryAnimatedStyle = useAnimatedStyle(() => ({
       transform: [{ scale: entryScale.value }],
     }));
@@ -142,7 +138,6 @@ export const PresenceCards = memo(
               />
 
               <View style={styles.cardContent}>
-                {/* Icône avec fond */}
                 <View
                   style={[
                     styles.iconContainer,
@@ -351,5 +346,4 @@ const styles = StyleSheet.create({
   },
 });
 
-// Ajout du display name
 PresenceCards.displayName = "PresenceCards";

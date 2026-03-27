@@ -41,7 +41,6 @@ interface MetricsCardProps {
   onMetricPress?: (metric: string) => void;
 }
 
-// ==================== COMPOSANT METRIC ITEM ====================
 const MetricItem = memo(
   ({
     value,
