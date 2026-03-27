@@ -9,6 +9,7 @@ export const styles = StyleSheet.create({
   // Conteneur principal
   container: {
     flex: 1,
+    alignItems: 'center'
   },
 
   // Effets de fond
