@@ -32,7 +32,6 @@ export const CameraView: React.FC<CameraViewProps> = ({
       }}
     >
       <View style={styles.overlay}>
-        {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
             <Ionicons name="close" size={28} color={COLORS.white} />
@@ -47,7 +46,6 @@ export const CameraView: React.FC<CameraViewProps> = ({
           </TouchableOpacity>
         </View>
 
-        {/* Zone de scan */}
         <View style={styles.scanArea}>
           <View style={styles.cornerTL} />
           <View style={styles.cornerTR} />
