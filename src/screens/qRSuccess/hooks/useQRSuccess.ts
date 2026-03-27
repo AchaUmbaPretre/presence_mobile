@@ -10,7 +10,7 @@ import {
   Vibration
 } from "react-native";
 import { createAnimations } from "../animations/createAnimations";
-import { getConfig } from "../config/successConfig";
+import { getSuccessConfig  } from "../config/successConfig";
 import { formatDateTime, FormattedDateTime } from "@/screens/dashboard/constants/dashboard.constants";
 
 interface QRSuccessParams {
@@ -86,7 +86,7 @@ export const useQRSuccess = () => {
     };
   }, []);
 
-  const config = getConfig(params.typeScan);
+  const config = getSuccessConfig(params.typeScan);
   
   const dateTime: FormattedDateTime = formatDateTime(
     params.scan_time ? new Date(params.scan_time) : new Date(),

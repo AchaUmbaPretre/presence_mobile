@@ -1,6 +1,8 @@
 // screens/qr-success/config/successConfig.ts
 import { COLORS } from '@/screens/dashboard/constants/color';
 
+export type ScanType = 'ENTREE' | 'SORTIE';
+
 export interface SuccessConfig {
   primary: {
     main: string;
@@ -14,10 +16,12 @@ export interface SuccessConfig {
   };
   title: string;
   subtitle: string;
-  gradientColors: [string, string, string]; // ✅ Type tuple explicite
+  gradientColors: [string, string, string];
+  icon: string;
+  statusText: string;
 }
 
-export const getConfig = (typeScan: 'ENTREE' | 'SORTIE'): SuccessConfig => {
+export const getSuccessConfig = (typeScan: ScanType): SuccessConfig => {
   const isEntry = typeScan === 'ENTREE';
   
   return {
@@ -36,5 +40,7 @@ export const getConfig = (typeScan: 'ENTREE' | 'SORTIE'): SuccessConfig => {
     gradientColors: isEntry
       ? [COLORS.success.main, COLORS.success.dark, '#1B5E20']
       : [COLORS.warning.main, COLORS.warning.dark, '#BF360C'],
+    icon: isEntry ? 'log-in-outline' : 'log-out-outline',
+    statusText: isEntry ? 'Entrée validée' : 'Sortie validée',
   };
 };

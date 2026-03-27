@@ -1,3 +1,4 @@
+// services/qrService.ts
 import * as Crypto from 'expo-crypto';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '@/api/client';
@@ -44,6 +45,8 @@ class QRService {
    * Vérifie et décode un QR code scanné
    */
   async verifyAndDecode(encryptedData: string): Promise<QRScanResult> {
+    const timestamp = Date.now();
+    
     try {
       // Déchiffrer
       const decrypted = await this.decrypt(encryptedData);
@@ -54,6 +57,8 @@ class QRService {
         return {
           success: false,
           message: 'QR code invalide',
+          timestamp,
+          error: 'INVALID_TYPE',
         };
       }
 
@@ -62,6 +67,8 @@ class QRService {
         return {
           success: false,
           message: 'QR code expiré (30 secondes)',
+          timestamp,
+          error: 'EXPIRED',
         };
       }
 
@@ -71,6 +78,8 @@ class QRService {
         return {
           success: false,
           message: 'Signature invalide',
+          timestamp,
+          error: 'INVALID_SIGNATURE',
         };
       }
 
@@ -80,6 +89,8 @@ class QRService {
         return {
           success: false,
           message: 'QR code déjà utilisé',
+          timestamp,
+          error: 'ALREADY_USED',
         };
       }
 
@@ -93,6 +104,7 @@ class QRService {
         success: true,
         data: payload,
         message: 'QR code valide',
+        timestamp,
         terminalInfo,
       };
     } catch (error) {
@@ -100,6 +112,8 @@ class QRService {
       return {
         success: false,
         message: 'QR code invalide',
+        timestamp,
+        error: error instanceof Error ? error.message : 'DECODE_ERROR',
       };
     }
   }

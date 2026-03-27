@@ -1,17 +1,47 @@
+// types/qr.types.ts
+
+import { ScanType } from "@/screens/qRSuccess/config/successConfig";
+
 export interface QRPayload {
-  type: 'PRESENCE';
+  type: "PRESENCE";
   terminalId: number;
   siteId: number;
   timestamp: number;
   expiresIn: number;
   signature?: string;
 }
-
+/* 
 export interface QRScanResult {
   success: boolean;
-  data?: QRPayload;
   message: string;
+  data?: QRPayload;
+  error?: string;
+  timestamp: number;
   terminalInfo?: TerminalInfo;
+}
+ */
+// types/qr.types.ts
+export interface QRScanResult {
+  success: boolean;
+  message: string;
+  data?: QRPayload;
+  error?: string;
+  timestamp: number; // ✅ Obligatoire maintenant
+  terminalInfo?: TerminalInfo;
+  validationDetails?: {
+    isValid: boolean;
+    reason?: string;
+    distance?: number;
+    isWithinZone?: boolean;
+  };
+}
+
+export interface QRScanState {
+  isScanning: boolean;
+  scanned: boolean;
+  isProcessing: boolean;
+  hasPermission: boolean;
+  lastError?: string;
 }
 
 export interface TerminalInfo {
@@ -33,6 +63,7 @@ export interface QRScannerProps {
   onScan: (data: QRPayload) => void;
   onClose: () => void;
   onError?: (error: string) => void;
+  autoClose?: boolean;
 }
 
 export interface QRResultProps {
@@ -44,18 +75,26 @@ export interface QRResultProps {
   onRetry?: () => void;
 }
 
-/* type RootStackParamList = {
-  Tabs: undefined;
-  Historique: undefined;
-  QRSuccess: {
-    message: string;
-    typeScan: ScanType;
-    siteName: string;
-    zoneName?: string;
-    distance?: number;
-    isWithinZone?: boolean;
-    retard_minutes?: number;
-    heures_supplementaires?: number;
-    scan_time?: string;
-  };
-}; */
+export interface QRSuccessParams {
+  message: string;
+  typeScan: ScanType;
+  siteName: string;
+  zoneName?: string;
+  distance?: number;
+  isWithinZone?: boolean;
+  retard_minutes?: number;
+  heures_supplementaires?: number;
+  scan_time?: string;
+}
+
+export interface CameraViewProps {
+  scanned: boolean;
+  isVerifying: boolean;
+  flashEnabled: boolean;
+  location: any;
+  locationError: string | null;
+  onBarCodeScanned: (data: string) => void;
+  onFlashToggle: () => void;
+  onClose: () => void;
+  onLocationRetry?: () => void;
+}
