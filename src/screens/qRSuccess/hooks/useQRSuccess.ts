@@ -10,24 +10,27 @@ import {
   Vibration
 } from "react-native";
 import { createAnimations } from "../animations/createAnimations";
-import { getSuccessConfig  } from "../config/successConfig";
-import { formatDateTime, FormattedDateTime } from "@/screens/dashboard/constants/dashboard.constants";
+import { getSuccessConfig } from "../config/successConfig";
+import { formatDateTime } from "@/screens/dashboard/constants/dashboard.constants";
 
-interface QRSuccessParams {
+export interface QRSuccessParams {
   message: string;
   typeScan: "ENTREE" | "SORTIE";
   siteName: string;
+  siteId?: number;
   zoneName?: string;
+  zoneId?: number;
   distance?: number;
   isWithinZone?: boolean;
   retard_minutes?: number;
   heures_supplementaires?: number;
   scan_time?: string;
+  jour_non_travaille?: boolean;
+  is_new_record?: boolean;
 }
 
 export const useQRSuccess = () => {
-  const navigation =
-    useNavigation<NativeStackNavigationProp<AppStackParamList>>();
+  const navigation = useNavigation<NativeStackNavigationProp<AppStackParamList>>();
   const route = useRoute();
   const params = route.params as QRSuccessParams;
 
@@ -59,7 +62,6 @@ export const useQRSuccess = () => {
     animations.startGlowLoop();
     animations.startBackgroundLoop();
 
-    // Feedback haptique
     InteractionManager.runAfterInteractions(() => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setTimeout(() => {
@@ -70,15 +72,11 @@ export const useQRSuccess = () => {
 
     startConfettiAnimation();
 
-    // Gestion bouton retour
-    const backHandler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      () => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        navigation.navigate("Tabs");
-        return true;
-      },
-    );
+    const backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      navigation.navigate("Tabs");
+      return true;
+    });
 
     return () => {
       backHandler.remove();
@@ -88,9 +86,7 @@ export const useQRSuccess = () => {
 
   const config = getSuccessConfig(params.typeScan);
   
-  const dateTime: FormattedDateTime = formatDateTime(
-    params.scan_time ? new Date(params.scan_time) : new Date(),
-  );
+  const dateTime = formatDateTime(params.scan_time ? new Date(params.scan_time) : new Date());
 
   const handlers = {
     goToHome: () => {

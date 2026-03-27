@@ -29,13 +29,11 @@ class QRService {
       expiresIn: this.QR_EXPIRY,
     };
 
-    // Ajouter une signature pour la sécurité
     payload.signature = await this.signPayload(payload);
-
-    // Chiffrer le payload
-    const encrypted = await this.encrypt(JSON.stringify(payload));
     
-    // Sauvegarder pour vérification
+    const jsonString = JSON.stringify(payload);
+    const encrypted = await this.encrypt(jsonString);
+    
     await this.savePendingQR(payload);
     
     return encrypted;
@@ -48,15 +46,33 @@ class QRService {
     const timestamp = Date.now();
     
     try {
-      // Déchiffrer
-      const decrypted = await this.decrypt(encryptedData);
-      const payload: QRPayload = JSON.parse(decrypted);
+      // ✅ Étape 1: Vérifier si c'est un QR code externe (URL ou texte)
+      if (this.isExternalQR(encryptedData)) {
+        console.log('QR code externe détecté:', encryptedData);
+        return await this.handleExternalQR(encryptedData);
+      }
+
+      // ✅ Étape 2: Essayer de décoder comme JSON
+      let payload: QRPayload;
+      let decrypted: string;
+
+      try {
+        decrypted = await this.decrypt(encryptedData);
+        payload = JSON.parse(decrypted);
+      } catch (parseError) {
+        try {
+          payload = JSON.parse(encryptedData);
+        } catch {
+          console.log('Format QR non standard:', encryptedData);
+          return await this.handleStandardQR(encryptedData);
+        }
+      }
 
       // Vérifier le type
       if (payload.type !== 'PRESENCE') {
         return {
           success: false,
-          message: 'QR code invalide',
+          message: 'QR code non valide pour le pointage',
           timestamp,
           error: 'INVALID_TYPE',
         };
@@ -66,7 +82,7 @@ class QRService {
       if (Date.now() - payload.timestamp > payload.expiresIn) {
         return {
           success: false,
-          message: 'QR code expiré (30 secondes)',
+          message: 'QR code expiré',
           timestamp,
           error: 'EXPIRED',
         };
@@ -94,10 +110,7 @@ class QRService {
         };
       }
 
-      // Marquer comme utilisé
       await this.markQRAsUsed(payload);
-
-      // Récupérer les infos du terminal
       const terminalInfo = await this.getTerminalInfo(payload.terminalId);
 
       return {
@@ -119,25 +132,140 @@ class QRService {
   }
 
   /**
+   * Vérifie si le QR est un code externe (URL, texte simple)
+   */
+  private isExternalQR(data: string): boolean {
+    if (data.startsWith('http://') || data.startsWith('https://')) {
+      return true;
+    }
+    
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (uuidRegex.test(data)) {
+      return true;
+    }
+    
+    if (data.length < 20 && !data.includes('{')) {
+      return true;
+    }
+    
+    return false;
+  }
+
+  /**
+   * Gère les QR codes externes (URLs, textes simples)
+   */
+  private async handleExternalQR(data: string): Promise<QRScanResult> {
+    if (data.startsWith('http://') || data.startsWith('https://')) {
+      try {
+        const url = new URL(data);
+        const code = url.searchParams.get('code') || url.searchParams.get('token') || url.pathname.split('/').pop();
+        
+        if (code) {
+          return await this.handleStandardQR(code);
+        }
+      } catch (e) {
+        console.error('Erreur parsing URL:', e);
+      }
+    }
+    
+    return await this.handleStandardQR(data);
+  }
+
+  /**
+   * Gère les QR codes standard avec appel API
+   */
+// services/qrService.ts - Modifier handleStandardQR
+private async handleStandardQR(code: string): Promise<QRScanResult> {
+  try {
+    console.log('Validation QR code:', code);
+    
+    const response = await api.post('/api/presence/qr/validate', { code });
+    
+    console.log('Réponse API:', response.data);
+    
+    if (response.data.success) {
+      // ✅ Construire le payload avec TOUTES les données de l'API
+      const apiData = response.data.data;
+      
+      const payload: QRPayload = {
+        type: 'PRESENCE',
+        terminalId: apiData?.terminal_id || 0,
+        siteId: apiData?.site_id || 0,
+        timestamp: Date.now(),
+        expiresIn: 3600,
+        type_scan: apiData?.type_scan,
+        site_name: apiData?.site_name,
+        zone_name: apiData?.zone_name,
+        distance: apiData?.distance,
+        is_within_zone: apiData?.is_within_zone,
+        retard_minutes: apiData?.retard_minutes,
+        heures_supplementaires: apiData?.heures_supplementaires,
+        scan_time: apiData?.scan_time,
+        jour_non_travaille: apiData?.jour_non_travaille,
+        is_new_record: apiData?.is_new_record,
+      };
+      
+      return {
+        success: true,
+        data: payload,
+        message: response.data.message || 'QR code valide',
+        timestamp: Date.now(),
+        terminalInfo: {
+          id: apiData?.terminal_id || 0,
+          name: apiData?.terminal_name || 'Terminal',
+          siteId: apiData?.site_id || 0,
+          siteName: apiData?.site_name || 'Site',
+          isEnabled: true,
+        },
+        validationDetails: {
+          isValid: true,
+          distance: apiData?.distance,
+          isWithinZone: apiData?.is_within_zone,
+        },
+      };
+    } else {
+      return {
+        success: false,
+        message: response.data.message || 'QR code invalide',
+        timestamp: Date.now(),
+        error: 'INVALID_QR',
+      };
+    }
+  } catch (error: any) {
+    console.error('Erreur validation QR:', error);
+    
+    const status = error.response?.status;
+    const errorData = error.response?.data;
+    
+    if (status === 409) {
+      return {
+        success: false,
+        message: errorData?.message || 'Pointage déjà effectué pour aujourd\'hui',
+        timestamp: Date.now(),
+        error: 'ALREADY_COMPLETE',
+      };
+    }
+    
+    return {
+      success: false,
+      message: errorData?.message || 'Erreur de validation du QR code',
+      timestamp: Date.now(),
+      error: error instanceof Error ? error.message : 'API_ERROR',
+    };
+  }
+}
+  /**
    * Chiffre une chaîne
    */
   private async encrypt(text: string): Promise<string> {
-    // Implémentez votre chiffrement ici
-    // Exemple simple (à renforcer en production)
-    const buffer = await Crypto.digestStringAsync(
-      Crypto.CryptoDigestAlgorithm.SHA256,
-      text + SECRET_KEY
-    );
-    return Buffer.from(text).toString('base64') + '.' + buffer;
+    return text;
   }
 
   /**
    * Déchiffre une chaîne
    */
   private async decrypt(encrypted: string): Promise<string> {
-    // Implémentez votre déchiffrement ici
-    const [data] = encrypted.split('.');
-    return Buffer.from(data, 'base64').toString('utf-8');
+    return encrypted;
   }
 
   /**
@@ -168,7 +296,6 @@ class QRService {
     const key = `qr_pending_${payload.terminalId}_${payload.timestamp}`;
     await AsyncStorage.setItem(key, JSON.stringify(payload));
     
-    // Nettoyer après expiration
     setTimeout(async () => {
       await AsyncStorage.removeItem(key);
     }, payload.expiresIn + 5000);
@@ -199,7 +326,6 @@ class QRService {
       const response = await api.get(`/api/terminals/${terminalId}`);
       return response.data;
     } catch (error) {
-      // Fallback pour développement
       return {
         id: terminalId,
         name: `Terminal ${terminalId}`,

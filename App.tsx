@@ -1,16 +1,18 @@
 import { NavigationContainer } from "@react-navigation/native";
+import { Buffer } from "buffer";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 import {
-    SafeAreaProvider,
-    useSafeAreaInsets,
+  SafeAreaProvider,
+  useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { Provider, useDispatch } from "react-redux";
+import { restoreSession } from "./redux/authSlice";
+import { store } from "./redux/store";
 import RootNavigator from "./src/navigation/RootNavigator";
 import { COLORS } from "./src/screens/dashboard/constants/color";
-import { store } from "./redux/store";
-import { restoreSession } from "./redux/authSlice";
+global.Buffer = Buffer;
 
 const AuthInitializer = ({ children }: { children: React.ReactNode }) => {
   const dispatch = useDispatch();

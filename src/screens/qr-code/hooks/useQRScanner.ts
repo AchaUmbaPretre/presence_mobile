@@ -1,3 +1,4 @@
+// hooks/useQRScanner.ts
 import { useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
 import { useCallback, useRef, useState, useEffect } from "react";
@@ -54,7 +55,7 @@ export const useQRScanner = ({
     }
   }, []);
 
-  // ✅ Déclaration de resetScanner AVANT de l'utiliser dans showErrorAlert
+  // Réinitialisation du scanner
   const resetScanner = useCallback(() => {
     if (!isMounted.current) return;
     
@@ -106,12 +107,32 @@ export const useQRScanner = ({
     }
   }, [hapticEnabled]);
 
-  // Gestion de l'erreur avec alert
+  // ✅ Gestion améliorée des erreurs avec support des codes d'erreur
   const showErrorAlert = useCallback((
     title: string,
     message: string,
+    errorCode?: string,
     onRetry?: () => void
   ) => {
+    // ✅ Si l'erreur est "pointage déjà effectué", ne pas proposer de réessayer
+    if (errorCode === 'ALREADY_COMPLETE') {
+      Alert.alert(
+        title,
+        message,
+        [
+          { 
+            text: "OK", 
+            onPress: () => {
+              onScanEnd?.();
+              resetScanner();
+            }
+          },
+        ],
+        { cancelable: false }
+      );
+      return;
+    }
+    
     Alert.alert(
       title,
       message,
@@ -126,11 +147,11 @@ export const useQRScanner = ({
             }
           },
         },
-        { text: "Annuler", style: "cancel" },
+        { text: "Annuler", style: "cancel", onPress: () => resetScanner() },
       ],
       { cancelable: false }
     );
-  }, [resetScanner]);
+  }, [resetScanner, onScanEnd]);
 
   // Traitement du scan
   const handleScan = useCallback(async (data: string) => {
@@ -155,7 +176,6 @@ export const useQRScanner = ({
 
       if (result.success && result.data) {
         triggerSuccessFeedback();
-        
         onScanSuccess?.(result.data);
 
         if (autoClose) {
@@ -170,9 +190,13 @@ export const useQRScanner = ({
         triggerErrorFeedback();
         onScanError?.(result.message);
         
-        showErrorAlert("QR Code invalide", result.message, () => {
-          resetScanner();
-        });
+        // ✅ Passer le code d'erreur à showErrorAlert
+        showErrorAlert(
+          result.error === 'ALREADY_COMPLETE' ? "Pointage déjà effectué" : "QR Code invalide",
+          result.message,
+          result.error,
+          () => resetScanner()
+        );
       }
     } catch (error) {
       console.error("Erreur scan:", error);
@@ -185,6 +209,7 @@ export const useQRScanner = ({
         showErrorAlert(
           "Erreur",
           `${errorMessage}. Veuillez réessayer.`,
+          undefined,
           () => resetScanner()
         );
       }
@@ -261,6 +286,7 @@ export const useQRScanner = ({
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }, []);
 
+  // Go back (à gérer par le composant parent)
   const goBack = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }, []);

@@ -1,7 +1,6 @@
-// types/qr.types.ts
-
 import { ScanType } from "@/screens/qRSuccess/config/successConfig";
 
+// types/qr.types.ts
 export interface QRPayload {
   type: "PRESENCE";
   terminalId: number;
@@ -9,24 +8,36 @@ export interface QRPayload {
   timestamp: number;
   expiresIn: number;
   signature?: string;
+  // ✅ Champs de pointage
+  type_scan?: "ENTREE" | "SORTIE";
+  site_name?: string;
+  zone_name?: string;
+  distance?: number;
+  is_within_zone?: boolean;
+  retard_minutes?: number;
+  heures_supplementaires?: number;
+  scan_time?: string;
+  jour_non_travaille?: boolean;
+  is_new_record?: boolean;
 }
-/* 
+
 export interface QRScanResult {
   success: boolean;
   message: string;
-  data?: QRPayload;
+  data?: QRPayload & {
+    type_scan?: "ENTREE" | "SORTIE";
+    site_name?: string;
+    zone_name?: string;
+    distance?: number;
+    is_within_zone?: boolean;
+    retard_minutes?: number;
+    heures_supplementaires?: number;
+    scan_time?: string;
+    jour_non_travaille?: boolean;
+    is_new_record?: boolean;
+  };
   error?: string;
   timestamp: number;
-  terminalInfo?: TerminalInfo;
-}
- */
-// types/qr.types.ts
-export interface QRScanResult {
-  success: boolean;
-  message: string;
-  data?: QRPayload;
-  error?: string;
-  timestamp: number; // ✅ Obligatoire maintenant
   terminalInfo?: TerminalInfo;
   validationDetails?: {
     isValid: boolean;
@@ -35,6 +46,7 @@ export interface QRScanResult {
     isWithinZone?: boolean;
   };
 }
+
 
 export interface QRScanState {
   isScanning: boolean;

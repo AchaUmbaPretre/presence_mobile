@@ -8,6 +8,7 @@ import TabNavigator from "./TabNavigator";
 import { QRScannerScreen } from "@/screens/qr-code/QRScannerScreen";
 import QRSuccessScreen from "@/screens/qRSuccess/QRSuccessScreen";
 
+// navigation/AppNavigator.tsx
 export type AppStackParamList = {
   Tabs: undefined;
   QRScanner: undefined;
@@ -15,15 +16,21 @@ export type AppStackParamList = {
     message: string;
     typeScan: string;
     siteName: string;
+    siteId?: number;
     zoneName?: string;
+    zoneId?: number;
     distance?: number;
     isWithinZone?: boolean;
+    retard_minutes?: number;
+    heures_supplementaires?: number;
+    scan_time?: string; 
+    jour_non_travaille?: boolean; 
+    is_new_record?: boolean;
   };
   Geoloc: undefined;
   Historique: undefined;
   Rapports: undefined;
 };
-
 const Stack = createNativeStackNavigator<AppStackParamList>();
 
 const AppNavigator = () => {
