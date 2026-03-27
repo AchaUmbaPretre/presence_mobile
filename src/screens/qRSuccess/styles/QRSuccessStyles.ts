@@ -1,4 +1,3 @@
-// screens/qr-success/styles/QRSuccessStyles.ts
 import { StyleSheet, Dimensions, Platform } from 'react-native';
 import { getFontFamily } from '@/constants/typography';
 import { COLORS } from '@/screens/dashboard/constants/color';
@@ -6,7 +5,6 @@ import { COLORS } from '@/screens/dashboard/constants/color';
 const { width, height } = Dimensions.get('window');
 
 export const styles = StyleSheet.create({
-  // Conteneur principal
   container: {
     flex: 1,
     alignItems: 'center'

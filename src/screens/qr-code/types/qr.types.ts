@@ -1,6 +1,5 @@
 import { ScanType } from "@/screens/qRSuccess/config/successConfig";
 
-// types/qr.types.ts
 export interface QRPayload {
   type: "PRESENCE";
   terminalId: number;
@@ -8,7 +7,6 @@ export interface QRPayload {
   timestamp: number;
   expiresIn: number;
   signature?: string;
-  // ✅ Champs de pointage
   type_scan?: "ENTREE" | "SORTIE";
   site_name?: string;
   zone_name?: string;
@@ -128,6 +126,7 @@ export interface UseQRScannerProps {
   hapticEnabled?: boolean;
 }
 
+// types/qr.types.ts
 export interface UseQRScannerReturn {
   permission: any;
   state: QRScanState & {
@@ -136,8 +135,8 @@ export interface UseQRScannerReturn {
     locationError: string | null;
   };
   lastResult: QRScanResult | null;
-  
-  // Actions
+  isScanning: boolean;
+  scanned: boolean;
   handleScan: (data: string) => Promise<void>;
   resetScanner: () => void;
   stopScanning: () => void;
@@ -146,8 +145,6 @@ export interface UseQRScannerReturn {
   toggleFlash: () => void;
   goBack: () => void;
   retryLocation: () => Promise<void>;
-  
-  // Utilitaires
-  isScanning: boolean;
-  scanned: boolean;
+  pauseScanner: () => void;
+  resumeScanner: () => void;
 }

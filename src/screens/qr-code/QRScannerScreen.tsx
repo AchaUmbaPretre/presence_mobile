@@ -1,4 +1,6 @@
-import { useNavigation } from "@react-navigation/native";
+// screens/qr-code/QRScannerScreen.tsx
+import { AppStackParamList } from "@/navigation/types";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import React, { useCallback } from "react";
 import { StatusBar, View } from "react-native";
@@ -8,7 +10,6 @@ import { PermissionRequest } from "./components/PermissionRequest";
 import { useQRScanner } from "./hooks/useQRScanner";
 import { styles } from "./styles/QRScannerStyles";
 import { QRPayload } from "./types/qr.types";
-import { AppStackParamList } from "@/navigation/types";
 
 interface QRSuccessData extends QRPayload {
   message?: string;
@@ -22,49 +23,84 @@ interface QRSuccessData extends QRPayload {
   scan_time?: string;
 }
 
-const DEFAULT_PARAMS = {
+const DEFAULT_VALUES = {
   type_scan: "ENTREE" as const,
   site_name: "Site",
   message: "Pointage enregistré avec succès",
 } as const;
 
 export const QRScannerScreen = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<AppStackParamList>>();
-  
-  const { state, handleScan, requestCameraPermission, toggleFlash, retryLocation } = useQRScanner({
-    onScanSuccess: useCallback((result: QRSuccessData) => {
-      const { 
-        type_scan = DEFAULT_PARAMS.type_scan,
-        site_name = DEFAULT_PARAMS.site_name,
-        zone_name,
-        distance,
-        is_within_zone,
-        retard_minutes,
-        heures_supplementaires,
-        scan_time,
-        message = DEFAULT_PARAMS.message,
-      } = result;
+  const navigation =
+    useNavigation<NativeStackNavigationProp<AppStackParamList>>();
 
-      navigation.navigate("QRSuccess", {
-        message,
-        typeScan: type_scan,
-        siteName: site_name,
-        zoneName: zone_name,
-        distance,
-        isWithinZone: is_within_zone,
-        retard_minutes,
-        heures_supplementaires,
-        scan_time: scan_time || new Date().toISOString(),
-      });
-    }, [navigation]),
+  const {
+    state,
+    handleScan,
+    requestCameraPermission,
+    toggleFlash,
+    retryLocation,
+    pauseScanner,
+    resumeScanner,
+  } = useQRScanner({
+    onScanSuccess: useCallback(
+      (result: QRSuccessData) => {
+        // ✅ Pause immédiate du scanner avant navigation
+        pauseScanner();
+
+        const {
+          type_scan = DEFAULT_VALUES.type_scan,
+          site_name = DEFAULT_VALUES.site_name,
+          zone_name,
+          distance,
+          is_within_zone,
+          retard_minutes,
+          heures_supplementaires,
+          scan_time,
+          message = DEFAULT_VALUES.message,
+        } = result;
+
+        navigation.navigate("QRSuccess", {
+          message,
+          typeScan: type_scan,
+          siteName: site_name,
+          zoneName: zone_name,
+          distance,
+          isWithinZone: is_within_zone,
+          retard_minutes,
+          heures_supplementaires,
+          scan_time: scan_time || new Date().toISOString(),
+        });
+      },
+      [navigation],
+    ),
+
     onScanError: useCallback((error: string) => {
-      console.error("Scan error:", error);
+      console.error("QR Scan Error:", error);
+      setTimeout(() => {
+        resumeScanner();
+      }, 2000);
     }, []),
   });
 
   const goBack = useCallback(() => navigation.goBack(), [navigation]);
 
-  if (state.hasPermission === null) return <LoadingState message="Demande de permission caméra..." />;
+  // ✅ Réinitialiser le scanner quand l'écran revient au focus
+  useFocusEffect(
+    useCallback(() => {
+      // Réactiver le scanner quand l'écran revient au focus
+      resumeScanner();
+
+      return () => {
+        // Nettoyage si nécessaire (optionnel)
+      };
+    }, [resumeScanner]),
+  );
+
+  // États de permission
+  if (state.hasPermission === null) {
+    return <LoadingState message="Demande de permission caméra..." />;
+  }
+
   if (state.hasPermission === false) {
     return (
       <PermissionRequest
@@ -78,6 +114,7 @@ export const QRScannerScreen = () => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#000" />
+
       <CameraView
         scanned={state.scanned}
         isVerifying={state.isProcessing}

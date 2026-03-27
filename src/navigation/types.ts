@@ -1,20 +1,17 @@
+// navigation/types.ts
 export type AppStackParamList = {
   Tabs: undefined;
   QRScanner: undefined;
   QRSuccess: {
     message: string;
-    typeScan: string;
+    typeScan: "ENTREE" | "SORTIE";
     siteName: string;
-    siteId?: number;
     zoneName?: string;
-    zoneId?: number;
     distance?: number;
     isWithinZone?: boolean;
     retard_minutes?: number;
     heures_supplementaires?: number;
-    scan_time?: string; 
-    jour_non_travaille?: boolean; 
-    is_new_record?: boolean;
+    scan_time?: string;
   };
   Geoloc: undefined;
   Historique: undefined;

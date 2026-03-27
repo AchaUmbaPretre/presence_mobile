@@ -55,7 +55,6 @@ export const useQRScanner = ({
     }
   }, []);
 
-  // Réinitialisation du scanner
   const resetScanner = useCallback(() => {
     if (!isMounted.current) return;
     
@@ -69,6 +68,18 @@ export const useQRScanner = ({
     setLastError(undefined);
     setIsScanning(true);
     setIsProcessing(false);
+  }, []);
+
+  const pauseScanner = useCallback(() => {
+    if (!isMounted.current) return;
+    setIsScanning(false);
+  }, []);
+
+  // ✅ Reprise du scanner (pour réessayer)
+  const resumeScanner = useCallback(() => {
+    if (!isMounted.current) return;
+    setIsScanning(true);
+    setScanned(false);
   }, []);
 
   useEffect(() => {
@@ -107,14 +118,13 @@ export const useQRScanner = ({
     }
   }, [hapticEnabled]);
 
-  // ✅ Gestion améliorée des erreurs avec support des codes d'erreur
+  // Gestion des erreurs avec alert
   const showErrorAlert = useCallback((
     title: string,
     message: string,
     errorCode?: string,
     onRetry?: () => void
   ) => {
-    // ✅ Si l'erreur est "pointage déjà effectué", ne pas proposer de réessayer
     if (errorCode === 'ALREADY_COMPLETE') {
       Alert.alert(
         title,
@@ -143,23 +153,25 @@ export const useQRScanner = ({
             if (onRetry) {
               onRetry();
             } else {
-              resetScanner();
+              resumeScanner(); // ✅ Reprendre le scan
             }
           },
         },
-        { text: "Annuler", style: "cancel", onPress: () => resetScanner() },
+        { text: "Annuler", style: "cancel", onPress: () => resumeScanner() },
       ],
       { cancelable: false }
     );
-  }, [resetScanner, onScanEnd]);
+  }, [resetScanner, onScanEnd, resumeScanner]);
 
-  // Traitement du scan
+  // ✅ Traitement du scan avec pause immédiate
   const handleScan = useCallback(async (data: string) => {
+    // ✅ Empêcher les scans multiples
     if (!isScanning || scanned || isProcessing) return;
 
-    setIsProcessing(true);
+    // ✅ Pause immédiate du scanner
+    pauseScanner();
     setScanned(true);
-    setIsScanning(false);
+    setIsProcessing(true);
 
     onScanStart?.();
 
@@ -176,27 +188,22 @@ export const useQRScanner = ({
 
       if (result.success && result.data) {
         triggerSuccessFeedback();
+        
+        // ✅ Appeler le callback qui va naviguer
         onScanSuccess?.(result.data);
-
-        if (autoClose) {
-          scanTimeout.current = setTimeout(() => {
-            if (isMounted.current) {
-              onScanEnd?.();
-              resetScanner();
-            }
-          }, closeDelay);
-        }
+        
+        // ✅ Le scanner reste en pause, la navigation va quitter l'écran
+        
       } else {
         triggerErrorFeedback();
         onScanError?.(result.message);
         
-        // ✅ Passer le code d'erreur à showErrorAlert
-        showErrorAlert(
-          result.error === 'ALREADY_COMPLETE' ? "Pointage déjà effectué" : "QR Code invalide",
-          result.message,
-          result.error,
-          () => resetScanner()
-        );
+        // ✅ En cas d'erreur, réactiver après un délai
+        setTimeout(() => {
+          if (isMounted.current) {
+            resumeScanner();
+          }
+        }, 2000);
       }
     } catch (error) {
       console.error("Erreur scan:", error);
@@ -206,12 +213,11 @@ export const useQRScanner = ({
       setLastError(errorMessage);
       
       if (isMounted.current) {
-        showErrorAlert(
-          "Erreur",
-          `${errorMessage}. Veuillez réessayer.`,
-          undefined,
-          () => resetScanner()
-        );
+        setTimeout(() => {
+          if (isMounted.current) {
+            resumeScanner();
+          }
+        }, 2000);
       }
     } finally {
       if (isMounted.current) {
@@ -222,22 +228,18 @@ export const useQRScanner = ({
     isScanning,
     scanned,
     isProcessing,
-    autoClose,
-    closeDelay,
     onScanStart,
-    onScanEnd,
     onScanSuccess,
     onScanError,
+    pauseScanner,
+    resumeScanner,
     triggerSuccessFeedback,
     triggerErrorFeedback,
-    showErrorAlert,
-    resetScanner,
   ]);
 
   // Arrêt du scanning
   const stopScanning = useCallback(() => {
     if (!isMounted.current) return;
-    
     setIsScanning(false);
     setScanned(true);
     onScanEnd?.();
@@ -246,7 +248,6 @@ export const useQRScanner = ({
   // Démarrage du scanning
   const startScanning = useCallback(() => {
     if (!isMounted.current) return;
-    
     resetScanner();
     onScanStart?.();
   }, [resetScanner, onScanStart]);
@@ -286,7 +287,7 @@ export const useQRScanner = ({
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }, []);
 
-  // Go back (à gérer par le composant parent)
+  // Go back
   const goBack = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }, []);
@@ -325,5 +326,7 @@ export const useQRScanner = ({
     toggleFlash,
     goBack,
     retryLocation,
+    pauseScanner,   // ✅ Exporté pour usage externe
+    resumeScanner,  // ✅ Exporté pour usage externe
   };
 };
