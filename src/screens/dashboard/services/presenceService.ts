@@ -6,6 +6,10 @@ interface HebdomadaireParams {
   id: number;
 }
 
+export const getPresenceByUserId = async (userId: number) => {
+  return api.get(`/api/presence/user/${userId}/today`);
+};
+
 export const postPresence = async (data: PointageRequest) => {
   return api.post("/api/presence", data);
 };

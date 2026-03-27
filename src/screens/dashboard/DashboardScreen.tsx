@@ -41,8 +41,7 @@ type AppNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 const DashboardScreen = memo(() => {
   const navigation = useNavigation<AppNavigationProp>();
   const data = useSelector((state: RootState) => state.auth.currentUser);
-
-  const { presence, isLoading, handlePointage, metrics, handleMetricPress } =
+  const { presence, isLoading, metrics, handleMetricPress, refreshData } =
     usePresence();
   const { activities, refreshActivities, handleActivityPress, handleSeeAll } =
     useActivities(data?.id);
@@ -55,9 +54,10 @@ const DashboardScreen = memo(() => {
   const { animatedStyle } = useCombinedAnimation();
 
   const handleRefresh = useCallback(() => {
+    refreshData();
     refreshActivities();
     refreshWeek();
-  }, [refreshActivities, refreshWeek]);
+  }, [refreshData, refreshActivities, refreshWeek]);
 
   const handleActionPress = useCallback(
     (action: string) => {
@@ -107,11 +107,7 @@ const DashboardScreen = memo(() => {
                 seconds={formattedSeconds}
                 date={formattedDate}
               />
-              <PresenceCards
-                presence={presence}
-                onPointage={handlePointage}
-                isLoading={isLoading}
-              />
+              <PresenceCards presence={presence} isLoading={isLoading} />
             </View>
           </LinearGradient>
 
@@ -121,6 +117,7 @@ const DashboardScreen = memo(() => {
               supplementaires={metrics.supplementaires}
               objectif={metrics.objectif}
               objectifAtteint={metrics.objectifAtteint}
+              onMetricPress={handleMetricPress}
             />
             <QuickActions onActionPress={handleActionPress} />
             <ActivityList

@@ -1,6 +1,6 @@
-import * as Haptics from "expo-haptics";
+// components/PresenceCards.tsx
 import { LinearGradient } from "expo-linear-gradient";
-import React, { memo, useCallback } from "react";
+import React, { memo } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -9,15 +9,7 @@ import {
   Text,
   View,
 } from "react-native";
-import Animated, {
-  FadeInDown,
-  interpolate,
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from "react-native-reanimated";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { Images } from "../../../assets/index";
 import { COLORS } from "../constants/color";
 import { PresenceState } from "../types/presence.types";
@@ -36,89 +28,54 @@ const BLUE_PRO = {
 
 interface PresenceCardsProps {
   presence: PresenceState;
-  onPointage: (type: "ENTREE" | "SORTIE") => void;
   isLoading?: boolean;
 }
 
 export const PresenceCards = memo(
-  ({ presence, onPointage, isLoading = false }: PresenceCardsProps) => {
-    const isEntryDisabled = !!presence.heure_entree;
-    const isExitDisabled = !presence.heure_entree || !!presence.heure_sortie;
-
-    // Animations
-    const entryScale = useSharedValue(1);
-    const exitScale = useSharedValue(1);
-    const entryGlow = useSharedValue(0);
-    const exitGlow = useSharedValue(0);
-
-    // Gestion du clic
-    const handlePress = useCallback(
-      (type: "ENTREE" | "SORTIE") => {
-        const isDisabled = type === "ENTREE" ? isEntryDisabled : isExitDisabled;
-
-        if (isDisabled || isLoading) {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-          return;
+  ({ presence, isLoading = false }: PresenceCardsProps) => {
+    // ✅ Fonction pour formater l'heure
+    const formatTime = (time: string | null): string => {
+      if (!time) return "--:--";
+      // Si l'heure est déjà au format HH:MM, la retourner directement
+      if (time.match(/^\d{2}:\d{2}$/)) {
+        return time;
+      }
+      // Sinon, essayer de parser
+      try {
+        const date = new Date(time);
+        if (!isNaN(date.getTime())) {
+          return date.toLocaleTimeString("fr-FR", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
         }
+      } catch (e) {
+        console.error("Erreur formatage heure:", e);
+      }
+      return time || "--:--";
+    };
 
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-
-        const scale = type === "ENTREE" ? entryScale : exitScale;
-        const glow = type === "ENTREE" ? entryGlow : exitGlow;
-
-        scale.value = withSpring(0.95, { damping: 12 }, () => {
-          scale.value = withSpring(1);
-        });
-
-        glow.value = withTiming(1, { duration: 200 }, () => {
-          glow.value = withTiming(0, { duration: 300 });
-          runOnJS(onPointage)(type);
-        });
-      },
-      [isEntryDisabled, isExitDisabled, isLoading, onPointage],
-    );
-
-    const entryAnimatedStyle = useAnimatedStyle(() => ({
-      transform: [{ scale: entryScale.value }],
-    }));
-
-    const exitAnimatedStyle = useAnimatedStyle(() => ({
-      transform: [{ scale: exitScale.value }],
-    }));
-
-    const entryGlowStyle = useAnimatedStyle(() => ({
-      opacity: interpolate(entryGlow.value, [0, 1], [0, 0.15]),
-    }));
-
-    const exitGlowStyle = useAnimatedStyle(() => ({
-      opacity: interpolate(exitGlow.value, [0, 1], [0, 0.15]),
-    }));
-
-    // Rendu d'une carte
+    // Rendu d'une carte d'affichage (sans interaction)
     const renderCard = (
       type: "ENTREE" | "SORTIE",
       time: string | null,
       icon: any,
       label: string,
-      animatedStyle: any,
-      glowStyle: any,
       delay: number,
     ) => {
       const isActive = !!time;
       const isEntry = type === "ENTREE";
       const accentColor = isEntry ? BLUE_PRO.primary : BLUE_PRO.secondary;
+      const formattedTime = formatTime(time);
+
+      console.log(`Rendu carte ${label}:`, { time, formattedTime, isActive });
 
       return (
         <Animated.View
           entering={FadeInDown.delay(delay).springify().damping(15)}
-          style={[{ flex: 1 }, animatedStyle]}
+          style={{ flex: 1 }}
         >
-          <Card
-            onPress={() => handlePress(type)}
-            disabled={isEntry ? isEntryDisabled : isExitDisabled}
-            active={isActive}
-            style={styles.card}
-          >
+          <Card active={isActive} style={styles.card}>
             <LinearGradient
               colors={
                 isActive
@@ -129,14 +86,6 @@ export const PresenceCards = memo(
               end={{ x: 1, y: 1 }}
               style={styles.cardGradient}
             >
-              <Animated.View
-                style={[
-                  styles.glowEffect,
-                  { backgroundColor: accentColor },
-                  glowStyle,
-                ]}
-              />
-
               <View style={styles.cardContent}>
                 <View
                   style={[
@@ -173,7 +122,7 @@ export const PresenceCards = memo(
                         isActive && styles.cardTimeActive,
                       ]}
                     >
-                      {time || "--:--"}
+                      {formattedTime}
                     </Text>
                   )}
                 </View>
@@ -203,8 +152,6 @@ export const PresenceCards = memo(
           presence.heure_entree,
           Images.arriveeIcon,
           "Arrivée",
-          entryAnimatedStyle,
-          entryGlowStyle,
           100,
         )}
 
@@ -213,8 +160,6 @@ export const PresenceCards = memo(
           presence.heure_sortie,
           Images.departIcon,
           "Départ",
-          exitAnimatedStyle,
-          exitGlowStyle,
           200,
         )}
       </View>
@@ -248,14 +193,6 @@ const styles = StyleSheet.create({
   cardGradient: {
     padding: 16,
     position: "relative",
-  },
-  glowEffect: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    opacity: 0,
   },
   cardContent: {
     flexDirection: "row",
@@ -293,7 +230,7 @@ const styles = StyleSheet.create({
   cardLabel: {
     fontSize: 14,
     fontFamily: getFontFamily("medium"),
-    color: BLUE_PRO.textBlue, // Changé de textDark à textBlue
+    color: BLUE_PRO.textBlue,
     marginBottom: 4,
     opacity: 0.7,
   },
@@ -309,7 +246,7 @@ const styles = StyleSheet.create({
       android: "monospace",
       default: "monospace",
     }),
-    color: BLUE_PRO.textBlue, // Changé de textDark à textBlue
+    color: BLUE_PRO.textBlue,
     opacity: 0.5,
   },
   cardTimeActive: {
