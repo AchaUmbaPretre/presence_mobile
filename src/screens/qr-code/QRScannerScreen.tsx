@@ -33,6 +33,7 @@ export const QRScannerScreen = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<AppStackParamList>>();
 
+  // ✅ Appeler le hook et récupérer toutes les valeurs
   const {
     state,
     handleScan,
@@ -42,61 +43,56 @@ export const QRScannerScreen = () => {
     pauseScanner,
     resumeScanner,
   } = useQRScanner({
-    onScanSuccess: useCallback(
-      (result: QRSuccessData) => {
-        // ✅ Pause immédiate du scanner avant navigation
-        pauseScanner();
+    onScanSuccess: (result: QRSuccessData) => {
+      console.log("🎉 Scan réussi - Données reçues:", result);
 
-        const {
-          type_scan = DEFAULT_VALUES.type_scan,
-          site_name = DEFAULT_VALUES.site_name,
-          zone_name,
-          distance,
-          is_within_zone,
-          retard_minutes,
-          heures_supplementaires,
-          scan_time,
-          message = DEFAULT_VALUES.message,
-        } = result;
+      // ✅ Utiliser les fonctions
+      pauseScanner();
 
-        navigation.navigate("QRSuccess", {
-          message,
-          typeScan: type_scan,
-          siteName: site_name,
-          zoneName: zone_name,
-          distance,
-          isWithinZone: is_within_zone,
-          retard_minutes,
-          heures_supplementaires,
-          scan_time: scan_time || new Date().toISOString(),
-        });
-      },
-      [navigation],
-    ),
+      const {
+        type_scan = DEFAULT_VALUES.type_scan,
+        site_name = DEFAULT_VALUES.site_name,
+        zone_name,
+        distance,
+        is_within_zone,
+        retard_minutes,
+        heures_supplementaires,
+        scan_time,
+        message = DEFAULT_VALUES.message,
+      } = result;
 
-    onScanError: useCallback((error: string) => {
-      console.error("QR Scan Error:", error);
+      navigation.navigate("QRSuccess", {
+        message,
+        typeScan: type_scan,
+        siteName: site_name,
+        zoneName: zone_name,
+        distance,
+        isWithinZone: is_within_zone,
+        retard_minutes,
+        heures_supplementaires,
+        scan_time: scan_time || new Date().toISOString(),
+      });
+    },
+    onScanError: (error: string) => {
+      console.error("❌ QR Scan Error:", error);
       setTimeout(() => {
         resumeScanner();
       }, 2000);
-    }, []),
+    },
   });
 
   const goBack = useCallback(() => navigation.goBack(), [navigation]);
 
-  // ✅ Réinitialiser le scanner quand l'écran revient au focus
   useFocusEffect(
     useCallback(() => {
-      // Réactiver le scanner quand l'écran revient au focus
+      console.log("📱 QRScannerScreen - Focus, reprise du scanner");
       resumeScanner();
-
       return () => {
-        // Nettoyage si nécessaire (optionnel)
+        console.log("📱 QRScannerScreen - Blur");
       };
     }, [resumeScanner]),
   );
 
-  // États de permission
   if (state.hasPermission === null) {
     return <LoadingState message="Demande de permission caméra..." />;
   }

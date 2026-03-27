@@ -1,4 +1,3 @@
-// hooks/useQRScanner.ts
 import { useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
 import { useCallback, useRef, useState, useEffect } from "react";
@@ -20,8 +19,8 @@ export const useQRScanner = ({
   const [permission, requestPermission] = useCameraPermissions();
   const [isScanning, setIsScanning] = useState(true);
   const [scanned, setScanned] = useState(false);
-  const [lastResult, setLastResult] = useState<QRScanResult | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [lastResult, setLastResult] = useState<QRScanResult | null>(null);
   const [lastError, setLastError] = useState<string | undefined>();
   const [flashEnabled, setFlashEnabled] = useState(false);
   const [location, setLocation] = useState<any>(null);
@@ -30,7 +29,6 @@ export const useQRScanner = ({
   const scanTimeout = useRef<NodeJS.Timeout | null>(null);
   const isMounted = useRef(true);
 
-  // Récupération de la position GPS
   const getCurrentLocation = useCallback(async () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -55,6 +53,18 @@ export const useQRScanner = ({
     }
   }, []);
 
+  // ==================== Contrôle du scanner ====================
+  const pauseScanner = useCallback(() => {
+    if (!isMounted.current) return;
+    setIsScanning(false);
+  }, []);
+
+  const resumeScanner = useCallback(() => {
+    if (!isMounted.current) return;
+    setIsScanning(true);
+    setScanned(false);
+  }, []);
+
   const resetScanner = useCallback(() => {
     if (!isMounted.current) return;
     
@@ -70,140 +80,91 @@ export const useQRScanner = ({
     setIsProcessing(false);
   }, []);
 
-  const pauseScanner = useCallback(() => {
-    if (!isMounted.current) return;
-    setIsScanning(false);
-  }, []);
-
-  // ✅ Reprise du scanner (pour réessayer)
-  const resumeScanner = useCallback(() => {
-    if (!isMounted.current) return;
-    setIsScanning(true);
-    setScanned(false);
-  }, []);
-
-  useEffect(() => {
-    isMounted.current = true;
-    getCurrentLocation();
-    return () => {
-      isMounted.current = false;
-      if (scanTimeout.current) {
-        clearTimeout(scanTimeout.current);
-      }
-    };
-  }, []);
-
-  // Feedback haptique et vibration
+  // ==================== Feedback utilisateur ====================
   const triggerSuccessFeedback = useCallback(() => {
-    if (hapticEnabled) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }
-    if (vibrationEnabled) {
-      Vibration.vibrate(100);
-    }
+    if (hapticEnabled) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    if (vibrationEnabled) Vibration.vibrate(100);
   }, [hapticEnabled, vibrationEnabled]);
 
   const triggerErrorFeedback = useCallback(() => {
-    if (hapticEnabled) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-    }
-    if (vibrationEnabled) {
-      Vibration.vibrate(200);
-    }
+    if (hapticEnabled) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    if (vibrationEnabled) Vibration.vibrate(200);
   }, [hapticEnabled, vibrationEnabled]);
 
   const triggerWarningFeedback = useCallback(() => {
-    if (hapticEnabled) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    }
+    if (hapticEnabled) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
   }, [hapticEnabled]);
 
-  // Gestion des erreurs avec alert
+  // ==================== Gestion des erreurs ====================
   const showErrorAlert = useCallback((
     title: string,
     message: string,
     errorCode?: string,
     onRetry?: () => void
   ) => {
+    // Cas spécial: pointage déjà effectué
     if (errorCode === 'ALREADY_COMPLETE') {
       Alert.alert(
         title,
         message,
-        [
-          { 
-            text: "OK", 
-            onPress: () => {
-              onScanEnd?.();
-              resetScanner();
-            }
-          },
-        ],
+        [{ text: "OK", onPress: () => { onScanEnd?.(); resetScanner(); } }],
         { cancelable: false }
       );
       return;
     }
     
+    // Cas générique avec option réessayer
     Alert.alert(
       title,
       message,
       [
-        {
-          text: "Réessayer",
-          onPress: () => {
-            if (onRetry) {
-              onRetry();
-            } else {
-              resumeScanner(); // ✅ Reprendre le scan
-            }
-          },
-        },
+        { text: "Réessayer", onPress: () => onRetry ? onRetry() : resumeScanner() },
         { text: "Annuler", style: "cancel", onPress: () => resumeScanner() },
       ],
       { cancelable: false }
     );
   }, [resetScanner, onScanEnd, resumeScanner]);
 
-  // ✅ Traitement du scan avec pause immédiate
+  // ==================== Traitement du scan ====================
   const handleScan = useCallback(async (data: string) => {
-    // ✅ Empêcher les scans multiples
     if (!isScanning || scanned || isProcessing) return;
 
-    // ✅ Pause immédiate du scanner
     pauseScanner();
     setScanned(true);
     setIsProcessing(true);
-
     onScanStart?.();
 
     try {
-      const result = await qrService.verifyAndDecode(data);
+      const result = await qrService.verifyAndDecode(data, location);
       
       if (!isMounted.current) return;
       
       setLastResult(result);
-      
-      if (!result.success) {
-        setLastError(result.message);
-      }
+      if (!result.success) setLastError(result.message);
 
       if (result.success && result.data) {
         triggerSuccessFeedback();
-        
-        // ✅ Appeler le callback qui va naviguer
         onScanSuccess?.(result.data);
         
-        // ✅ Le scanner reste en pause, la navigation va quitter l'écran
-        
+        if (autoClose) {
+          scanTimeout.current = setTimeout(() => {
+            if (isMounted.current) {
+              onScanEnd?.();
+              resetScanner();
+            }
+          }, closeDelay);
+        }
       } else {
         triggerErrorFeedback();
         onScanError?.(result.message);
         
-        // ✅ En cas d'erreur, réactiver après un délai
-        setTimeout(() => {
-          if (isMounted.current) {
-            resumeScanner();
-          }
-        }, 2000);
+        // ✅ Utilisation de showErrorAlert
+        showErrorAlert(
+          result.error === 'ALREADY_COMPLETE' ? "Pointage déjà effectué" : "QR Code invalide",
+          result.message,
+          result.error,
+          () => resumeScanner()
+        );
       }
     } catch (error) {
       console.error("Erreur scan:", error);
@@ -213,31 +174,25 @@ export const useQRScanner = ({
       setLastError(errorMessage);
       
       if (isMounted.current) {
-        setTimeout(() => {
-          if (isMounted.current) {
-            resumeScanner();
-          }
-        }, 2000);
+        // ✅ Utilisation de showErrorAlert pour les erreurs génériques
+        showErrorAlert(
+          "Erreur",
+          `${errorMessage}. Veuillez réessayer.`,
+          undefined,
+          () => resumeScanner()
+        );
       }
     } finally {
-      if (isMounted.current) {
-        setIsProcessing(false);
-      }
+      if (isMounted.current) setIsProcessing(false);
     }
   }, [
-    isScanning,
-    scanned,
-    isProcessing,
-    onScanStart,
-    onScanSuccess,
-    onScanError,
-    pauseScanner,
-    resumeScanner,
-    triggerSuccessFeedback,
-    triggerErrorFeedback,
+    isScanning, scanned, isProcessing, location, autoClose, closeDelay,
+    onScanStart, onScanSuccess, onScanError, onScanEnd,
+    pauseScanner, resumeScanner, resetScanner,
+    triggerSuccessFeedback, triggerErrorFeedback, showErrorAlert
   ]);
 
-  // Arrêt du scanning
+  // ==================== Actions du scanner ====================
   const stopScanning = useCallback(() => {
     if (!isMounted.current) return;
     setIsScanning(false);
@@ -245,14 +200,13 @@ export const useQRScanner = ({
     onScanEnd?.();
   }, [onScanEnd]);
 
-  // Démarrage du scanning
   const startScanning = useCallback(() => {
     if (!isMounted.current) return;
     resetScanner();
     onScanStart?.();
   }, [resetScanner, onScanStart]);
 
-  // Demande de permission caméra
+  // ==================== Permissions ====================
   const requestCameraPermission = useCallback(async (): Promise<void> => {
     try {
       const result = await requestPermission();
@@ -265,13 +219,9 @@ export const useQRScanner = ({
             { text: "OK", style: "default" },
             { 
               text: "Paramètres", 
-              onPress: () => {
-                if (Platform.OS === 'ios') {
-                  Linking.openURL('app-settings:');
-                } else {
-                  Linking.openSettings();
-                }
-              }
+              onPress: () => Platform.OS === 'ios' 
+                ? Linking.openURL('app-settings:') 
+                : Linking.openSettings()
             },
           ]
         );
@@ -281,22 +231,31 @@ export const useQRScanner = ({
     }
   }, [requestPermission, triggerWarningFeedback]);
 
-  // Toggle flash
+  // ==================== Interface utilisateur ====================
   const toggleFlash = useCallback(() => {
     setFlashEnabled(prev => !prev);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }, []);
 
-  // Go back
   const goBack = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }, []);
 
-  // Retry location
   const retryLocation = useCallback(async () => {
     await getCurrentLocation();
   }, [getCurrentLocation]);
 
+  // ==================== Effets ====================
+  useEffect(() => {
+    isMounted.current = true;
+    getCurrentLocation();
+    return () => {
+      isMounted.current = false;
+      if (scanTimeout.current) clearTimeout(scanTimeout.current);
+    };
+  }, []);
+
+  // ==================== State ====================
   const state: QRScanState & {
     flashEnabled: boolean;
     location: any;
@@ -326,7 +285,7 @@ export const useQRScanner = ({
     toggleFlash,
     goBack,
     retryLocation,
-    pauseScanner,   // ✅ Exporté pour usage externe
-    resumeScanner,  // ✅ Exporté pour usage externe
+    pauseScanner,
+    resumeScanner,
   };
 };
