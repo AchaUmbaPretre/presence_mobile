@@ -5,7 +5,7 @@ import React, { useCallback } from "react";
 import {
   ActivityIndicator,
   SafeAreaView,
-  StatusBar,
+  StatusBar,    
   StyleSheet,
   Text,
   View,
