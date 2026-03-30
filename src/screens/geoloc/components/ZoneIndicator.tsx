@@ -2,15 +2,11 @@ import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { LocationStatus } from '../types/geoloc.types';
+import { ZoneIndicatorProps } from '../types/geoloc.types';
 import { ZONE_COLORS } from '../constants/geoloc.constants';
 import { COLORS } from '@/screens/dashboard/constants/color';
 import { getFontFamily } from '@/constants/typography';
 
-interface ZoneIndicatorProps {
-  status: LocationStatus;
-  maxDistance?: number;
-}
 
 export const ZoneIndicator: React.FC<ZoneIndicatorProps> = ({
   status,

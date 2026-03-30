@@ -1,5 +1,6 @@
 // types/geoloc.types.ts
 import type { LocationObject } from "expo-location";
+import { Region } from "react-native-maps";
 
 export interface Coordinates {
   latitude: number;
@@ -86,4 +87,28 @@ export interface UseLocationReturn {
   getCurrentLocation: () => Promise<void>;
   requestPermission: () => Promise<boolean>;
   checkNetworkAndGPS: () => Promise<boolean>;
+}
+
+export interface ZoneIndicatorProps {
+  status: LocationStatus;
+  maxDistance?: number;
+}
+
+export interface LocationPermissionProps {
+  onRequestPermission: () => void;
+  onClose?: () => void;
+}
+
+export interface LocationMapProps {
+  siteCoordinates: Coordinates;
+  userLocation?: Coordinates;
+  radius: number;
+  isWithinZone?: boolean;
+  onMapReady?: () => void;
+  onRegionChange?: (region: Region) => void;
+}
+
+export interface LocationInfoProps {
+  status: LocationStatus;
+  isLoading: boolean;
 }

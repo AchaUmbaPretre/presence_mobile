@@ -44,7 +44,6 @@ export const useLocation = ({
     granted: false,
     canAskAgain: true,
   });
-
   const currentUser = useSelector((state: RootState) => state.auth.currentUser);
 
 

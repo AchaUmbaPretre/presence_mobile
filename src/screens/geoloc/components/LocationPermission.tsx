@@ -10,11 +10,8 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { LocationPermissionProps } from "../types/geoloc.types";
 
-interface LocationPermissionProps {
-  onRequestPermission: () => void;
-  onClose?: () => void;
-}
 
 export const LocationPermission: React.FC<LocationPermissionProps> = ({
   onRequestPermission,

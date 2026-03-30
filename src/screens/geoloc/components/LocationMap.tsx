@@ -3,28 +3,15 @@ import { COLORS } from "@/screens/dashboard/constants/color";
 import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
-import { Dimensions, Platform, StyleSheet, Text, View } from "react-native";
+import { Platform, StyleSheet, Text, View } from "react-native";
 import MapView, {
     Circle,
     Marker,
-    PROVIDER_GOOGLE,
-    Region,
+    PROVIDER_GOOGLE
 } from "react-native-maps";
 import { ZONE_COLORS } from "../constants/geoloc.constants";
-import { Coordinates } from "../types/geoloc.types";
 
-const { width, height } = Dimensions.get("window");
 
-interface LocationMapProps {
-  siteCoordinates: Coordinates;
-  userLocation?: Coordinates;
-  radius: number;
-  isWithinZone?: boolean;
-  onMapReady?: () => void;
-  onRegionChange?: (region: Region) => void;
-}
-
-// ==================== COMPOSANT LÉGENDE ====================
 const MapLegend: React.FC<{ isWithinZone?: boolean; distance?: number }> = ({
   isWithinZone,
   distance,
@@ -57,7 +44,6 @@ const MapLegend: React.FC<{ isWithinZone?: boolean; distance?: number }> = ({
   );
 };
 
-// ==================== COMPOSANT PRINCIPAL ====================
 export const LocationMap: React.FC<LocationMapProps> = ({
   siteCoordinates,
   userLocation,
@@ -130,7 +116,6 @@ export const LocationMap: React.FC<LocationMapProps> = ({
     return isWithinZone ? ZONE_COLORS.authorized : ZONE_COLORS.forbidden;
   }, [isWithinZone]);
 
-  // Région initiale optimisée
   const initialRegion = useMemo(
     () => ({
       ...siteCoordinates,
@@ -156,10 +141,8 @@ export const LocationMap: React.FC<LocationMapProps> = ({
         loadingBackgroundColor={COLORS.background}
         onMapReady={onMapReady}
         onRegionChangeComplete={onRegionChange}
-        // Optimisations Android
         googleMapId={Platform.OS === "android" ? "YOUR_MAP_ID" : undefined}
       >
-        {/* Zone autorisée */}
         <Circle
           center={siteCoordinates}
           radius={radius}
@@ -213,7 +196,6 @@ export const LocationMap: React.FC<LocationMapProps> = ({
         </TouchableOpacity>
       )}
 
-      {/* Légende */}
       {userLocation && (
         <MapLegend isWithinZone={isWithinZone} distance={distance} />
       )}
@@ -330,4 +312,5 @@ const styles = StyleSheet.create({
 
 // Ajouter TouchableOpacity si ce n'est pas déjà importé
 import { TouchableOpacity } from "react-native";
+import { LocationMapProps } from "../types/geoloc.types";
 

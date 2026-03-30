@@ -7,12 +7,7 @@ import React, { useMemo } from "react";
 import { Platform, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { LOCATION_MESSAGES, ZONE_COLORS } from "../constants/geoloc.constants";
-import { LocationStatus } from "../types/geoloc.types";
-
-interface LocationInfoProps {
-  status: LocationStatus;
-  isLoading: boolean;
-}
+import { LocationInfoProps } from "../types/geoloc.types";
 
 const AccuracyIndicator: React.FC<{ accuracy: number; color: string }> = ({
   accuracy,
@@ -71,7 +66,6 @@ export const LocationInfo: React.FC<LocationInfoProps> = ({
     return `${(meters / 1000).toFixed(1)} km`;
   };
 
-  // ✅ Styles conditionnels séparés
   const containerStyle = Platform.select({
     ios: [styles.baseContainer, styles.iosContainer],
     android: [styles.baseContainer, styles.androidContainer],
