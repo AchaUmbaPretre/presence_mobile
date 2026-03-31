@@ -7,7 +7,8 @@ import axios, {
 import { isAuthError } from "./../utils/errorHandler";
 import { API_ENDPOINTS } from "./endpoints";
 
-const DOMAIN = process.env.EXPO_PUBLIC_API_URL || "http://192.168.1.67:8080";
+const DOMAIN =
+  process.env.EXPO_PUBLIC_API_URL || "https://apidlog.loginsmart-cd.com";
 
 // Configuration du client axios
 export const api: AxiosInstance = axios.create({

@@ -9,9 +9,9 @@ import { ALERT_MESSAGES, AUTH_MESSAGES } from "../constants/auth.constants";
 import { validateField, validateLoginForm } from "../schemas/validation.schema";
 import { authService } from "../services/authService";
 import {
-    LoginFormData,
-    RootStackParamList,
-    ValidationErrors,
+  LoginFormData,
+  RootStackParamList,
+  ValidationErrors,
 } from "../types/auth.types";
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<

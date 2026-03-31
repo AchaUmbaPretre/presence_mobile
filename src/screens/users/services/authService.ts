@@ -1,6 +1,6 @@
-import { api } from './../../../api/client';
-import { LoginCredentials, LoginResponse, User } from '../types/auth.types';
-import { API_ENDPOINTS } from '@/api/endpoints';
+import { API_ENDPOINTS } from "@/api/endpoints";
+import { LoginCredentials, LoginResponse, User } from "../types/auth.types";
+import { api } from "./../../../api/client";
 
 class AuthService {
   private static instance: AuthService;
@@ -12,36 +12,38 @@ class AuthService {
     return AuthService.instance;
   }
 
-  async login(credentials: LoginCredentials): Promise<{ accessToken: string; user: User }> {
+  async login(
+    credentials: LoginCredentials,
+  ): Promise<{ accessToken: string; user: User }> {
     try {
       const response = await api.post<LoginResponse>(
-        API_ENDPOINTS.AUTH.LOGIN, 
-        credentials
+        API_ENDPOINTS.AUTH.LOGIN,
+        credentials,
       );
-      
+
       const data = response.data;
-      
+      console.log(data);
       // Vérifier si la connexion a réussi
       if (!data.success) {
-        throw new Error(data.message || 'Erreur de connexion');
+        throw new Error(data.message || "Erreur de connexion");
       }
 
       // Construire l'objet user
       const user: User = {
         id: data.id_utilisateur,
         email: data.email,
-        nom: data.nom || '',
-        prenom: data.prenom || '',
-        role: data.role || 'user',
+        nom: data.nom || "",
+        prenom: data.prenom || "",
+        role: data.role || "user",
         permissions: data.permissions || [],
         scope_sites: data.scope_sites || [],
         scope_departments: data.scope_departments || [],
-        scope_terminals: data.scope_terminals || []
+        scope_terminals: data.scope_terminals || [],
       };
 
       return {
         accessToken: data.accessToken,
-        user
+        user,
       };
     } catch (error) {
       throw this.handleError(error);
@@ -59,7 +61,7 @@ class AuthService {
   async refreshToken(): Promise<{ accessToken: string }> {
     try {
       const response = await api.post<{ accessToken: string }>(
-        API_ENDPOINTS.AUTH.REFRESH_TOKEN
+        API_ENDPOINTS.AUTH.REFRESH_TOKEN,
       );
       return response.data;
     } catch (error) {
@@ -69,13 +71,13 @@ class AuthService {
 
   private handleError(error: any): Error {
     if (error.response) {
-      const message = error.response.data?.message || 'Erreur serveur';
+      const message = error.response.data?.message || "Erreur serveur";
       return new Error(message);
     }
     if (error.request) {
-      return new Error('Erreur réseau');
+      return new Error("Erreur réseau");
     }
-    return new Error('Erreur inconnue');
+    return new Error("Erreur inconnue");
   }
 }
 

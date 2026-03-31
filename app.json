@@ -7,21 +7,30 @@
     "icon": "./src/assets/logo.png",
     "scheme": "presencemobile",
     "userInterfaceStyle": "automatic",
-    "ios": {
-      "supportsTablet": true
-    },
+
     "android": {
+      "package": "com.dlogpresence.presence",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./src/assets/logo.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
     },
+
+    "ios": {
+      "supportsTablet": true
+    },
+
     "web": {
       "output": "single",
       "favicon": "./src/assets/logo.png"
     },
+
     "plugins": [
       [
         "expo-build-properties",
@@ -43,13 +52,19 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/logo.png",
+          "image": "./src/assets/logo.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
       ],
       "@react-native-community/datetimepicker"
-    ]
+    ],
+
+    "extra": {
+      "eas": {
+        "projectId": "7ed5ae03-1a50-4c55-9085-b7678bb44a94"
+      }
+    }
   }
 }
