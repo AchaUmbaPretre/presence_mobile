@@ -22,7 +22,6 @@ class AuthService {
       );
 
       const data = response.data;
-      console.log(data);
       // Vérifier si la connexion a réussi
       if (!data.success) {
         throw new Error(data.message || "Erreur de connexion");

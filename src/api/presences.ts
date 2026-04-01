@@ -1,6 +1,8 @@
 import axios from "axios";
+import config from "../../config";
+import { store } from "./../../redux/store";
 
-const DOMAIN = "https://apidlog.loginsmart-cd.com";
+const DOMAIN = config.REACT_APP_SERVER_DOMAIN;
 
 export type PresencePayload = {
   id_utilisateur: number;
@@ -15,9 +17,6 @@ export type PresencePayload = {
 export const postPresence = async (data: PresencePayload) => {
   return axios.post(`${DOMAIN}/api/presence`, data);
 };
-
-import config from "../../config";
-import { store } from "./../../redux/store";
 
 const api = axios.create({
   baseURL: config.REACT_APP_SERVER_DOMAIN,

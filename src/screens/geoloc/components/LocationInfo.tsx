@@ -70,7 +70,7 @@ export const LocationInfo: React.FC<LocationInfoProps> = ({
     ios: [styles.baseContainer, styles.iosContainer],
     android: [styles.baseContainer, styles.androidContainer],
   });
-
+                  
   const content = (
     <Animated.View
       entering={FadeInDown.delay(100).springify()}
@@ -92,7 +92,6 @@ export const LocationInfo: React.FC<LocationInfoProps> = ({
         </View>
       </View>
 
-      {/* Informations détaillées */}
       {!isLoading && (
         <View style={styles.detailsCard}>
           <View style={styles.detailsRow}>

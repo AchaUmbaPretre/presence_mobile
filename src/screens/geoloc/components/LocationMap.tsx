@@ -4,13 +4,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { Platform, StyleSheet, Text, View } from "react-native";
-import MapView, {
-    Circle,
-    Marker,
-    PROVIDER_GOOGLE
-} from "react-native-maps";
+import MapView, { Circle, Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { ZONE_COLORS } from "../constants/geoloc.constants";
-
 
 const MapLegend: React.FC<{ isWithinZone?: boolean; distance?: number }> = ({
   isWithinZone,
@@ -75,10 +70,8 @@ export const LocationMap: React.FC<LocationMapProps> = ({
     return R * c;
   }, [userLocation, siteCoordinates]);
 
-  // Animation vers la position utilisateur
   useEffect(() => {
     if (userLocation && mapRef.current) {
-      // Éviter l'animation au premier rendu si c'est déjà la région initiale
       if (isFirstRender.current) {
         isFirstRender.current = false;
         return;

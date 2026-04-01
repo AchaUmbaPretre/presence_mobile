@@ -68,8 +68,6 @@ export const PresenceCards = memo(
       const accentColor = isEntry ? BLUE_PRO.primary : BLUE_PRO.secondary;
       const formattedTime = formatTime(time);
 
-      console.log(`Rendu carte ${label}:`, { time, formattedTime, isActive });
-
       return (
         <Animated.View
           entering={FadeInDown.delay(delay).springify().damping(15)}

@@ -4,11 +4,11 @@ import axios, {
   AxiosInstance,
   InternalAxiosRequestConfig,
 } from "axios";
+import config from "config";
 import { isAuthError } from "./../utils/errorHandler";
 import { API_ENDPOINTS } from "./endpoints";
 
-const DOMAIN =
-  process.env.EXPO_PUBLIC_API_URL || "https://apidlog.loginsmart-cd.com";
+const DOMAIN = config.REACT_APP_SERVER_DOMAIN;
 
 // Configuration du client axios
 export const api: AxiosInstance = axios.create({

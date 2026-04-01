@@ -26,6 +26,7 @@ interface WeekIndicatorProps {
   days: WeekDay[];
   onDayPress?: (day: WeekDay, index: number) => void;
   showHours?: boolean;
+  isLoading?: boolean;
 }
 
 type Status = "present" | "partial" | "absent";
@@ -144,10 +145,17 @@ const DayItem = memo(
 DayItem.displayName = "DayItem";
 
 export const WeekIndicator = memo(
-  ({ days, onDayPress, showHours = false }: WeekIndicatorProps) => {
+  ({
+    days,
+    onDayPress,
+    showHours = false,
+    isLoading = false,
+  }: WeekIndicatorProps) => {
     const stats = useMemo(() => {
       let present = 0;
       let partial = 0;
+
+      console.log(days);
 
       for (const d of days) {
         if (d.partial) partial++;
@@ -163,6 +171,32 @@ export const WeekIndicator = memo(
       },
       [onDayPress],
     );
+
+    // État de chargement
+    if (isLoading) {
+      return (
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Cette semaine</Text>
+          </View>
+          <LinearGradient
+            colors={[COLORS.white, COLORS.gray[50]]}
+            style={styles.weekContainer}
+          >
+            <View style={styles.weekGrid}>
+              {[...Array(7)].map((_, i) => (
+                <View key={i} style={styles.weekDayWrapper}>
+                  <View style={styles.weekDayContent}>
+                    <Text style={styles.weekDayLetter}>-</Text>
+                    <View style={[styles.weekDayIndicator, { opacity: 0.3 }]} />
+                  </View>
+                </View>
+              ))}
+            </View>
+          </LinearGradient>
+        </View>
+      );
+    }
 
     return (
       <View style={styles.section}>
@@ -227,7 +261,7 @@ export const WeekIndicator = memo(
 WeekIndicator.displayName = "WeekIndicator";
 
 const styles = StyleSheet.create({
-  section: { marginBottom: 90 },
+  section: { marginBottom: 24 },
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -319,6 +353,3 @@ const styles = StyleSheet.create({
   },
   decorativeGradient: { flex: 1, height: "100%" },
 });
-
-DayItem.displayName = "DayItem";
-WeekIndicator.displayName = "WeekIndicator";
