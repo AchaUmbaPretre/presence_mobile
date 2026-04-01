@@ -41,18 +41,13 @@ class LocationService {
   ): Promise<any> {
     try {
       const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, "0");
-      const day = String(now.getDate()).padStart(2, "0");
-      const hours = String(now.getHours()).padStart(2, "0");
-      const minutes = String(now.getMinutes()).padStart(2, "0");
-      const seconds = String(now.getSeconds()).padStart(2, "0");
+      const date_presence = now.toISOString().split("T")[0];
+      const timezoneOffset = -now.getTimezoneOffset() / 60;
 
       const payload = {
         id_utilisateur: userId,
-        date_presence: `${year}-${month}-${day}`,
-        datetime: `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`,
-        source: "MANUEL",
+        date_presence,
+        source: "GEOLOC",
         permissions: ["attendance.events.approve"],
         location: {
           latitude: location.latitude,
@@ -60,19 +55,23 @@ class LocationService {
           accuracy: location.accuracy,
           timestamp: location.timestamp,
         },
+        timezone_offset: timezoneOffset,
       };
 
+      
       const response = await api.post("/api/presence", payload);
+      
       return response.data;
-    } catch (error) {
-      console.error("Erreur pointage géoloc:", error);
+    } catch (error: any) {
+      console.error("❌ Erreur pointage géoloc:", error);
+      
+      if (error.response) {
+        throw new Error(error.response.data?.message || "Erreur lors du pointage");
+      }
       throw error;
     }
   }
 
-  /**
-   * Vérifie la zone et enregistre le pointage en une seule opération
-   */
   async verifierEtPointer(
     userId: number,
     latitude: number,
@@ -88,10 +87,11 @@ class LocationService {
       );
 
       if (!verification.data?.dans_zone) {
-        throw new Error("Hors zone de pointage");
+        throw new Error(
+          `Hors zone de pointage. ${verification.data?.zone_plus_proche?.nom_zone ? `Zone la plus proche: ${verification.data.zone_plus_proche.nom_zone} à ${verification.data.zone_plus_proche.distance}m` : ""}`,
+        );
       }
 
-      // 2. Ensuite enregistrer le pointage
       const pointage = await this.recordPointageWithLocation(userId, {
         latitude,
         longitude,

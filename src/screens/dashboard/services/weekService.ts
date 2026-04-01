@@ -1,4 +1,3 @@
-// services/weekService.ts
 import { api } from "@/api/client";
 import { WeekDay } from "../types/weekIndication.type";
 
@@ -19,6 +18,7 @@ export interface WeekResponse {
   message?: string;
 }
 
+// ==================== SERVICE ====================
 export const getSemainePresence = async (
   userId: number,
 ): Promise<WeekResponse> => {
@@ -26,7 +26,7 @@ export const getSemainePresence = async (
     const response = await api.get<WeekResponse>(
       `/api/presence/semainePresenceById?userId=${userId}`,
     );
-    return response.data.data;
+    return response.data;
   } catch (error) {
     console.error("❌ Erreur récupération semaine:", error);
     throw error;

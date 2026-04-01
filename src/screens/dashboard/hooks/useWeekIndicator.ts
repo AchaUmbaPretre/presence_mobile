@@ -13,7 +13,7 @@ export const useWeekIndicator = (userId?: number) => {
   const loadWeekData = useCallback(async () => {
     if (!userId) {
       setDays([]);
-      setStats({ present: 0, partial: 0, total: 7 });
+      setStats({ present: 0, partial: 0, total: 7 });                         
       setPeriod({ debut: "", fin: "" });
       return;
     }
@@ -23,11 +23,10 @@ export const useWeekIndicator = (userId?: number) => {
 
     try {
       const response = await getSemainePresence(userId);
-      console.log(response);
-      if (response?.success && response.data) {
-        setDays(response.data.jours || []);
-        setStats(response.data.stats || { present: 0, partial: 0, total: 7 });
-        setPeriod(response.data.periode || { debut: "", fin: "" });
+      if (response?.success) {
+        setDays(response.data?.jours || []);
+        setStats(response.data?.stats || { present: 0, partial: 0, total: 7 });
+        setPeriod(response.data?.periode || { debut: "", fin: "" });
       }
     } catch (err) {
       setError("Erreur de chargement");
@@ -44,11 +43,7 @@ export const useWeekIndicator = (userId?: number) => {
 
   const handleDayPress = useCallback((day: WeekDay, index: number) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    console.log(
-      `📅 Jour cliqué: ${day.letter} (${day.date}) - Heures: ${day.heures}h`,
-    );
-    // Vous pouvez ajouter une navigation ici
-    // navigation.navigate('PresenceDetail', { date: day.date, userId });
+    console.log(`📅 Jour cliqué: ${day.letter} (${day.date})`);
   }, []);
 
   useEffect(() => {

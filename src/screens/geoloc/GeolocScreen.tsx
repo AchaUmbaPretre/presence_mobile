@@ -6,16 +6,16 @@ import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useCallback, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useSelector } from "react-redux";
 import { RootState } from "redux/store";
@@ -47,6 +47,7 @@ export const GeolocScreen = () => {
     siteRadius: DEFAULT_SITE.radius,
   });
 
+  // screens/geoloc/GeolocScreen.tsx
   const handlePointage = useCallback(async () => {
     // Vérification 1: Utilisateur connecté
     if (!currentUser?.id) {
@@ -58,16 +59,18 @@ export const GeolocScreen = () => {
     // Vérification 2: Dans la zone (via API ou local)
     if (!status.isWithinZone) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      
-      // Message plus précis si on a des infos de l'API
+
       if (zoneVerification?.data?.zone_plus_proche) {
         const zoneProche = zoneVerification.data.zone_plus_proche;
         Alert.alert(
           "❌ Hors zone",
-          `Vous êtes à ${zoneProche.distance}m de "${zoneProche.nom_site}". Rapprochez-vous pour pointer.`
+          `Vous êtes à ${zoneProche.distance}m de "${zoneProche.nom_site}". Rapprochez-vous pour pointer.`,
         );
       } else {
-        Alert.alert("❌ Hors zone", "Vous devez être dans la zone pour pointer");
+        Alert.alert(
+          "❌ Hors zone",
+          "Vous devez être dans la zone pour pointer",
+        );
       }
       return;
     }
@@ -83,7 +86,6 @@ export const GeolocScreen = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
-      // Préparer les données de localisation
       const pointageLocation: PointageLocation = {
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
@@ -91,43 +93,45 @@ export const GeolocScreen = () => {
         timestamp: Date.now(),
       };
 
-      // Appel au service d'enregistrement
       const result = await locationService.recordPointageWithLocation(
         currentUser.id,
-        pointageLocation
+        pointageLocation,
       );
 
-      if (result?.success) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        
-        // Message personnalisé si on a des infos de zone
-        const zoneName = zoneVerification?.data?.zone?.nom_site || DEFAULT_SITE.name;
-        
-        Alert.alert(
-          "✅ Pointage réussi",
-          `Votre présence a été enregistrée sur "${zoneName}"`,
-          [
-            {
-              text: "OK",
-              onPress: () => navigation.goBack(),
-            },
-          ]
-        );
-      } else {
-        throw new Error(result?.message || "Erreur de pointage");
-      }
+      // ✅ Ici, ne pas vérifier result?.success car il n'existe pas
+      // L'API retourne directement les données (message, retard_minutes, etc.)
+
+      // ✅ Si on arrive ici, c'est que l'appel a réussi (pas d'erreur)
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+      const zoneName =
+        zoneVerification?.data?.zone?.nom_site || DEFAULT_SITE.name;
+      const message =
+        result?.message || `Votre présence a été enregistrée sur "${zoneName}"`;
+
+      Alert.alert("✅ Pointage réussi", message, [
+        {
+          text: "OK",
+          onPress: () => navigation.goBack(),
+        },
+      ]);
     } catch (err: any) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert(
         "❌ Erreur",
-        err.message || "Impossible d'enregistrer le pointage"
+        err.message || "Impossible d'enregistrer le pointage",
       );
       console.error("Erreur pointage:", err);
     } finally {
       setIsPointing(false);
     }
-  }, [status.isWithinZone, location, navigation, currentUser?.id, zoneVerification]);
-
+  }, [
+    status.isWithinZone,
+    location,
+    navigation,
+    currentUser?.id,
+    zoneVerification,
+  ]);
   const handleRefresh = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     getCurrentLocation();
@@ -419,12 +423,12 @@ const styles = StyleSheet.create({
     color: COLORS.white,
   },
   apiInfoBox: {
-    backgroundColor: COLORS.primary.light + '20',
+    backgroundColor: COLORS.primary.light + "20",
     borderRadius: 12,
     padding: 12,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: COLORS.primary.main + '40',
+    borderColor: COLORS.primary.main + "40",
   },
   apiInfoTitle: {
     fontSize: 12,
@@ -439,7 +443,7 @@ const styles = StyleSheet.create({
   },
   principalBadge: {
     backgroundColor: COLORS.primary.main,
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 4,

@@ -6,7 +6,6 @@ export interface WeekDay {
   heures?: number;
 }
 
-
 export interface WeekStats {
   present: number;
   partial: number;

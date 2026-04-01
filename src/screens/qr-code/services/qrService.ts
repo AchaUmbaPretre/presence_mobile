@@ -149,9 +149,6 @@ class QRService {
    */
   private async handleStandardQR(code: string, location?: { latitude: number; longitude: number; accuracy: number }): Promise<QRScanResult> {
     try {
-      console.log('Validation QR code:', code);
-      console.log('📍 Position GPS:', location);
-      
       const payload: any = { code };
       
       if (location) {
@@ -161,9 +158,7 @@ class QRService {
       }
       
       const response = await api.post('/api/presence/qr/validate', payload);
-      
-      console.log('Réponse API:', response.data);
-      
+            
       if (response.data.success) {
         const apiData = response.data.data || {};
         
