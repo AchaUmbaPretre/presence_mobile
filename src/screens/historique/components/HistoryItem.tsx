@@ -104,7 +104,6 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
           </View>
         </View>
 
-        {/* Métriques */}
         {(item.retard_minutes > 0 || item.heures_supplementaires > 0) && (
           <View style={styles.metricsContainer}>
             {item.retard_minutes > 0 && (

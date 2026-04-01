@@ -133,7 +133,6 @@ export const GeolocScreen = () => {
     getCurrentLocation();
   }, [getCurrentLocation]);
 
-  // Afficher une erreur si présente
   if (error) {
     return (
       <SafeAreaView style={styles.container}>
@@ -168,7 +167,6 @@ export const GeolocScreen = () => {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
 
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
@@ -204,13 +202,11 @@ export const GeolocScreen = () => {
           />
         </View>
 
-        {/* Informations de localisation */}
         <LocationInfo status={status} isLoading={isLoading} />
 
         {/* Indicateur de zone */}
         <ZoneIndicator status={status} maxDistance={200} />
 
-        {/* Informations API (optionnel) */}
         {zoneVerification?.data?.zone && (
           <View style={styles.apiInfoBox}>
             <Text style={styles.apiInfoTitle}>Site détecté</Text>
@@ -225,7 +221,6 @@ export const GeolocScreen = () => {
           </View>
         )}
 
-        {/* Bouton de pointage */}
         <TouchableOpacity
           style={[
             styles.pointageButton,

@@ -186,7 +186,6 @@ export const HistoryStats: React.FC<HistoryStatsProps> = ({
         ))}
       </View>
 
-      {/* Signature discrète */}
       <View style={styles.signature}>
         <View style={styles.signatureDot} />
         <View style={styles.signatureDot} />
