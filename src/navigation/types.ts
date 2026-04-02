@@ -16,6 +16,7 @@ export type AppStackParamList = {
   Geoloc: undefined;
   Historique: undefined;
   Rapports: undefined;
+  NotificationSettings: undefined;
 };
 
 export type RootStackParamList = {

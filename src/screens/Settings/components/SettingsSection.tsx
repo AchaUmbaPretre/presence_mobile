@@ -1,3 +1,5 @@
+import { NotificationSettings } from "@/screens/notification/components/NotificationSettings";
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Platform, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
@@ -7,7 +9,7 @@ import { SettingSection as SettingSectionType } from "../types/settings.types";
 import { SettingsItem } from "./SettingsItem";
 
 interface SettingsSectionProps {
-  section: SettingSectionType;    
+  section: SettingSectionType;
   index: number;
   toggleValues: {
     notificationsEnabled: boolean;
@@ -31,14 +33,38 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({
     >
       <Text style={styles.sectionTitle}>{section.title}</Text>
       <View style={styles.sectionContent}>
-        {section.items.map((item) => (
-          <SettingsItem
-            key={item.id}
-            item={item}
-            toggleValues={toggleValues}
-            onToggle={onToggle}
-          />
-        ))}
+        {section.items.map((item) => {
+          // ✅ Si l'item est de type "custom" et concerne les notifications
+          if (
+            item.type === "custom" &&
+            item.component === "NotificationSettings"
+          ) {
+            return (
+              <View key={item.id} style={styles.customItemContainer}>
+                <View style={styles.customItemHeader}>
+                  <View style={styles.customItemIcon}>
+                    <Ionicons
+                      name={item.icon as any}
+                      size={20}
+                      color={COLORS.gray[600]}
+                    />
+                  </View>
+                  <Text style={styles.customItemLabel}>{item.label}</Text>
+                </View>
+                <NotificationSettings />
+              </View>
+            );
+          }
+
+          return (
+            <SettingsItem
+              key={item.id}
+              item={item}
+              toggleValues={toggleValues}
+              onToggle={onToggle}
+            />
+          );
+        })}
       </View>
     </Animated.View>
   );
@@ -72,5 +98,30 @@ const styles = StyleSheet.create({
         elevation: 2,
       },
     }),
+  },
+  customItemContainer: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.gray[100],
+  },
+  customItemHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  customItemIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: COLORS.gray[50],
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  customItemLabel: {
+    fontSize: 15,
+    fontFamily: getFontFamily("medium"),
+    color: COLORS.gray[900],
   },
 });

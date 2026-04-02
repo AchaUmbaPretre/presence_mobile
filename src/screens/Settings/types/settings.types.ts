@@ -5,7 +5,8 @@ export type SettingItemType =
   | "navigation"
   | "info"
   | "action"
-  | "select";
+  | "select"
+  | "custom";
 
 export interface SettingItem {
   id: string;
@@ -17,12 +18,14 @@ export interface SettingItem {
   destructive?: boolean;
   badge?: number;
   disabled?: boolean;
+  component?: string;
 }
 
 export interface SettingSection {
   id: string;
   title: string;
   items: SettingItem[];
+  component?: string;
 }
 
 export interface StorageInfo {

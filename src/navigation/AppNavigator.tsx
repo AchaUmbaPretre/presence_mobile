@@ -8,6 +8,7 @@ import TabNavigator from "./TabNavigator";
 import { QRScannerScreen } from "@/screens/qr-code/QRScannerScreen";
 import QRSuccessScreen from "@/screens/qRSuccess/QRSuccessScreen";
 import { AppStackParamList } from "./types";
+import { NotificationSettings } from "@/screens/notification/components/NotificationSettings";
 
 const Stack = createNativeStackNavigator<AppStackParamList>();
 

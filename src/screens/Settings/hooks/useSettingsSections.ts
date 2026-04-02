@@ -27,7 +27,8 @@ export const useSettingsSections = ({
             icon: "notifications-outline",
             label: "Notifications",
             value: state.notificationsEnabled ? "Activées" : "Désactivées",
-            type: "toggle",
+            type: "custom",
+            component: "NotificationSettings",
           },
           {
             id: "darkmode",
