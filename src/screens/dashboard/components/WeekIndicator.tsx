@@ -155,8 +155,6 @@ export const WeekIndicator = memo(
       let present = 0;
       let partial = 0;
 
-      console.log(days);
-
       for (const d of days) {
         if (d.partial) partial++;
         else if (d.present) present++;
@@ -172,7 +170,6 @@ export const WeekIndicator = memo(
       [onDayPress],
     );
 
-    // État de chargement
     if (isLoading) {
       return (
         <View style={styles.section}>

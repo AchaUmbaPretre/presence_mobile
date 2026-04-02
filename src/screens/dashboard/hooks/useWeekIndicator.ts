@@ -43,7 +43,6 @@ export const useWeekIndicator = (userId?: number) => {
 
   const handleDayPress = useCallback((day: WeekDay, index: number) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    console.log(`📅 Jour cliqué: ${day.letter} (${day.date})`);
   }, []);
 
   useEffect(() => {

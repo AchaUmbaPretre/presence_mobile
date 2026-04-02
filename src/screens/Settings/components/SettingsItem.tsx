@@ -15,12 +15,14 @@ interface SettingsItemProps {
     autoSyncEnabled: boolean;
   };
   onToggle: (id: string) => void;
+  onPress?: () => void; // ✅ Ajout de la prop optionnelle
 }
 
 export const SettingsItem: React.FC<SettingsItemProps> = ({
   item,
   toggleValues,
   onToggle,
+  onPress, // ✅ Ajout
 }) => {
   const getToggleValue = () => {
     switch (item.id) {
@@ -32,18 +34,27 @@ export const SettingsItem: React.FC<SettingsItemProps> = ({
     }
   };
 
+  const handlePress = () => {
+    if (item.disabled) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    
+    // ✅ Si onPress personnalisé est fourni, l'utiliser
+    if (onPress) {
+      onPress();
+    } 
+    // Sinon, comportement normal
+    else if (item.type === "toggle") {
+      onToggle(item.id);
+    } 
+    else {
+      item.onPress?.();
+    }
+  };
+
   return (
     <TouchableOpacity
       style={[styles.item, item.disabled && styles.itemDisabled]}
-      onPress={() => {
-        if (item.disabled) return;
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        if (item.type === "toggle") {
-          onToggle(item.id);
-        } else {
-          item.onPress?.();
-        }
-      }}
+      onPress={handlePress}
       activeOpacity={item.disabled ? 1 : 0.7}
     >
       <View style={styles.itemLeft}>

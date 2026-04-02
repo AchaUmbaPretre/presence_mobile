@@ -1,8 +1,14 @@
+// components/SettingsSection.tsx
 import { NotificationSettings } from "@/screens/notification/components/NotificationSettings";
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
+import React, { useState } from "react";
 import { Platform, StyleSheet, Text, View } from "react-native";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import Animated, { 
+  FadeInDown, 
+  FadeInUp, 
+  FadeOutUp,
+  Layout 
+} from "react-native-reanimated";
 import { getFontFamily } from "../../../constants/typography";
 import { COLORS } from "../../dashboard/constants/color";
 import { SettingSection as SettingSectionType } from "../types/settings.types";
@@ -26,6 +32,9 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({
   toggleValues,
   onToggle,
 }) => {
+  // ✅ État pour contrôler l'affichage des paramètres de notifications
+  const [showNotificationSettings, setShowNotificationSettings] = useState(false);
+
   return (
     <Animated.View
       entering={FadeInDown.delay(200 + index * 100).springify()}
@@ -34,24 +43,32 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({
       <Text style={styles.sectionTitle}>{section.title}</Text>
       <View style={styles.sectionContent}>
         {section.items.map((item) => {
-          // ✅ Si l'item est de type "custom" et concerne les notifications
-          if (
-            item.type === "custom" &&
-            item.component === "NotificationSettings"
-          ) {
+          // ✅ Pour l'item notifications, on ajoute un comportement spécial
+          if (item.id === "notifications") {
+            // Modifier l'item pour afficher l'état du toggle
+            const modifiedItem = {
+              ...item,
+              value: showNotificationSettings ? "Masquer" : "Configurer",
+            };
+            
             return (
-              <View key={item.id} style={styles.customItemContainer}>
-                <View style={styles.customItemHeader}>
-                  <View style={styles.customItemIcon}>
-                    <Ionicons
-                      name={item.icon as any}
-                      size={20}
-                      color={COLORS.gray[600]}
-                    />
-                  </View>
-                  <Text style={styles.customItemLabel}>{item.label}</Text>
-                </View>
-                <NotificationSettings />
+              <View key={item.id}>
+                <SettingsItem
+                  item={modifiedItem}
+                  toggleValues={toggleValues}
+                  onToggle={onToggle}
+                  onPress={() => setShowNotificationSettings(!showNotificationSettings)}
+                />
+                {showNotificationSettings && (
+                  <Animated.View
+                    entering={FadeInUp.springify()}
+                    exiting={FadeOutUp.springify()}
+                    layout={Layout.springify()}
+                    style={styles.notificationSettingsContainer}
+                  >
+                    <NotificationSettings />
+                  </Animated.View>
+                )}
               </View>
             );
           }
@@ -99,29 +116,12 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  customItemContainer: {
-    paddingVertical: 12,
+  notificationSettingsContainer: {
     paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.gray[100],
-  },
-  customItemHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  customItemIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+    paddingBottom: 16,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.gray[100],
     backgroundColor: COLORS.gray[50],
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-  },
-  customItemLabel: {
-    fontSize: 15,
-    fontFamily: getFontFamily("medium"),
-    color: COLORS.gray[900],
   },
 });
