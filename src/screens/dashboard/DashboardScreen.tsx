@@ -27,6 +27,8 @@ import { useCombinedAnimation } from "./hooks/useAnimation";
 import { useCurrentTime } from "./hooks/useCurrentTime";
 import { usePresence } from "./hooks/usePresence";
 import { useWeekIndicator } from "./hooks/useWeekIndicator";
+import { useNotifications } from "../notification/hooks/useNotifications";
+import { NotificationSettings } from "../notification/components/NotificationSettings";
 
 const BLUE_PRO = {
   primary: "#0A4DA4",
@@ -52,6 +54,8 @@ const DashboardScreen = memo(() => {
   } = useWeekIndicator(data?.id);
   const { formattedDate, formattedTime, formattedSeconds } = useCurrentTime();
   const { animatedStyle } = useCombinedAnimation();
+  const { sendPointageSuccess, checkAndSendWeeklyCongrats } = useNotifications();
+
 
   const handleRefresh = useCallback(() => {
     refreshData();
@@ -133,6 +137,7 @@ const DashboardScreen = memo(() => {
             />
           </View>
         </Animated.View>
+        <NotificationSettings />
       </ScrollView>
     </SafeAreaView>
   );
