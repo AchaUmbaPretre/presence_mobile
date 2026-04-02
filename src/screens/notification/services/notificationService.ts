@@ -3,6 +3,7 @@ import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import { api } from '@/api/client';
+import { NotificationPayload, ReminderConfig } from '../types/notification.types';
 
 // Configuration du comportement des notifications
 Notifications.setNotificationHandler({
@@ -14,22 +15,6 @@ Notifications.setNotificationHandler({
     shouldShowList: true,
   }),
 });
-
-// Types
-export interface NotificationPayload {
-  title: string;
-  body: string;
-  data?: any;
-  sound?: string;
-  badge?: number;
-}
-
-export interface ReminderConfig {
-  enabled: boolean;
-  checkInTime: string; // "08:00"
-  checkOutTime: string; // "17:00"
-  reminderBeforeMinutes: number; // 15
-}
 
 class NotificationService {
   private static instance: NotificationService;
@@ -43,9 +28,6 @@ class NotificationService {
     return NotificationService.instance;
   }
 
-  /**
-   * Initialise les notifications push
-   */
   async initialize(): Promise<string | null> {
     try {
       // Vérifier si les notifications sont supportées
