@@ -40,7 +40,6 @@ export const getActivityListe = async (
       };
     }
 
-    // Si l'API retourne un objet avec une propriété 'activities'
     if (
       responseData &&
       "activities" in responseData &&
@@ -53,7 +52,6 @@ export const getActivityListe = async (
       };
     }
 
-    // Fallback: retourner un tableau vide
     return {
       success: false,
       data: [],

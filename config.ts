@@ -3,7 +3,7 @@ interface Config {
 }
 
 const config: Config = {
-  REACT_APP_SERVER_DOMAIN: "http://192.168.1.73:8080",
+  REACT_APP_SERVER_DOMAIN: "https://apidlog.loginsmart-cd.com",
 };
 
 export default config;
