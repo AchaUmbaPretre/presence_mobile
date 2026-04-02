@@ -31,7 +31,6 @@ export const getActivityListe = async (
       };
     }
 
-    // Si l'API retourne directement un tableau dans response.data
     if (Array.isArray(responseData)) {
       return {
         success: true,
