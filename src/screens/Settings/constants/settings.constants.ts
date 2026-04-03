@@ -3,7 +3,6 @@ import Constants from "expo-constants";
 import { StorageInfo } from "../types/settings.types";
 import { COLORS } from "../../dashboard/constants/color";
 
-// ==================== CONSTANTES ====================
 const manifest = Constants.manifest || Constants.manifest2?.extra?.expoClient || {};
 export const APP_VERSION = (manifest as any).version || "1.0.0";
 export const BUILD_NUMBER = Platform.select({

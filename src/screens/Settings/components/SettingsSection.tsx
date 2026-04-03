@@ -30,7 +30,6 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({
       <View style={styles.sectionContent}>
         {section.items.map((item) => {
           if (item.id === "notifications") {
-            // Modifier l'item pour afficher l'état du toggle
             const modifiedItem = {
               ...item,
               value: showNotificationSettings ? "Masquer" : "Configurer",
