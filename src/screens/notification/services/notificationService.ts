@@ -169,8 +169,6 @@ class NotificationService {
     }
   }
 
-// services/notificationService.ts
-
 /**
  * Planifie une notification à une date spécifique
  * ✅ Correction: Utiliser les composants de date au lieu de 'date'
