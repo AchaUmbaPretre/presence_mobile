@@ -47,3 +47,19 @@ export interface AppInfo {
   version: string;
   buildNumber: string;
 }
+
+export interface SettingsHeaderProps {
+  style?: any;
+}
+
+export interface SettingsSectionProps {
+  section: SettingSection;
+  index: number;
+  toggleValues: {
+    notificationsEnabled: boolean;
+    darkModeEnabled: boolean;
+    biometricsEnabled: boolean;
+    autoSyncEnabled: boolean;
+  };
+  onToggle: (id: string) => void;
+}

@@ -1,13 +1,10 @@
 import React from "react";
-import { StyleSheet, Text, ViewStyle } from "react-native";
+import { StyleSheet, Text } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated from "react-native-reanimated";
 import { COLORS } from "../../dashboard/constants/color";
 import { getFontFamily } from "../../../constants/typography";
-
-interface SettingsHeaderProps {
-  style?: any;
-}
+import { SettingsHeaderProps } from "../types/settings.types";
 
 export const SettingsHeader: React.FC<SettingsHeaderProps> = ({ style }) => {
   return (

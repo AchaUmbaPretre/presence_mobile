@@ -1,6 +1,4 @@
-// components/SettingsSection.tsx
 import { NotificationSettings } from "@/screens/notification/components/NotificationSettings";
-import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { Platform, StyleSheet, Text, View } from "react-native";
 import Animated, { 
@@ -11,20 +9,9 @@ import Animated, {
 } from "react-native-reanimated";
 import { getFontFamily } from "../../../constants/typography";
 import { COLORS } from "../../dashboard/constants/color";
-import { SettingSection as SettingSectionType } from "../types/settings.types";
+import { SettingsSectionProps } from "../types/settings.types";
 import { SettingsItem } from "./SettingsItem";
 
-interface SettingsSectionProps {
-  section: SettingSectionType;
-  index: number;
-  toggleValues: {
-    notificationsEnabled: boolean;
-    darkModeEnabled: boolean;
-    biometricsEnabled: boolean;
-    autoSyncEnabled: boolean;
-  };
-  onToggle: (id: string) => void;
-}
 
 export const SettingsSection: React.FC<SettingsSectionProps> = ({
   section,
@@ -32,7 +19,6 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({
   toggleValues,
   onToggle,
 }) => {
-  // ✅ État pour contrôler l'affichage des paramètres de notifications
   const [showNotificationSettings, setShowNotificationSettings] = useState(false);
 
   return (
@@ -43,7 +29,6 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({
       <Text style={styles.sectionTitle}>{section.title}</Text>
       <View style={styles.sectionContent}>
         {section.items.map((item) => {
-          // ✅ Pour l'item notifications, on ajoute un comportement spécial
           if (item.id === "notifications") {
             // Modifier l'item pour afficher l'état du toggle
             const modifiedItem = {
