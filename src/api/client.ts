@@ -91,7 +91,7 @@ api.interceptors.response.use(
         }
         return api(originalRequest);
       } catch (refreshError) {
-        await tokenManager.clearToken(); // ← Nettoyage via tokenManager
+        await tokenManager.clearToken();
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

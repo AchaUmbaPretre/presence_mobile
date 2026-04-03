@@ -1,8 +1,9 @@
+// screens/dashboard/DashboardScreen.tsx
 import { RootStackParamList } from "@/navigation/types";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { memo, useCallback } from "react";
+import React, { memo, useCallback, useEffect } from "react";
 import {
   Animated,
   Platform,
@@ -42,6 +43,7 @@ type AppNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 const DashboardScreen = memo(() => {
   const navigation = useNavigation<AppNavigationProp>();
   const data = useSelector((state: RootState) => state.auth.currentUser);
+  
   const { presence, isLoading, metrics, handleMetricPress, refreshData } =
     usePresence();
   const { activities, refreshActivities, handleActivityPress, handleSeeAll } =
@@ -53,14 +55,41 @@ const DashboardScreen = memo(() => {
   } = useWeekIndicator(data?.id);
   const { formattedDate, formattedTime, formattedSeconds } = useCurrentTime();
   const { animatedStyle } = useCombinedAnimation();
-  const { sendPointageSuccess, checkAndSendWeeklyCongrats } =
-    useNotifications();
+  
+  // ✅ Notifications
+  const { 
+    checkAndSendWeeklyCongrats, 
+    sendAbsenceAlert 
+  } = useNotifications(data?.id);
+
+  // ✅ Vérifier les absences et envoyer des rappels
+  useEffect(() => {
+    if (data?.id) {
+      // Vérifier toutes les 30 minutes si l'utilisateur n'a pas pointé
+      const interval = setInterval(() => {
+        sendAbsenceAlert();
+      }, 30 * 60 * 1000); // 30 minutes
+      
+      return () => clearInterval(interval);
+    }
+  }, [data?.id, sendAbsenceAlert]);
+
+  // ✅ Vérifier les félicitations hebdomadaires au chargement
+  useFocusEffect(
+    useCallback(() => {
+      if (data?.id) {
+        checkAndSendWeeklyCongrats();
+      }
+    }, [data?.id, checkAndSendWeeklyCongrats])
+  );
 
   const handleRefresh = useCallback(() => {
     refreshData();
     refreshActivities();
     refreshWeek();
-  }, [refreshData, refreshActivities, refreshWeek]);
+    // ✅ Rafraîchir aussi les vérifications
+    checkAndSendWeeklyCongrats();
+  }, [refreshData, refreshActivities, refreshWeek, checkAndSendWeeklyCongrats]);
 
   const handleActionPress = useCallback(
     (action: string) => {

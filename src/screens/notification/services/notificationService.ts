@@ -1,9 +1,12 @@
-import * as Notifications from 'expo-notifications';
-import * as Device from 'expo-device';
-import Constants from 'expo-constants';
-import { Platform } from 'react-native';
-import { api } from '@/api/client';
-import { NotificationPayload, ReminderConfig } from '../types/notification.types';
+import { api } from "@/api/client";
+import Constants from "expo-constants";
+import * as Device from "expo-device";
+import * as Notifications from "expo-notifications";
+import { Platform } from "react-native";
+import {
+    NotificationPayload,
+    ReminderConfig,
+} from "../types/notification.types";
 
 // Configuration du comportement des notifications
 Notifications.setNotificationHandler({
@@ -32,70 +35,75 @@ class NotificationService {
     try {
       // Vérifier si les notifications sont supportées
       if (!Device.isDevice) {
-        console.log('⚠️ Les notifications push ne sont pas supportées sur simulateur');
+        console.log(
+          "⚠️ Les notifications push ne sont pas supportées sur simulateur",
+        );
         return null;
       }
 
       // Demander la permission
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      const { status: existingStatus } =
+        await Notifications.getPermissionsAsync();
       let finalStatus = existingStatus;
 
-      if (existingStatus !== 'granted') {
+      if (existingStatus !== "granted") {
         const { status } = await Notifications.requestPermissionsAsync();
         finalStatus = status;
       }
 
-      if (finalStatus !== 'granted') {
-        console.log('❌ Permission de notification refusée');
+      if (finalStatus !== "granted") {
+        console.log("❌ Permission de notification refusée");
         return null;
       }
 
       // Récupérer le token Expo push
-      const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
-      
+      const projectId =
+        Constants.expoConfig?.extra?.eas?.projectId ??
+        Constants.easConfig?.projectId;
+
       if (!projectId) {
-        console.log('⚠️ Pas de projectId EAS configuré');
+        console.log("⚠️ Pas de projectId EAS configuré");
         return null;
       }
 
       const token = await Notifications.getExpoPushTokenAsync({ projectId });
       this.expoPushToken = token.data;
 
-      console.log('✅ Token Expo Push:', this.expoPushToken);
+      console.log("✅ Token Expo Push:", this.expoPushToken);
 
       // Envoyer le token au backend
       await this.registerToken();
 
       // Configurer les canaux Android
-      if (Platform.OS === 'android') {
-        await Notifications.setNotificationChannelAsync('presence', {
-          name: 'Pointage',
+      if (Platform.OS === "android") {
+        await Notifications.setNotificationChannelAsync("presence", {
+          name: "Pointage",
           importance: Notifications.AndroidImportance.HIGH,
           vibrationPattern: [0, 250, 250, 250],
-          lightColor: '#0A4DA4',
-          sound: 'default',
+          lightColor: "#0A4DA4",
+          sound: "default",
         });
-        
-        await Notifications.setNotificationChannelAsync('reminders', {
-          name: 'Rappels',
+
+        await Notifications.setNotificationChannelAsync("reminders", {
+          name: "Rappels",
           importance: Notifications.AndroidImportance.HIGH,
           vibrationPattern: [0, 250, 250, 250],
-          lightColor: '#FF9800',
-          sound: 'default',
+          lightColor: "#FF9800",
+          sound: "default",
         });
-        
-        await Notifications.setNotificationChannelAsync('alerts', {
-          name: 'Alertes',
+
+        await Notifications.setNotificationChannelAsync("alerts", {
+          name: "Alertes",
           importance: Notifications.AndroidImportance.DEFAULT,
           vibrationPattern: [0, 250, 250, 250],
-          lightColor: '#F44336',
-          sound: 'default',
+          lightColor: "#F44336",
+          sound: "default",
         });
       }
 
       return this.expoPushToken;
     } catch (error) {
-      console.error('❌ Erreur initialisation notifications:', error);
+      console.error("❌ Erreur initialisation notifications:", error);
       return null;
     }
   }
@@ -107,14 +115,14 @@ class NotificationService {
     if (!this.expoPushToken) return;
 
     try {
-      await api.post('/api/notifications/register', {
+      await api.post("/api/notifications/register", {
         token: this.expoPushToken,
         platform: Platform.OS,
         device_name: Device.deviceName,
       });
-      console.log('✅ Token enregistré sur le serveur');
+      console.log("✅ Token enregistré sur le serveur");
     } catch (error) {
-      console.error('❌ Erreur enregistrement token:', error);
+      console.error("❌ Erreur enregistrement token:", error);
     }
   }
 
@@ -128,14 +136,14 @@ class NotificationService {
           title: payload.title,
           body: payload.body,
           data: payload.data,
-          sound: payload.sound || 'default',
+          sound: payload.sound || "default",
           badge: payload.badge,
         },
         trigger: null, // Immédiat
       });
-      console.log('✅ Notification locale envoyée:', payload.title);
+      console.log("✅ Notification locale envoyée:", payload.title);
     } catch (error) {
-      console.error('❌ Erreur envoi notification locale:', error);
+      console.error("❌ Erreur envoi notification locale:", error);
     }
   }
 
@@ -145,7 +153,7 @@ class NotificationService {
    */
   async scheduleNotification(
     payload: NotificationPayload,
-    seconds: number
+    seconds: number,
   ): Promise<string> {
     try {
       const identifier = await Notifications.scheduleNotificationAsync({
@@ -153,7 +161,7 @@ class NotificationService {
           title: payload.title,
           body: payload.body,
           data: payload.data,
-          sound: payload.sound || 'default',
+          sound: payload.sound || "default",
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
@@ -164,111 +172,118 @@ class NotificationService {
       console.log(`✅ Notification planifiée dans ${seconds}s: ${identifier}`);
       return identifier;
     } catch (error) {
-      console.error('❌ Erreur planification notification:', error);
-      return '';
+      console.error("❌ Erreur planification notification:", error);
+      return "";
     }
   }
 
-/**
- * Planifie une notification à une date spécifique
- * ✅ Correction: Utiliser les composants de date au lieu de 'date'
- */
-async scheduleNotificationAtDate(
-  payload: NotificationPayload,
-  date: Date
-): Promise<string> {
-  try {
-    const identifier = await Notifications.scheduleNotificationAsync({
-      content: {
-        title: payload.title,
-        body: payload.body,
-        data: payload.data,
-        sound: payload.sound || 'default',
-      },
-      trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
-        year: date.getFullYear(),
-        month: date.getMonth() + 1, // Note: getMonth() retourne 0-11
-        day: date.getDate(),
-        hour: date.getHours(),
-        minute: date.getMinutes(),
-        second: date.getSeconds(),
-        repeats: false,
-      },
-    });
-    console.log(`✅ Notification planifiée à ${date}: ${identifier}`);
-    return identifier;
-  } catch (error) {
-    console.error('❌ Erreur planification notification:', error);
-    return '';
+  /**
+   * Planifie une notification à une date spécifique
+   * ✅ Correction: Utiliser les composants de date au lieu de 'date'
+   */
+  async scheduleNotificationAtDate(
+    payload: NotificationPayload,
+    date: Date,
+  ): Promise<string> {
+    try {
+      const identifier = await Notifications.scheduleNotificationAsync({
+        content: {
+          title: payload.title,
+          body: payload.body,
+          data: payload.data,
+          sound: payload.sound || "default",
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
+          year: date.getFullYear(),
+          month: date.getMonth() + 1, // Note: getMonth() retourne 0-11
+          day: date.getDate(),
+          hour: date.getHours(),
+          minute: date.getMinutes(),
+          second: date.getSeconds(),
+          repeats: false,
+        },
+      });
+      console.log(`✅ Notification planifiée à ${date}: ${identifier}`);
+      return identifier;
+    } catch (error) {
+      console.error("❌ Erreur planification notification:", error);
+      return "";
+    }
   }
-}
 
-/**
- * Planifie une notification quotidienne récurrente
- */
-async scheduleDailyNotification(
-  payload: NotificationPayload,
-  hour: number,
-  minute: number,
-  second: number = 0
-): Promise<string> {
-  try {
-    const identifier = await Notifications.scheduleNotificationAsync({
-      content: {
-        title: payload.title,
-        body: payload.body,
-        data: payload.data,
-        sound: payload.sound || 'default',
-      },
-      trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
-        hour,
-        minute,
-        second,
-        repeats: true,
-      },
-    });
-    console.log(`✅ Notification quotidienne planifiée à ${hour}:${minute}: ${identifier}`);
-    return identifier;
-  } catch (error) {
-    console.error('❌ Erreur planification notification quotidienne:', error);
-    return '';
+  /**
+   * Planifie une notification quotidienne récurrente
+   */
+  async scheduleDailyNotification(
+    payload: NotificationPayload,
+    hour: number,
+    minute: number,
+    second: number = 0,
+  ): Promise<string> {
+    try {
+      const identifier = await Notifications.scheduleNotificationAsync({
+        content: {
+          title: payload.title,
+          body: payload.body,
+          data: payload.data,
+          sound: payload.sound || "default",
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
+          hour,
+          minute,
+          second,
+          repeats: true,
+        },
+      });
+      console.log(
+        `✅ Notification quotidienne planifiée à ${hour}:${minute}: ${identifier}`,
+      );
+      return identifier;
+    } catch (error) {
+      console.error("❌ Erreur planification notification quotidienne:", error);
+      return "";
+    }
   }
-}
 
-/**
- * Planifie une notification hebdomadaire
- */
-async scheduleWeeklyNotification(
-  payload: NotificationPayload,
-  weekday: number, // 1 = lundi, 7 = dimanche
-  hour: number,
-  minute: number
-): Promise<string> {
-  try {
-    const identifier = await Notifications.scheduleNotificationAsync({
-      content: {
-        title: payload.title,
-        body: payload.body,
-        data: payload.data,
-        sound: payload.sound || 'default',
-      },
-      trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
-        weekday,
-        hour,
-        minute,
-        repeats: true,
-      },
-    });
-    console.log(`✅ Notification hebdomadaire planifiée (jour ${weekday} à ${hour}:${minute}): ${identifier}`);
-    return identifier;
-  } catch (error) {
-    console.error('❌ Erreur planification notification hebdomadaire:', error);
-    return '';
+  /**
+   * Planifie une notification hebdomadaire
+   */
+  async scheduleWeeklyNotification(
+    payload: NotificationPayload,
+    weekday: number, // 1 = lundi, 7 = dimanche
+    hour: number,
+    minute: number,
+  ): Promise<string> {
+    try {
+      const identifier = await Notifications.scheduleNotificationAsync({
+        content: {
+          title: payload.title,
+          body: payload.body,
+          data: payload.data,
+          sound: payload.sound || "default",
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
+          weekday,
+          hour,
+          minute,
+          repeats: true,
+        },
+      });
+      console.log(
+        `✅ Notification hebdomadaire planifiée (jour ${weekday} à ${hour}:${minute}): ${identifier}`,
+      );
+      return identifier;
+    } catch (error) {
+      console.error(
+        "❌ Erreur planification notification hebdomadaire:",
+        error,
+      );
+      return "";
+    }
   }
-}
 
   /**
    * Annule une notification planifiée
@@ -278,7 +293,7 @@ async scheduleWeeklyNotification(
       await Notifications.cancelScheduledNotificationAsync(identifier);
       console.log(`✅ Notification annulée: ${identifier}`);
     } catch (error) {
-      console.error('❌ Erreur annulation notification:', error);
+      console.error("❌ Erreur annulation notification:", error);
     }
   }
 
@@ -288,9 +303,9 @@ async scheduleWeeklyNotification(
   async cancelAllScheduledNotifications(): Promise<void> {
     try {
       await Notifications.cancelAllScheduledNotificationsAsync();
-      console.log('✅ Toutes les notifications ont été annulées');
+      console.log("✅ Toutes les notifications ont été annulées");
     } catch (error) {
-      console.error('❌ Erreur annulation notifications:', error);
+      console.error("❌ Erreur annulation notifications:", error);
     }
   }
 
@@ -304,9 +319,13 @@ async scheduleWeeklyNotification(
     if (!config.enabled) return;
 
     // Calculer les heures des rappels
-    const [checkInHour, checkInMinute] = config.checkInTime.split(':').map(Number);
-    const [checkOutHour, checkOutMinute] = config.checkOutTime.split(':').map(Number);
-    
+    const [checkInHour, checkInMinute] = config.checkInTime
+      .split(":")
+      .map(Number);
+    const [checkOutHour, checkOutMinute] = config.checkOutTime
+      .split(":")
+      .map(Number);
+
     // Heure du rappel matin (heure_pointage - reminderBeforeMinutes)
     let reminderInHour = checkInHour;
     let reminderInMinute = checkInMinute - config.reminderBeforeMinutes;
@@ -327,7 +346,7 @@ async scheduleWeeklyNotification(
     const now = new Date();
     const reminderInDate = new Date();
     reminderInDate.setHours(reminderInHour, reminderInMinute, 0, 0);
-    
+
     const reminderOutDate = new Date();
     reminderOutDate.setHours(reminderOutHour, reminderOutMinute, 0, 0);
 
@@ -342,22 +361,22 @@ async scheduleWeeklyNotification(
     // Programmer les rappels
     await this.scheduleNotificationAtDate(
       {
-        title: '⏰ Rappel pointage',
+        title: "⏰ Rappel pointage",
         body: `N'oubliez pas de pointer votre arrivée dans ${config.reminderBeforeMinutes} minutes`,
-        data: { type: 'CHECK_IN_REMINDER' },
-        sound: 'default',
+        data: { type: "CHECK_IN_REMINDER" },
+        sound: "default",
       },
-      reminderInDate
+      reminderInDate,
     );
 
     await this.scheduleNotificationAtDate(
       {
-        title: '⏰ Rappel pointage',
+        title: "⏰ Rappel pointage",
         body: `N'oubliez pas de pointer votre départ dans ${config.reminderBeforeMinutes} minutes`,
-        data: { type: 'CHECK_OUT_REMINDER' },
-        sound: 'default',
+        data: { type: "CHECK_OUT_REMINDER" },
+        sound: "default",
       },
-      reminderOutDate
+      reminderOutDate,
     );
 
     // Programmer des rappels quotidiens récurrents
@@ -367,9 +386,15 @@ async scheduleWeeklyNotification(
   /**
    * Programme des rappels récurrents
    */
-  private async scheduleRecurringReminder(config: ReminderConfig): Promise<void> {
-    const [checkInHour, checkInMinute] = config.checkInTime.split(':').map(Number);
-    const [checkOutHour, checkOutMinute] = config.checkOutTime.split(':').map(Number);
+  private async scheduleRecurringReminder(
+    config: ReminderConfig,
+  ): Promise<void> {
+    const [checkInHour, checkInMinute] = config.checkInTime
+      .split(":")
+      .map(Number);
+    const [checkOutHour, checkOutMinute] = config.checkOutTime
+      .split(":")
+      .map(Number);
 
     // Rappel d'arrivée quotidien
     const arrivalTrigger = {
@@ -389,40 +414,40 @@ async scheduleWeeklyNotification(
 
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: '⏰ Heure de pointage',
-        body: `C'est l'heure de pointer votre ${config.checkInTime === `${checkInHour}:${checkInMinute}` ? 'arrivée' : 'départ'} !`,
-        data: { type: 'POINTAGE_REMINDER' },
-        sound: 'default',
+        title: "⏰ Heure de pointage",
+        body: `C'est l'heure de pointer votre ${config.checkInTime === `${checkInHour}:${checkInMinute}` ? "arrivée" : "départ"} !`,
+        data: { type: "POINTAGE_REMINDER" },
+        sound: "default",
       },
       trigger: arrivalTrigger as any,
     });
 
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: '⏰ Heure de pointage',
+        title: "⏰ Heure de pointage",
         body: `C'est l'heure de pointer votre départ !`,
-        data: { type: 'POINTAGE_REMINDER' },
-        sound: 'default',
+        data: { type: "POINTAGE_REMINDER" },
+        sound: "default",
       },
       trigger: departureTrigger as any,
     });
 
-    console.log('✅ Rappels récurrents configurés');
+    console.log("✅ Rappels récurrents configurés");
   }
 
   /**
    * Envoie une notification de pointage réussi
    */
   async sendPointageSuccessNotification(
-    type: 'ENTREE' | 'SORTIE',
+    type: "ENTREE" | "SORTIE",
     siteName: string,
     time: string,
     isLate?: boolean,
-    lateMinutes?: number
+    lateMinutes?: number,
   ): Promise<void> {
-    const title = type === 'ENTREE' ? '✅ Arrivée pointée' : '✅ Départ pointé';
-    let body = `Votre ${type === 'ENTREE' ? 'arrivée' : 'départ'} à ${siteName} a été enregistré à ${time}`;
-    
+    const title = type === "ENTREE" ? "✅ Arrivée pointée" : "✅ Départ pointé";
+    let body = `Votre ${type === "ENTREE" ? "arrivée" : "départ"} à ${siteName} a été enregistré à ${time}`;
+
     if (isLate && lateMinutes) {
       body += ` (${lateMinutes} min de retard)`;
     }
@@ -430,7 +455,7 @@ async scheduleWeeklyNotification(
     await this.sendLocalNotification({
       title,
       body,
-      data: { type: 'POINTAGE_SUCCESS', pointageType: type },
+      data: { type: "POINTAGE_SUCCESS", pointageType: type },
     });
   }
 
@@ -439,9 +464,9 @@ async scheduleWeeklyNotification(
    */
   async sendErrorNotification(message: string): Promise<void> {
     await this.sendLocalNotification({
-      title: '❌ Erreur pointage',
+      title: "❌ Erreur pointage",
       body: message,
-      data: { type: 'POINTAGE_ERROR' },
+      data: { type: "POINTAGE_ERROR" },
     });
   }
 
@@ -450,9 +475,9 @@ async scheduleWeeklyNotification(
    */
   async sendAbsenceReminder(): Promise<void> {
     await this.sendLocalNotification({
-      title: '⚠️ Absence détectée',
-      body: 'Vous n\'avez pas pointé aujourd\'hui. Pensez à justifier votre absence.',
-      data: { type: 'ABSENCE_REMINDER' },
+      title: "⚠️ Absence détectée",
+      body: "Vous n'avez pas pointé aujourd'hui. Pensez à justifier votre absence.",
+      data: { type: "ABSENCE_REMINDER" },
     });
   }
 
@@ -461,12 +486,12 @@ async scheduleWeeklyNotification(
    */
   async sendCongratulationNotification(
     message: string,
-    stats: { present: number; partial: number; total: number }
+    stats: { present: number; partial: number; total: number },
   ): Promise<void> {
     await this.sendLocalNotification({
-      title: '🏆 Félicitations !',
+      title: "🏆 Félicitations !",
       body: `${message} (${stats.present}/${stats.total} jours présents cette semaine)`,
-      data: { type: 'CONGRATULATIONS', stats },
+      data: { type: "CONGRATULATIONS", stats },
     });
   }
 
