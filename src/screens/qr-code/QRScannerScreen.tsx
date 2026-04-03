@@ -1,4 +1,3 @@
-// screens/qr-code/QRScannerScreen.tsx
 import { AppStackParamList } from "@/navigation/types";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -33,7 +32,6 @@ export const QRScannerScreen = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<AppStackParamList>>();
 
-  // ✅ Appeler le hook et récupérer toutes les valeurs
   const {
     state,
     handleScan,
@@ -45,8 +43,6 @@ export const QRScannerScreen = () => {
   } = useQRScanner({
     onScanSuccess: (result: QRSuccessData) => {
       console.log("🎉 Scan réussi - Données reçues:", result);
-
-      // ✅ Utiliser les fonctions
       pauseScanner();
 
       const {
